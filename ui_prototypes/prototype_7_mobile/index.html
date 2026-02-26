@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering — Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    .phone-frame {
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      box-shadow: 0 0 0 1px #e0e0e0;
+    }
+    .header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #eee;
+      z-index: 10;
+    }
+    .header h1 { font-size: 1.25rem; font-weight: 600; }
+    .feed { padding: 1rem 1.25rem; }
+    .post {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      padding: 0.5rem;
+      flex-shrink: 0;
+    }
+    .avatar-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #e0e7ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .post-meta .name { font-weight: 600; font-size: 0.95rem; }
+    .post-meta .time { font-size: 0.8rem; color: #888; }
+    .post-content { font-size: 0.95rem; margin-bottom: 1rem; }
+    .post-actions {
+      display: flex;
+      gap: 1.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #f0f0f0;
+    }
+    .post-actions span {
+      font-size: 0.85rem;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .post-actions span:hover { color: #6366f1; }
+    .fab {
+      position: fixed;
+      bottom: 100px;
+      right: 50%;
+      transform: translateX(calc(210px - 50%));
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.75rem 0;
+      border-top: 1px solid #eee;
+      z-index: 20;
+    }
+    .bottom-nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      color: #888;
+      text-decoration: none;
+      font-size: 0.7rem;
+    }
+    .bottom-nav a.active { color: #6366f1; }
+    .bottom-nav .icon { font-size: 1.25rem; }
+    .pagination { text-align: center; padding: 1rem; }
+    .pagination a { color: #6366f1; text-decoration: none; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <header class="header">
+      <h1>Feed</h1>
+    </header>
+
+    <main class="feed">
+      <article class="post">
+        <div class="post-header">
+          <div class="avatar"><div class="avatar-inner">GC</div></div>
+          <div class="post-meta">
+            <div class="name">Green City Initiative</div>
+            <div class="time">2h ago</div>
+          </div>
+        </div>
+        <p class="post-content">Tree planting event this Saturday at Riverside Park. 20 volunteers needed. No experience required.</p>
+        <div class="post-actions">
+          <span class="js-like">Like</span>
+          <span>Comment</span>
+          <span>Share</span>
+        </div>
+      </article>
+
+      <article class="post">
+        <div class="post-header">
+          <div class="avatar"><div class="avatar-inner">MS</div></div>
+          <div class="post-meta">
+            <div class="name">Maria Santos</div>
+            <div class="time">5h ago</div>
+          </div>
+        </div>
+        <p class="post-content">First week at the food bank done! This community is amazing.</p>
+        <div class="post-actions">
+          <span class="js-like">Like</span>
+          <span>Comment</span>
+          <span>Share</span>
+        </div>
+      </article>
+
+      <article class="post">
+        <div class="post-header">
+          <div class="avatar"><div class="avatar-inner">CS</div></div>
+          <div class="post-meta">
+            <div class="name">Community Shelter</div>
+            <div class="time">1d ago</div>
+          </div>
+        </div>
+        <p class="post-content">Volunteer position: Weekend coordinator. 4 hrs/week. Apply now.</p>
+        <div class="post-actions">
+          <span class="js-like">Like</span>
+          <span>Comment</span>
+          <span>Share</span>
+        </div>
+      </article>
+
+      <div class="pagination"><a href="#">Load more</a></div>
+    </main>
+  </div>
+
+  <button class="fab" type="button" title="New post">+</button>
+
+  <nav class="bottom-nav">
+    <a href="#" class="active"><span class="icon">🏠</span> Feed</a>
+    <a href="#"><span class="icon">📅</span> Calendar</a>
+    <a href="#"><span class="icon">🗺️</span> Map</a>
+    <a href="#"><span class="icon">👤</span> Profile</a>
+  </nav>
+
+  <script>
+    document.querySelectorAll('.js-like').forEach(el => {
+      el.addEventListener('click', function() {
+        this.textContent = this.textContent === 'Like' ? 'Liked' : 'Like';
+      });
+    });
+  </script>
+</body>
+</html>

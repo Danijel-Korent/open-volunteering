@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering — Cards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f5f9;
+      color: #334155;
+      min-height: 100vh;
+    }
+    .header {
+      background: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { font-weight: 700; font-size: 1.25rem; color: #0f172a; }
+    .nav { display: flex; gap: 1.5rem; }
+    .nav a { color: #64748b; text-decoration: none; font-size: 0.9rem; }
+    .nav a:hover { color: #0f172a; }
+    .main { max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: box-shadow 0.2s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 600;
+    }
+    .card-meta .name { font-weight: 600; color: #0f172a; }
+    .card-meta .time { font-size: 0.8rem; color: #94a3b8; }
+    .card-body { margin-bottom: 1rem; }
+    .card-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .tag {
+      background: #e2e8f0;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: #475569;
+    }
+    .card-actions {
+      display: flex;
+      gap: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f1f5f9;
+    }
+    .card-actions button {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-actions button:hover { color: #3b82f6; }
+    .post-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .post-card .card-actions { border-top: none; padding-top: 0; }
+    .create-post {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .create-post input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .create-post input::placeholder { color: #94a3b8; }
+    .create-post input:focus { outline: none; border-color: #3b82f6; }
+    .pagination {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .pagination a {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <span class="logo">Open Volunteering</span>
+    <nav class="nav">
+      <a href="#">Feed</a>
+      <a href="#">Calendar</a>
+      <a href="#">Map</a>
+      <a href="#">Profile</a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="create-post">
+      <input type="text" placeholder="What's happening? Create a post...">
+    </div>
+
+    <div class="card post-card">
+      <div class="card-header">
+        <div class="avatar">GC</div>
+        <div class="card-meta">
+          <div class="name">Green City Initiative</div>
+          <div class="time">2 hours ago</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>Tree planting event this Saturday! We need 20 volunteers. No experience required.</p>
+        <div class="card-tags">
+          <span class="tag">Environment</span>
+          <span class="tag">Riverside Park</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="js-like">Like</button>
+        <button>Comment</button>
+        <button>Share</button>
+      </div>
+    </div>
+
+    <div class="card post-card">
+      <div class="card-header">
+        <div class="avatar">MS</div>
+        <div class="card-meta">
+          <div class="name">Maria Santos</div>
+          <div class="time">5 hours ago</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>First week at the food bank done! This community is amazing.</p>
+        <div class="card-tags">
+          <span class="tag">Food Bank</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="js-like">Like</button>
+        <button>Comment</button>
+        <button>Share</button>
+      </div>
+    </div>
+
+    <div class="card post-card">
+      <div class="card-header">
+        <div class="avatar">CS</div>
+        <div class="card-meta">
+          <div class="name">Community Shelter</div>
+          <div class="time">1 day ago</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>Volunteer position: Weekend coordinator. 4 hrs/week. Apply now.</p>
+        <div class="card-tags">
+          <span class="tag">Position</span>
+          <span class="tag">Coordinator</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="js-like">Like</button>
+        <button>Comment</button>
+        <button>Share</button>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <a href="#">Next page →</a>
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll('.js-like').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.textContent = this.textContent === 'Like' ? 'Liked' : 'Like';
+      });
+    });
+  </script>
+</body>
+</html>

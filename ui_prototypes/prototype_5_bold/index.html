@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering — Bold</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Work Sans', sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+      color: #e8e6e3;
+      min-height: 100vh;
+    }
+    .header {
+      background: rgba(255,255,255,0.05);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #ff6b35;
+    }
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #fff;
+    }
+    .logo span { color: #ff6b35; }
+    .nav { display: flex; gap: 2rem; }
+    .nav a {
+      color: #a0a0a0;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .nav a:hover { color: #ff6b35; }
+    .main { max-width: 640px; margin: 0 auto; padding: 2rem; }
+    .post {
+      background: rgba(255,255,255,0.06);
+      border-left: 4px solid #ff6b35;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: background 0.2s;
+    }
+    .post:hover { background: rgba(255,255,255,0.09); }
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .post-header .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .post-header .name { font-weight: 600; font-size: 1rem; }
+    .post-header .time { font-size: 0.8rem; color: #888; }
+    .post-content { margin-bottom: 1rem; font-size: 0.95rem; }
+    .post-actions {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .post-actions button {
+      background: none;
+      border: none;
+      color: #888;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .post-actions button:hover { color: #ff6b35; }
+    .compose {
+      background: rgba(255,255,255,0.06);
+      border: 2px dashed #ff6b35;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .compose textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #e8e6e3;
+      font-family: inherit;
+      font-size: 1rem;
+      resize: none;
+      min-height: 80px;
+    }
+    .compose textarea::placeholder { color: #666; }
+    .compose textarea:focus { outline: none; }
+    .compose button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.5rem;
+      background: #ff6b35;
+      color: #0f0f23;
+      border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .compose button:hover { background: #ff8555; }
+    .pagination {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .pagination a {
+      color: #ff6b35;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <span class="logo">Open<span>Volunteering</span></span>
+    <nav class="nav">
+      <a href="#">Feed</a>
+      <a href="#">Calendar</a>
+      <a href="#">Map</a>
+      <a href="#">Profile</a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="compose">
+      <textarea placeholder="Share with the community..."></textarea>
+      <button type="button">Post</button>
+    </div>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">GC</div>
+        <div>
+          <div class="name">Green City Initiative</div>
+          <div class="time">2 hours ago</div>
+        </div>
+      </div>
+      <p class="post-content">Tree planting event this Saturday! 20 volunteers needed at Riverside Park. No experience required—just bring enthusiasm.</p>
+      <div class="post-actions">
+        <button class="js-like">Like</button>
+        <button>Comment</button>
+        <button>Share</button>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">MS</div>
+        <div>
+          <div class="name">Maria Santos</div>
+          <div class="time">5 hours ago</div>
+        </div>
+      </div>
+      <p class="post-content">First week at the food bank complete. This community is incredible!</p>
+      <div class="post-actions">
+        <button class="js-like">Like</button>
+        <button>Comment</button>
+        <button>Share</button>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">CS</div>
+        <div>
+          <div class="name">Community Shelter</div>
+          <div class="time">1 day ago</div>
+        </div>
+      </div>
+      <p class="post-content">New volunteer position: Weekend coordinator. 4 hours/week. Apply now.</p>
+      <div class="post-actions">
+        <button class="js-like">Like</button>
+        <button>Comment</button>
+        <button>Share</button>
+      </div>
+    </article>
+
+    <div class="pagination">
+      <a href="#">Next page →</a>
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll('.js-like').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.textContent = this.textContent === 'Like' ? 'Liked' : 'Like';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering — Split</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Figtree', sans-serif;
+      background: #f0f4f8;
+      color: #1a1d21;
+      min-height: 100vh;
+      display: flex;
+    }
+    .left-panel {
+      flex: 1;
+      max-width: 560px;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .right-panel {
+      width: 340px;
+      background: #fff;
+      border-left: 1px solid #e5e7eb;
+      padding: 2rem;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .logo { font-weight: 700; font-size: 1.2rem; }
+    nav { display: flex; gap: 1.25rem; }
+    nav a { color: #6b7280; text-decoration: none; font-size: 0.9rem; }
+    nav a:hover { color: #1a1d21; }
+    .post {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+    .post-meta .name { font-weight: 600; }
+    .post-meta .time { font-size: 0.8rem; color: #9ca3af; }
+    .post-content { margin-bottom: 1rem; font-size: 0.95rem; }
+    .post-actions {
+      display: flex;
+      gap: 1.25rem;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+    .post-actions span { cursor: pointer; }
+    .post-actions span:hover { color: #059669; }
+    .compose {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .compose textarea {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: none;
+      min-height: 70px;
+    }
+    .compose button {
+      margin-top: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: #059669;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .right-panel h3 {
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .event-card {
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .event-card .title { font-weight: 600; margin-bottom: 0.25rem; }
+    .event-card .date { color: #6b7280; font-size: 0.8rem; }
+    .pagination { margin-top: 1rem; }
+    .pagination a { color: #059669; text-decoration: none; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="left-panel">
+    <header class="header">
+      <span class="logo">Open Volunteering</span>
+      <nav>
+        <a href="#">Feed</a>
+        <a href="#">Calendar</a>
+        <a href="#">Map</a>
+        <a href="#">Profile</a>
+      </nav>
+    </header>
+
+    <div class="compose">
+      <textarea placeholder="Share an update..."></textarea>
+      <button type="button">Post</button>
+    </div>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">GC</div>
+        <div class="post-meta">
+          <div class="name">Green City Initiative</div>
+          <div class="time">2 hours ago</div>
+        </div>
+      </div>
+      <p class="post-content">Tree planting event this Saturday at Riverside Park. 20 volunteers needed. No experience required.</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">MS</div>
+        <div class="post-meta">
+          <div class="name">Maria Santos</div>
+          <div class="time">5 hours ago</div>
+        </div>
+      </div>
+      <p class="post-content">First week at the food bank done! This community is amazing.</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">CS</div>
+        <div class="post-meta">
+          <div class="name">Community Shelter</div>
+          <div class="time">1 day ago</div>
+        </div>
+      </div>
+      <p class="post-content">Volunteer position: Weekend coordinator. 4 hrs/week. Apply now.</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <div class="pagination"><a href="#">Next page →</a></div>
+  </div>
+
+  <aside class="right-panel">
+    <h3>Upcoming events</h3>
+    <div class="event-card">
+      <div class="title">Tree planting</div>
+      <div class="date">Sat, Riverside Park</div>
+    </div>
+    <div class="event-card">
+      <div class="title">Food bank shift</div>
+      <div class="date">Sun, Community Center</div>
+    </div>
+    <div class="event-card">
+      <div class="title">Shelter cleanup</div>
+      <div class="date">Sat, Community Shelter</div>
+    </div>
+    <h3 style="margin-top: 2rem;">Open positions</h3>
+    <div class="event-card">
+      <div class="title">Weekend coordinator</div>
+      <div class="date">Community Shelter · 4 hrs/week</div>
+    </div>
+  </aside>
+
+  <script>
+    document.querySelectorAll('.js-like').forEach(el => {
+      el.addEventListener('click', function() {
+        this.textContent = this.textContent === 'Like' ? 'Liked' : 'Like';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering — Sidebar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 260px;
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1.5rem;
+      min-height: 100vh;
+    }
+    .sidebar .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      color: #fff;
+    }
+    .sidebar nav { display: flex; flex-direction: column; gap: 0.25rem; }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .sidebar a:hover { background: #334155; color: #fff; }
+    .sidebar a.active { background: #0f172a; color: #fff; }
+    .sidebar .icon { width: 20px; text-align: center; }
+    .content {
+      flex: 1;
+      padding: 2rem;
+      max-width: 680px;
+    }
+    .content h2 { margin-bottom: 1.5rem; font-size: 1.25rem; }
+    .feed-item {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .feed-item-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .feed-item-header .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+    .feed-item-header .name { font-weight: 600; }
+    .feed-item-header .time { font-size: 0.8rem; color: #64748b; }
+    .feed-item p { font-size: 0.9375rem; margin-bottom: 0.75rem; }
+    .feed-item-actions {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.8125rem;
+      color: #64748b;
+    }
+    .feed-item-actions span { cursor: pointer; }
+    .feed-item-actions span:hover { color: #0ea5e9; }
+    .new-post {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .new-post textarea {
+      width: 100%;
+      border: none;
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: none;
+      min-height: 60px;
+    }
+    .new-post textarea:focus { outline: none; }
+    .new-post button {
+      margin-top: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: #0ea5e9;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .pagination { margin-top: 1.5rem; }
+    .pagination a { color: #0ea5e9; text-decoration: none; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">Open Volunteering</div>
+    <nav>
+      <a href="#" class="active">
+        <span class="icon">📋</span> Feed
+      </a>
+      <a href="#">
+        <span class="icon">📅</span> Calendar
+      </a>
+      <a href="#">
+        <span class="icon">🗺️</span> Map
+      </a>
+      <a href="#">
+        <span class="icon">👤</span> Profile
+      </a>
+      <a href="#">
+        <span class="icon">📢</span> Positions
+      </a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <h2>Feed</h2>
+
+    <div class="new-post">
+      <textarea placeholder="Share an update..."></textarea>
+      <button type="button">Post</button>
+    </div>
+
+    <div class="feed-item">
+      <div class="feed-item-header">
+        <div class="avatar">GC</div>
+        <div>
+          <div class="name">Green City Initiative</div>
+          <div class="time">2 hours ago</div>
+        </div>
+      </div>
+      <p>Tree planting event this Saturday at Riverside Park. 20 volunteers needed. No experience required.</p>
+      <div class="feed-item-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </div>
+
+    <div class="feed-item">
+      <div class="feed-item-header">
+        <div class="avatar">MS</div>
+        <div>
+          <div class="name">Maria Santos</div>
+          <div class="time">5 hours ago</div>
+        </div>
+      </div>
+      <p>Completed my first week at the food bank. Grateful for this community!</p>
+      <div class="feed-item-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </div>
+
+    <div class="feed-item">
+      <div class="feed-item-header">
+        <div class="avatar">CS</div>
+        <div>
+          <div class="name">Community Shelter</div>
+          <div class="time">1 day ago</div>
+        </div>
+      </div>
+      <p>New volunteer position: Weekend coordinator. 4 hours/week. Apply now.</p>
+      <div class="feed-item-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <a href="#">Next page →</a>
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll('.js-like').forEach(el => {
+      el.addEventListener('click', function() {
+        this.textContent = this.textContent === 'Like' ? 'Liked' : 'Like';
+      });
+    });
+  </script>
+</body>
+</html>

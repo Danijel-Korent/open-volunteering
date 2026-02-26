@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering — Newsletter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: #fefefe;
+      color: #333;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    .container { max-width: 680px; margin: 0 auto; padding: 2rem; }
+    header { text-align: center; padding: 2rem 0; border-bottom: 2px solid #2c5f2d; }
+    h1 { font-family: 'Lora', serif; font-size: 2rem; color: #2c5f2d; }
+    .tagline { font-size: 0.9rem; color: #666; margin-top: 0.5rem; }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+    }
+    nav a { color: #2c5f2d; text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    .section-title {
+      font-family: 'Lora', serif;
+      font-size: 1rem;
+      color: #2c5f2d;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .post {
+      margin-bottom: 2rem;
+    }
+    .post-title {
+      font-family: 'Lora', serif;
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: #222;
+    }
+    .post-meta { font-size: 0.8rem; color: #888; margin-bottom: 0.5rem; }
+    .post-content { font-size: 0.95rem; }
+    .post-actions {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #2c5f2d;
+    }
+    .post-actions span { margin-right: 1rem; cursor: pointer; }
+    .post-actions span:hover { text-decoration: underline; }
+    .compose {
+      background: #f9f9f9;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid #e8e8e8;
+    }
+    .compose textarea {
+      width: 100%;
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: none;
+      min-height: 70px;
+    }
+    .compose button {
+      margin-top: 0.75rem;
+      padding: 0.5rem 1.25rem;
+      background: #2c5f2d;
+      color: #fff;
+      border: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .pagination { text-align: center; margin-top: 2rem; font-size: 0.9rem; }
+    .pagination a { color: #2c5f2d; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Open Volunteering</h1>
+      <p class="tagline">Community updates & opportunities</p>
+      <nav>
+        <a href="#">Feed</a>
+        <a href="#">Calendar</a>
+        <a href="#">Map</a>
+        <a href="#">Profile</a>
+      </nav>
+    </header>
+
+    <div class="compose">
+      <textarea placeholder="Share an update with the community..."></textarea>
+      <button type="button">Publish</button>
+    </div>
+
+    <div class="section-title">Recent updates</div>
+
+    <article class="post">
+      <h2 class="post-title">Tree planting event this Saturday</h2>
+      <div class="post-meta">Green City Initiative · 2 hours ago</div>
+      <p class="post-content">We're looking for volunteers to help with our tree planting event at Riverside Park. No experience needed—just bring enthusiasm and comfortable shoes. Meet at 9 AM.</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <article class="post">
+      <h2 class="post-title">First week at the food bank</h2>
+      <div class="post-meta">Maria Santos · 5 hours ago</div>
+      <p class="post-content">Just completed my first week volunteering. Grateful for this community and the opportunity to give back.</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <article class="post">
+      <h2 class="post-title">Weekend coordinator position open</h2>
+      <div class="post-meta">Community Shelter · 1 day ago</div>
+      <p class="post-content">New volunteer position: Weekend coordinator. Help organize activities for residents. 4 hours/week. Apply now.</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <div class="pagination"><a href="#">Next page →</a></div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.js-like').forEach(el => {
+      el.addEventListener('click', function() {
+        this.textContent = this.textContent === 'Like' ? 'Liked' : 'Like';
+      });
+    });
+  </script>
+</body>
+</html>

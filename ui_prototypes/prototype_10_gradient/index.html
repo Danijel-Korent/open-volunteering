@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering — Gradient</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(160deg, #fdf2f8 0%, #f5f3ff 50%, #eff6ff 100%);
+      color: #374151;
+      min-height: 100vh;
+    }
+    .container { max-width: 640px; margin: 0 auto; padding: 2rem; }
+    header {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+    .header-inner { display: flex; justify-content: space-between; align-items: center; }
+    .logo {
+      font-weight: 700;
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    nav { display: flex; gap: 1.5rem; }
+    nav a {
+      color: #6b7280;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    nav a:hover { color: #8b5cf6; }
+    .post {
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .post-meta .name { font-weight: 600; font-size: 1rem; }
+    .post-meta .time { font-size: 0.8rem; color: #9ca3af; }
+    .post-content { margin-bottom: 1rem; font-size: 0.95rem; }
+    .post-actions {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+    .post-actions span { cursor: pointer; font-weight: 500; }
+    .post-actions span:hover { color: #8b5cf6; }
+    .compose {
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .compose textarea {
+      width: 100%;
+      border: 2px solid #f3e8ff;
+      border-radius: 12px;
+      padding: 1rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: none;
+      min-height: 80px;
+    }
+    .compose textarea:focus { outline: none; border-color: #c4b5fd; }
+    .compose button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.5rem;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .compose button:hover { opacity: 0.95; }
+    .pagination { text-align: center; margin-top: 1.5rem; }
+    .pagination a {
+      color: #8b5cf6;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-inner">
+        <span class="logo">Open Volunteering</span>
+        <nav>
+          <a href="#">Feed</a>
+          <a href="#">Calendar</a>
+          <a href="#">Map</a>
+          <a href="#">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="compose">
+      <textarea placeholder="Share something with the community..."></textarea>
+      <button type="button">Post</button>
+    </div>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">GC</div>
+        <div class="post-meta">
+          <div class="name">Green City Initiative</div>
+          <div class="time">2 hours ago</div>
+        </div>
+      </div>
+      <p class="post-content">Tree planting event this Saturday at Riverside Park. 20 volunteers needed. No experience required—just bring enthusiasm!</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">MS</div>
+        <div class="post-meta">
+          <div class="name">Maria Santos</div>
+          <div class="time">5 hours ago</div>
+        </div>
+      </div>
+      <p class="post-content">First week at the food bank done! This community is amazing.</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-header">
+        <div class="avatar">CS</div>
+        <div class="post-meta">
+          <div class="name">Community Shelter</div>
+          <div class="time">1 day ago</div>
+        </div>
+      </div>
+      <p class="post-content">Volunteer position: Weekend coordinator. 4 hours/week. Apply now.</p>
+      <div class="post-actions">
+        <span class="js-like">Like</span>
+        <span>Comment</span>
+        <span>Share</span>
+      </div>
+    </article>
+
+    <div class="pagination"><a href="#">Next page →</a></div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.js-like').forEach(el => {
+      el.addEventListener('click', function() {
+        this.textContent = this.textContent === 'Like' ? 'Liked' : 'Like';
+      });
+    });
+  </script>
+</body>
+</html>
