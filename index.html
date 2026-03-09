@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-inner">
+        <a href="#/feed" class="logo">Open Volunteering</a>
+        <nav>
+          <a href="#/feed" data-route="feed">Feed</a>
+          <a href="#/profile" data-route="profile">Profile</a>
+        </nav>
+        <div class="user-switcher-wrap">
+          <label for="user-switcher">User:</label>
+          <select id="user-switcher" title="Switch user (dev tool)"></select>
+        </div>
+      </div>
+    </header>
+
+    <main id="app"></main>
+  </div>
+
+  <script type="module" src="public/js/app.js"></script>
+</body>
+</html>

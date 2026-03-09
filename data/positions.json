@@ -1,0 +1,37 @@
+[
+    {
+        "id": 1,
+        "authorId": 2,
+        "title": "Tree planting event",
+        "description": "Tree planting event this Saturday at Riverside Park. 20 volunteers needed. No experience required—just bring enthusiasm!",
+        "createdAt": "2025-03-08T10:00:00Z"
+    },
+    {
+        "id": 2,
+        "authorId": 3,
+        "title": "Weekend coordinator",
+        "description": "Volunteer position: Weekend coordinator. 4 hours\/week. Help organize activities and support our team. Apply now.",
+        "createdAt": "2025-03-07T14:30:00Z"
+    },
+    {
+        "id": 3,
+        "authorId": 2,
+        "title": "Park cleanup day",
+        "description": "Join us next Sunday for a community park cleanup. Gloves and bags provided. All ages welcome.",
+        "createdAt": "2025-03-06T09:00:00Z"
+    },
+    {
+        "id": 4,
+        "authorId": 1,
+        "title": "Test position",
+        "description": "This is a test volunteering position.",
+        "createdAt": "2026-03-09T15:20:27+01:00"
+    },
+    {
+        "id": 5,
+        "authorId": 3,
+        "title": "Test tittle",
+        "description": "test desc",
+        "createdAt": "2026-03-09T15:22:08+01:00"
+    }
+]

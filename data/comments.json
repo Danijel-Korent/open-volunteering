@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "positionId": 1,
+        "authorId": 1,
+        "content": "I'd love to join! Count me in.",
+        "createdAt": "2025-03-08T11:30:00Z"
+    },
+    {
+        "id": 2,
+        "positionId": 1,
+        "authorId": 3,
+        "content": "Great initiative! We'll spread the word.",
+        "createdAt": "2025-03-08T12:00:00Z"
+    },
+    {
+        "id": 3,
+        "positionId": 4,
+        "authorId": 1,
+        "content": "Great opportunity!",
+        "createdAt": "2026-03-09T15:20:38+01:00"
+    },
+    {
+        "id": 4,
+        "positionId": 3,
+        "authorId": 1,
+        "content": "Test test",
+        "createdAt": "2026-03-09T15:43:47+01:00"
+    }
+]
