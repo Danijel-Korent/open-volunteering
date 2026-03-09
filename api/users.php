@@ -1,4 +1,8 @@
 <?php
+/**
+ * Users API: GET /api/users (list all), GET /api/users/{id} (single user).
+ * Expects $segments from index.php. No POST/PUT/DELETE in Milestone #1.
+ */
 $id = $segments[1] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {

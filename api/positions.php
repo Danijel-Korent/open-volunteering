@@ -1,4 +1,12 @@
 <?php
+/**
+ * Positions and comments API:
+ * - GET /api/positions - list all positions (newest first)
+ * - POST /api/positions - create position (title, description, authorId)
+ * - GET /api/positions/{id}/comments - list comments for a position
+ * - POST /api/positions/{id}/comments - add comment (content, authorId)
+ * Expects $segments from index.php.
+ */
 $positionId = isset($segments[1]) ? (int) $segments[1] : null;
 $isComments = isset($segments[2]) && $segments[2] === 'comments';
 

@@ -1,4 +1,8 @@
 <?php
+/**
+ * API router: parses request path and delegates to users.php or positions.php.
+ * Handles CORS preflight (OPTIONS). Returns 404 for unknown routes.
+ */
 require_once __DIR__ . '/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

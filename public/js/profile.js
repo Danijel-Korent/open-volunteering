@@ -1,6 +1,12 @@
 import { getUser } from './api.js';
 import { getCurrentUserId } from './user-switcher.js';
 
+/**
+ * Get initials from a name (e.g. 'Maria Santos' -> 'MS').
+ *
+ * @param {string} name Full name
+ * @returns {string} Up to 2 uppercase initials
+ */
 function getInitials(name) {
   return name
     .split(' ')
@@ -10,12 +16,23 @@ function getInitials(name) {
     .toUpperCase();
 }
 
+/**
+ * Escape HTML special characters to prevent XSS.
+ *
+ * @param {string} str Raw string
+ * @returns {string} HTML-safe string
+ */
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
 
+/**
+ * Render the profile page for the current user.
+ *
+ * @param {HTMLElement} [container] Element to render into (default: #app)
+ */
 export async function renderProfile(container) {
   if (!container) container = document.getElementById('app');
   container.innerHTML = '';
