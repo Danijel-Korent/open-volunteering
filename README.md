@@ -19,7 +19,7 @@ Social network for volunteers and volunteer organizations
 - [x] Move old prototypes into a common folder
 - [x] Check if all functions are documented. Add type hinting everywhere it is missing
 - [] Move links to "Feed" and "Profile" bellow the "Open Volunteering" tittle. Also add links to "Calendar" and "Map" which will just display "not yet implemented" page
-- [] Add Icons to pages as in ui_prototypes/prototype_3_sidebar/
+- [] Add Icons to pages, how it is for exmaple done in http://localhost/git/open-volunteering/ui_prototypes/2026_02_25__initial_protos/prototype_3_sidebar/
 
 ## Milestone #1 - 1st working prototype with only one user type, opening and seeing and commenting volunteering positions
 

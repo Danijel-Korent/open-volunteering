@@ -39,7 +39,8 @@ function setActiveNav(route) {
  * @returns {void}
  */
 function renderNotYetImplemented(container) {
-  container.innerHTML = '<p class="placeholder-notice">Not yet implemented.</p>';
+  container.innerHTML =
+    '<p class="placeholder-notice">Not yet implemented.</p>';
 }
 
 /**
