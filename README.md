@@ -1,6 +1,6 @@
 # Short description
 
-Social network for volunteers and volunteer organizations
+(Prototype of) Social network for volunteers and volunteer organizations
 
 # Development plan
 
@@ -16,10 +16,12 @@ Social network for volunteers and volunteer organizations
 
 ### TODOs
 
-- [x] Move old prototypes into a common folder
-- [x] Check if all functions are documented. Add type hinting everywhere it is missing
-- [x] Move links to "Feed" and "Profile" bellow the "Open Volunteering" tittle. Also add links to "Calendar" and "Map" which will just display "not yet implemented" page
-- [x] Add Icons to pages, how it is for exmaple done in http://localhost/git/open-volunteering/ui_prototypes/2026_02_25__initial_protos/prototype_3_sidebar/
+- [] JSON database: Add distinction between organizations and users
+- [] Between menu and feed page, add a section for creating a post. Make it narrow single-line with a post button on the right, user avatar on the left, and input bar in the middle. Make posts of organizations and users differ in color. Open voluntering positions will be a 3rd type of post that will also be different in color than other two posts
+- [] Below the menu add checkboxes for enabling/disabling (filtering) volunteering positions, organization posts, and user posts
+- [] Below checkboxes, add a dropdown menu for selecting the algorithm for displaying posts (chorological, last unseen, most popular that day, custom)
+- [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
+
 
 ## Milestone #1 - 1st working prototype with only one user type, opening and seeing and commenting volunteering positions
 
@@ -76,6 +78,16 @@ For stack and folder layout, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Features and Specification
 
+### Overview
+
+- It will be social-media-like page
+- It will be primarily used by people who volunteer and organizations that provide volunteering positions
+- There will be two types of users/profiles. An ordinary user (also referenced as volunteers) and an organization.
+- Users will be able to creat posts, while organizations will be able to create posts, events and open volunteering positions
+- UX: Eaach type of post (user post, organization post, volunteering position, event) will have different color
+- It will have 5 pages: "Feed", "Profile", "Calendar", "Map" and page for available volunteering positions
+
+
 ### Use cases
 
 Why would this page be used by volunteers:
@@ -116,25 +128,27 @@ A social-network-like web page where people/organizations could perform the foll
 
 ### Web pages
 
-#### Page: Available volunteer positions
+#### Page: Available volunteering positions
 
 - if the user is not logged in
   - If user is not logged in, user can still see every position because there are no private positions
   - user can choose the algorithm for how the feed chooses presented content (newest to latest / most liked/supported, by location, only remote)
 
-- If the user is logged in
-  - TODO
+- Aditional features if the user is logged in:
+  - User can comment on volunteering positions
 
 #### Page: feed page (default home page)
 
 - if the user is not logged in
-  - If user is not logged in, user can still see everything because there are no private posts
-  - user can choose the algorithm for how the feed chooses content presented on feed
+  - Even if user is not logged in, page visitor can see all posts (user post, organization post, volunteering position, event)
+  - user can choose the algorithm for how the feed chooses presented content (newest to latest / most liked/supported, by location, etc)
+  - Can filter posts (select with checkboxes which post type to include to the feed)
 
-- If the user is logged in
+- Aditional features if the user is logged in:
   - user can comment on posts
   - user can share posts
   - user can create a post
+  - user can choose the algorithm for how the feed chooses presented content (newest to latest / most liked/supported, by location, etc)
 
 - The feed
   - There is no endless scrolling feature. At the end of feed, there is a link for the second page of the feed and so on.
@@ -143,17 +157,21 @@ A social-network-like web page where people/organizations could perform the foll
 
 #### Page: volunteer/organization profile page
 
-Shows:
+Shows users/organizations:
+- User/organization description
+- User/organization location
 - volunteer's skills if set
 - volunteer's volunteering experience if set
 - The feed of the volunteer/organization
 
 #### Page: Calendar of events
 
-- List all events in the next 1 year, ordered chronologically
+- List all events in the next 1 year
 
 #### Page: Map of organizations and events
 
-- Shows map with organizations locations on the map
+- Shows map with organizations HQ locations (if set), user locations (if set) and volunteering positions (if set)
+
+
 
 
