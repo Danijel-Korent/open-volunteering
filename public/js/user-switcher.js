@@ -12,26 +12,34 @@ export function getCurrentUserId() {
   return id ? parseInt(id, 10) : 1;
 }
 
+/**
+ * Persist the active user id and keep it in sync with the switcher UI.
+ *
+ * @param {number} id User id to store
+ * @returns {void}
+ */
 export function setCurrentUserId(id) {
   localStorage.setItem(STORAGE_KEY, String(id));
 }
 
 /**
  * Initialize the user switcher dropdown: load users, set current, attach change handler.
+ *
+ * @returns {Promise<void>}
  */
 export async function initUserSwitcher() {
-  const select = document.getElementById('user-switcher');
-  if (!select) return;
+  const el = document.getElementById('user-switcher');
+  if (!(el instanceof HTMLSelectElement)) return;
 
   const users = await getUsers();
   const currentId = getCurrentUserId();
 
-  select.innerHTML = users
+  el.innerHTML = users
     .map((u) => `<option value="${u.id}" ${u.id === currentId ? 'selected' : ''}>${escapeHtml(u.name)}</option>`)
     .join('');
 
-  select.addEventListener('change', () => {
-    setCurrentUserId(parseInt(select.value, 10));
+  el.addEventListener('change', () => {
+    setCurrentUserId(parseInt(el.value, 10));
     window.dispatchEvent(new Event('userchanged'));
   });
 }

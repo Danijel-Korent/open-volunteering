@@ -7,7 +7,7 @@ define('DATA_DIR', dirname(__DIR__) . '/data/');
  * @param mixed $data Data to encode as JSON
  * @param int $code HTTP status code (default 200)
  */
-function jsonResponse($data, $code = 200) {
+function jsonResponse(mixed $data, int $code = 200): void {
     http_response_code($code);
     header('Content-Type: application/json');
     header('Access-Control-Allow-Origin: *');
@@ -20,9 +20,9 @@ function jsonResponse($data, $code = 200) {
  * Read and decode a JSON file from the data directory.
  *
  * @param string $file Filename (e.g. 'users.json')
- * @return array Decoded data, or empty array if file missing or invalid
+ * @return array<int|string, mixed> Decoded data, or empty array if file missing or invalid
  */
-function readJson($file) {
+function readJson(string $file): array {
     $path = DATA_DIR . $file;
     if (!file_exists($path)) return [];
     $raw = file_get_contents($path);
@@ -37,7 +37,7 @@ function readJson($file) {
  * @param mixed $data Data to encode
  * @return int|false Bytes written, or false on failure
  */
-function writeJson($file, $data) {
+function writeJson(string $file, mixed $data): int|false {
     $path = DATA_DIR . $file;
     return file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 }
@@ -45,9 +45,9 @@ function writeJson($file, $data) {
 /**
  * Read and decode JSON from the request body (php://input).
  *
- * @return array Decoded data, or empty array if body empty or invalid
+ * @return array<string, mixed> Decoded data, or empty array if body empty or invalid
  */
-function getJsonInput() {
+function getJsonInput(): array {
     $input = file_get_contents('php://input');
     return json_decode($input, true) ?? [];
 }

@@ -31,7 +31,7 @@ function getInitials(name) {
 function timeAgo(dateStr) {
   const date = new Date(dateStr);
   const now = new Date();
-  const sec = Math.floor((now - date) / 1000);
+  const sec = Math.floor((now.getTime() - date.getTime()) / 1000);
   if (sec < 60) return 'just now';
   if (sec < 3600) return `${Math.floor(sec / 60)} min ago`;
   if (sec < 86400) return `${Math.floor(sec / 3600)} hours ago`;
@@ -55,9 +55,10 @@ function escapeHtml(str) {
  * Render the compose form for opening a new position.
  *
  * @param {HTMLElement} container Parent element
- * @param {Array} users User list (unused, kept for API)
+ * @param {User[]} _users User list (reserved for future use, e.g. posting as another user)
+ * @returns {Promise<void>}
  */
-async function renderCompose(container, users) {
+async function renderCompose(container, _users) {
   const currentId = getCurrentUserId();
   const div = document.createElement('div');
   div.className = 'compose';
@@ -72,6 +73,13 @@ async function renderCompose(container, users) {
   const titleEl = div.querySelector('#position-title');
   const descEl = div.querySelector('#position-description');
   const btnEl = div.querySelector('#btn-create-position');
+  if (
+    !(titleEl instanceof HTMLInputElement) ||
+    !(descEl instanceof HTMLTextAreaElement) ||
+    !(btnEl instanceof HTMLButtonElement)
+  ) {
+    return;
+  }
 
   btnEl.addEventListener('click', async () => {
     const title = titleEl.value.trim();
@@ -84,7 +92,8 @@ async function renderCompose(container, users) {
       descEl.value = '';
       await renderFeed(container);
     } catch (e) {
-      alert(e.message || 'Failed to create position');
+      const message = e instanceof Error ? e.message : 'Failed to create position';
+      alert(message);
     } finally {
       btnEl.disabled = false;
     }
@@ -95,8 +104,9 @@ async function renderCompose(container, users) {
  * Render a single position card with comments.
  *
  * @param {HTMLElement} container Parent element
- * @param {object} position Position data
- * @param {Object.<number, object>} usersMap Map of user id -> user object
+ * @param {Position} position Position data
+ * @param {Record<number, User>} usersMap Map of user id to user object
+ * @returns {Promise<void>}
  */
 async function renderPosition(container, position, usersMap) {
   const author = usersMap[position.authorId] || { name: 'Unknown' };
@@ -110,7 +120,7 @@ async function renderPosition(container, position, usersMap) {
 
   const article = document.createElement('article');
   article.className = 'position';
-  article.dataset.positionId = position.id;
+  article.dataset.positionId = String(position.id);
   article.innerHTML = `
     <div class="position-header">
       <div class="avatar">${escapeHtml(getInitials(author.name))}</div>
@@ -137,10 +147,28 @@ async function renderPosition(container, position, usersMap) {
   const commentsList = article.querySelector('.comments-list');
   const commentInput = article.querySelector('.comment-input');
   const commentSubmit = article.querySelector('.comment-submit');
+  const toggleCommentsBtn = article.querySelector('.js-toggle-comments');
+  if (
+    !(commentsSection instanceof HTMLElement) ||
+    !(commentsList instanceof HTMLElement) ||
+    !(commentInput instanceof HTMLInputElement) ||
+    !(commentSubmit instanceof HTMLButtonElement) ||
+    !(toggleCommentsBtn instanceof HTMLButtonElement)
+  ) {
+    throw new Error('Feed position DOM template is incomplete');
+  }
 
-  /** Render current comments list into the DOM. */
-  function renderComments() {
-    commentsList.innerHTML = commentsWithAuthors
+  /** @type {HTMLElement} */
+  const commentsListEl = commentsList;
+
+  /**
+   * Render current comments list into the DOM.
+   *
+   * @param {CommentWithAuthor[]} items Comments with author names
+   * @returns {void}
+   */
+  function renderComments(items) {
+    commentsListEl.innerHTML = items
       .map(
         (c) => `
       <div class="comment">
@@ -156,9 +184,9 @@ async function renderPosition(container, position, usersMap) {
       .join('');
   }
 
-  renderComments();
+  renderComments(commentsWithAuthors);
 
-  article.querySelector('.js-toggle-comments').addEventListener('click', () => {
+  toggleCommentsBtn.addEventListener('click', () => {
     const isHidden = commentsSection.style.display === 'none';
     commentsSection.style.display = isHidden ? 'block' : 'none';
   });
@@ -175,18 +203,19 @@ async function renderPosition(container, position, usersMap) {
       });
       const authorUser = usersMap[currentId] || { name: 'Unknown' };
       commentsWithAuthors.push({ ...newComment, author: authorUser });
-      renderComments();
+      renderComments(commentsWithAuthors);
       commentInput.value = '';
-      article.querySelector('.js-toggle-comments').textContent = `Comment (${commentsWithAuthors.length})`;
+      toggleCommentsBtn.textContent = `Comment (${commentsWithAuthors.length})`;
     } catch (e) {
-      alert(e.message || 'Failed to post comment');
+      const message = e instanceof Error ? e.message : 'Failed to post comment';
+      alert(message);
     } finally {
       commentSubmit.disabled = false;
     }
   });
 
   commentInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') commentSubmit.click();
+    if (e instanceof KeyboardEvent && e.key === 'Enter') commentSubmit.click();
   });
 
   container.appendChild(article);
@@ -196,22 +225,25 @@ async function renderPosition(container, position, usersMap) {
  * Render the feed page: compose form and list of positions.
  *
  * @param {HTMLElement} [container] Element to render into (default: #app)
+ * @returns {Promise<void>}
  */
 export async function renderFeed(container) {
-  if (!container) container = document.getElementById('app');
-  container.innerHTML = '';
+  const root = container ?? document.getElementById('app');
+  if (!root) throw new Error('Missing #app');
+  root.innerHTML = '';
 
   const [users, positions] = await Promise.all([getUsers(), getPositions()]);
+  /** @type {Record<number, User>} */
   const usersMap = Object.fromEntries(users.map((u) => [u.id, u]));
 
-  await renderCompose(container, users);
+  await renderCompose(root, users);
 
   for (const pos of positions) {
-    await renderPosition(container, pos, usersMap);
+    await renderPosition(root, pos, usersMap);
   }
 
   const pagination = document.createElement('div');
   pagination.className = 'pagination';
   pagination.innerHTML = '<span>End of feed</span>';
-  container.appendChild(pagination);
+  root.appendChild(pagination);
 }

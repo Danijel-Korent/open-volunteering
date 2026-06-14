@@ -2,7 +2,13 @@ import { renderFeed } from './feed.js';
 import { renderProfile } from './profile.js';
 import { initUserSwitcher } from './user-switcher.js';
 
-const app = document.getElementById('app');
+const appEl = document.getElementById('app');
+if (!appEl) {
+  throw new Error('Missing required element #app');
+}
+
+/** @type {HTMLElement} */
+const app = appEl;
 
 /**
  * Get current route from hash (e.g. '#/feed' -> '/feed').
@@ -18,6 +24,7 @@ function getRoute() {
  * Set active state on nav link matching the current route.
  *
  * @param {string} route Route name (e.g. 'feed', 'profile')
+ * @returns {void}
  */
 function setActiveNav(route) {
   document.querySelectorAll('nav a[data-route]').forEach((a) => {
@@ -27,6 +34,8 @@ function setActiveNav(route) {
 
 /**
  * Render the current page based on route.
+ *
+ * @returns {Promise<void>}
  */
 async function render() {
   const route = getRoute();
@@ -41,12 +50,20 @@ async function render() {
   }
 }
 
-/** Initialize app: user switcher, routing, event listeners. */
+/**
+ * Initialize app: user switcher, routing, event listeners.
+ *
+ * @returns {void}
+ */
 function init() {
   initUserSwitcher();
-  render();
-  window.addEventListener('hashchange', render);
-  window.addEventListener('userchanged', render);
+  void render();
+  window.addEventListener('hashchange', () => {
+    void render();
+  });
+  window.addEventListener('userchanged', () => {
+    void render();
+  });
 }
 
 init();

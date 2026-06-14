@@ -32,17 +32,20 @@ function escapeHtml(str) {
  * Render the profile page for the current user.
  *
  * @param {HTMLElement} [container] Element to render into (default: #app)
+ * @returns {Promise<void>}
  */
 export async function renderProfile(container) {
-  if (!container) container = document.getElementById('app');
-  container.innerHTML = '';
+  const root = container ?? document.getElementById('app');
+  if (!root) throw new Error('Missing #app');
+  root.innerHTML = '';
 
   const userId = getCurrentUserId();
+  /** @type {User} */
   let user;
   try {
     user = await getUser(userId);
-  } catch (e) {
-    container.innerHTML = '<p>User not found.</p>';
+  } catch (_e) {
+    root.innerHTML = '<p>User not found.</p>';
     return;
   }
 
@@ -57,5 +60,5 @@ export async function renderProfile(container) {
     </div>
     <p class="profile-bio">${escapeHtml(user.bio || 'No bio yet.')}</p>
   `;
-  container.appendChild(card);
+  root.appendChild(card);
 }

@@ -5,7 +5,7 @@ const API_BASE = 'api';
  *
  * @param {string} path API path (e.g. 'users', 'positions/1/comments')
  * @param {RequestInit} [options] Fetch options (method, body, headers)
- * @returns {Promise<object>} Parsed JSON response
+ * @returns {Promise<unknown>} Parsed JSON response (object or array)
  * @throws {Error} On HTTP error or invalid JSON
  */
 async function request(path, options = {}) {
@@ -19,37 +19,60 @@ async function request(path, options = {}) {
   return data;
 }
 
-/** @returns {Promise<Array>} List of all users */
+/**
+ * List all users.
+ *
+ * @returns {Promise<User[]>}
+ */
 export async function getUsers() {
-  return request('users');
+  const data = await request('users');
+  return /** @type {User[]} */ (data);
 }
 
-/** @param {number} id User ID @returns {Promise<object>} User object */
+/**
+ * Fetch a single user by id.
+ *
+ * @param {number} id User ID
+ * @returns {Promise<User>}
+ */
 export async function getUser(id) {
-  return request(`users/${id}`);
+  const data = await request(`users/${id}`);
+  return /** @type {User} */ (data);
 }
 
-/** @returns {Promise<Array>} List of all volunteering positions */
+/**
+ * List all volunteering positions.
+ *
+ * @returns {Promise<Position[]>}
+ */
 export async function getPositions() {
-  return request('positions');
+  const data = await request('positions');
+  return /** @type {Position[]} */ (data);
 }
 
 /**
  * Create a new volunteering position.
  *
  * @param {{ title: string, description: string, authorId: number }} data Position data
- * @returns {Promise<object>} Created position
+ * @returns {Promise<Position>}
  */
 export async function createPosition(data) {
-  return request('positions', {
+  const created = await request('positions', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  return /** @type {Position} */ (created);
 }
 
-/** @param {number} positionId Position ID @returns {Promise<Array>} List of comments */
+/**
+ * List comments for a position.
+ *
+ * @param {number} positionId Position ID
+ * @returns {Promise<Comment[]>}
+ */
 export async function getComments(positionId) {
-  return request(`positions/${positionId}/comments`);
+  const data = await request(`positions/${positionId}/comments`);
+  return /** @type {Comment[]} */ (data);
 }
 
 /**
@@ -57,11 +80,12 @@ export async function getComments(positionId) {
  *
  * @param {number} positionId Position ID
  * @param {{ content: string, authorId: number }} data Comment data
- * @returns {Promise<object>} Created comment
+ * @returns {Promise<Comment>}
  */
 export async function createComment(positionId, data) {
-  return request(`positions/${positionId}/comments`, {
+  const created = await request(`positions/${positionId}/comments`, {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  return /** @type {Comment} */ (created);
 }
