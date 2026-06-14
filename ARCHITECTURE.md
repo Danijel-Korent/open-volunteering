@@ -44,7 +44,7 @@ sequenceDiagram
 
 | Layer | Choice | Notes |
 | --- | --- | --- |
-| Front-end | Vanilla JavaScript (ES modules) | No bundler; hash routing in `app.js`. JSDoc on public scripts. |
+| Front-end | Vanilla JavaScript (ES modules) | No bundler; hash routing in `app.js`. JSDoc on public scripts; shared API shapes for `tsc --checkJs` in `public/js/types.d.ts` (see `public/js/jsconfig.json`). |
 | Back-end | Vanilla PHP | Small router in `api/index.php`; per-resource scripts. |
 | HTTP server | Apache (e.g. XAMPP) | `RewriteEngine` required for API paths (see Deployment). |
 | Data (prototype) | JSON files under `data/` | Planned migration to SQL for later milestones. |
@@ -63,6 +63,8 @@ sequenceDiagram
 | `public/js/feed.js` | Feed UI and position/comment flows. |
 | `public/js/profile.js` | Profile UI. |
 | `public/js/user-switcher.js` | Development-only user selection; persists choice (e.g. `localStorage`) for API calls. |
+| `public/js/jsconfig.json` | Enables `tsc` / editor checking of plain JS (`allowJs`, `checkJs`). |
+| `public/js/types.d.ts` | Declares shared domain types (`User`, `Position`, `Comment`, …) for the checker only; not loaded at runtime. |
 
 There is no client-side framework: new pages are new modules plus a branch in `app.js` `render()`.
 
@@ -134,7 +136,7 @@ Treat any machine that can reach the API as able to post as any `authorId` until
 ├── .htaccess        # Rewrites /api/* to api/index.php
 ├── public/          # Front-end assets
 │   ├── css/
-│   └── js/          # ES modules (app, api client, pages, user switcher)
+│   └── js/          # ES modules + jsconfig/types.d.ts for optional tsc
 ├── api/             # PHP REST API (router + handlers + config)
 ├── data/            # JSON storage (users, positions, comments)
 └── ui_prototypes/   # Design references (not loaded by the live app)

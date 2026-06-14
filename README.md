@@ -17,7 +17,7 @@ Social network for volunteers and volunteer organizations
 ### TODOs
 
 - [x] Move old prototypes into a common folder
-- [] Check if all functions are documented. All type hinting everywhere it is missing
+- [x] Check if all functions are documented. Add type hinting everywhere it is missing
 - [] Move links to Feed and Profile bellow the "Open Volunteering" tittle. Also add links to "Calendar" and "Map" which will just display "not yet implemented" page
 - [] Add Icons to pages as in ui_prototypes/prototype_3_sidebar/
 
