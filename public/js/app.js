@@ -27,9 +27,19 @@ function getRoute() {
  * @returns {void}
  */
 function setActiveNav(route) {
-  document.querySelectorAll('nav a[data-route]').forEach((a) => {
+  document.querySelectorAll('.header-nav a[data-route]').forEach((a) => {
     a.classList.toggle('active', a.getAttribute('data-route') === route);
   });
+}
+
+/**
+ * Render a simple placeholder for routes that are not built yet.
+ *
+ * @param {HTMLElement} container Main app mount element
+ * @returns {void}
+ */
+function renderNotYetImplemented(container) {
+  container.innerHTML = '<p class="placeholder-notice">Not yet implemented.</p>';
 }
 
 /**
@@ -45,6 +55,8 @@ async function render() {
     await renderFeed(app);
   } else if (route === '/profile') {
     await renderProfile(app);
+  } else if (route === '/calendar' || route === '/map') {
+    renderNotYetImplemented(app);
   } else {
     app.innerHTML = '<p>Page not found.</p>';
   }

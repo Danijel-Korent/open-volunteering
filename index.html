@@ -13,15 +13,19 @@
   <div class="container">
     <header>
       <div class="header-inner">
-        <a href="#/feed" class="logo">Open Volunteering</a>
-        <nav>
+        <div class="header-brand-row">
+          <a href="#/feed" class="logo">Open Volunteering</a>
+          <div class="user-switcher-wrap">
+            <label for="user-switcher">User:</label>
+            <select id="user-switcher" title="Switch user (dev tool)"></select>
+          </div>
+        </div>
+        <nav class="header-nav" aria-label="Main">
           <a href="#/feed" data-route="feed">Feed</a>
           <a href="#/profile" data-route="profile">Profile</a>
+          <a href="#/calendar" data-route="calendar">Calendar</a>
+          <a href="#/map" data-route="map">Map</a>
         </nav>
-        <div class="user-switcher-wrap">
-          <label for="user-switcher">User:</label>
-          <select id="user-switcher" title="Switch user (dev tool)"></select>
-        </div>
       </div>
     </header>
 
