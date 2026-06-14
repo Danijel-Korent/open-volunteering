@@ -16,8 +16,9 @@ Social network for volunteers and volunteer organizations
 
 ### TODOs
 
-- [] Move old prototypes into a common folder
-- [] Move links to Feed / Calendar / Map / Profile bellow the "Open Volunteering" tittle
+- [x] Move old prototypes into a common folder
+- [] Check if all functions are documented. All type hinting everywhere it is missing
+- [] Move links to Feed and Profile bellow the "Open Volunteering" tittle. Also add links to "Calendar" and "Map" which will just display "not yet implemented" page
 - [] Add Icons to pages as in ui_prototypes/prototype_3_sidebar/
 
 ## Milestone #1 - 1st working prototype with only one user type, opening and seeing and commenting volunteering positions
@@ -71,24 +72,7 @@ Other info:
 
 # Specifications
 
-## Technical
-
-- **Front-end:** Vanilla JavaScript
-- **Back-end:** Vanilla PHP
-- **Data storage:** JSON files (for the prototyping phase, later SQL)
-
-
-## Project structure
-
-```
-├── index.html       # App entry point
-├── public/          # Frontend assets
-│   ├── css/
-│   └── js/
-├── api/             # PHP REST API
-├── data/            # JSON storage (users, positions, comments)
-└── ui_prototypes/   # Design references
-```
+For stack and folder layout, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Features and Specification
 
@@ -139,7 +123,7 @@ A social-network-like web page where people/organizations could perform the foll
   - user can choose the algorithm for how the feed chooses presented content (newest to latest / most liked/supported, by location, only remote)
 
 - If the user is logged in
-  - 
+  - TODO
 
 #### Page: feed page (default home page)
 
