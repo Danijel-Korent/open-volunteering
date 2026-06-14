@@ -1,5 +1,6 @@
 import { getUser } from './api.js';
 import { getCurrentUserId } from './user-switcher.js';
+import { renderOpenPositionForm } from './open-position-form.js';
 
 /**
  * Get initials from a name (e.g. 'Maria Santos' -> 'MS').
@@ -61,4 +62,8 @@ export async function renderProfile(container) {
     <p class="profile-bio">${escapeHtml(user.bio || 'No bio yet.')}</p>
   `;
   root.appendChild(card);
+
+  await renderOpenPositionForm(root, async () => {
+    await renderProfile(root);
+  });
 }

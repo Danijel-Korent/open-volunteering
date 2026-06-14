@@ -61,7 +61,8 @@ sequenceDiagram
 | `public/js/app.js` | Bootstrap: routes `#/feed` and `#/profile`, listens for `hashchange` and `userchanged`. |
 | `public/js/api.js` | Thin REST client; `API_BASE = 'api'`. |
 | `public/js/feed.js` | Feed UI and position/comment flows. |
-| `public/js/profile.js` | Profile UI. |
+| `public/js/profile.js` | Profile UI and the “open position” form. |
+| `public/js/open-position-form.js` | Shared form to create a volunteering position (mounted on Profile). |
 | `public/js/user-switcher.js` | Development-only user selection; persists choice (e.g. `localStorage`) for API calls. |
 | `public/js/jsconfig.json` | Enables `tsc` / editor checking of plain JS (`allowJs`, `checkJs`). |
 | `public/js/types.d.ts` | Declares shared domain types (`User`, `Position`, `Comment`, …) for the checker only; not loaded at runtime. |

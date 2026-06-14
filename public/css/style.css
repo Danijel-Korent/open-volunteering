@@ -257,6 +257,7 @@ header {
   backdrop-filter: blur(10px);
   border-radius: 20px;
   padding: 2rem;
+  margin-bottom: 1.5rem;
   box-shadow: 0 4px 20px rgba(0,0,0,0.04);
   border: 1px solid rgba(255,255,255,0.6);
 }

@@ -1,7 +1,6 @@
 import {
   getUsers,
   getPositions,
-  createPosition,
   getComments,
   createComment,
 } from './api.js';
@@ -49,55 +48,6 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
-}
-
-/**
- * Render the compose form for opening a new position.
- *
- * @param {HTMLElement} container Parent element
- * @param {User[]} _users User list (reserved for future use, e.g. posting as another user)
- * @returns {Promise<void>}
- */
-async function renderCompose(container, _users) {
-  const currentId = getCurrentUserId();
-  const div = document.createElement('div');
-  div.className = 'compose';
-  div.innerHTML = `
-    <h2>Open a volunteering position</h2>
-    <input type="text" id="position-title" placeholder="Title" maxlength="200">
-    <textarea id="position-description" placeholder="Description"></textarea>
-    <button type="button" id="btn-create-position">Post</button>
-  `;
-  container.appendChild(div);
-
-  const titleEl = div.querySelector('#position-title');
-  const descEl = div.querySelector('#position-description');
-  const btnEl = div.querySelector('#btn-create-position');
-  if (
-    !(titleEl instanceof HTMLInputElement) ||
-    !(descEl instanceof HTMLTextAreaElement) ||
-    !(btnEl instanceof HTMLButtonElement)
-  ) {
-    return;
-  }
-
-  btnEl.addEventListener('click', async () => {
-    const title = titleEl.value.trim();
-    const description = descEl.value.trim();
-    if (!title || !description) return;
-    btnEl.disabled = true;
-    try {
-      await createPosition({ title, description, authorId: currentId });
-      titleEl.value = '';
-      descEl.value = '';
-      await renderFeed(container);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Failed to create position';
-      alert(message);
-    } finally {
-      btnEl.disabled = false;
-    }
-  });
 }
 
 /**
@@ -222,7 +172,7 @@ async function renderPosition(container, position, usersMap) {
 }
 
 /**
- * Render the feed page: compose form and list of positions.
+ * Render the feed page: list of positions (new positions are opened from Profile).
  *
  * @param {HTMLElement} [container] Element to render into (default: #app)
  * @returns {Promise<void>}
@@ -235,8 +185,6 @@ export async function renderFeed(container) {
   const [users, positions] = await Promise.all([getUsers(), getPositions()]);
   /** @type {Record<number, User>} */
   const usersMap = Object.fromEntries(users.map((u) => [u.id, u]));
-
-  await renderCompose(root, users);
 
   for (const pos of positions) {
     await renderPosition(root, pos, usersMap);

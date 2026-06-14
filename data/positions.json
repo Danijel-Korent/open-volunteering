@@ -33,5 +33,12 @@
         "title": "Test tittle",
         "description": "test desc",
         "createdAt": "2026-03-09T15:22:08+01:00"
+    },
+    {
+        "id": 6,
+        "authorId": 1,
+        "title": "Postion #2",
+        "description": "Test1234",
+        "createdAt": "2026-06-14T14:04:32+02:00"
     }
 ]
