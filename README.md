@@ -12,6 +12,14 @@ Social network for volunteers and volunteer organizations
   - not one central server but organizations can run their own servers that communicates with each other
   - Fediverse/ActivityPub compatible
 
+## Milestone #0 - Make a proper UX prototype for all pub-testing features, then implement features
+
+### TODOs
+
+- [] Move old prototypes into a common folder
+- [] Move links to Feed / Calendar / Map / Profile bellow the "Open Volunteering" tittle
+- [] Add Icons to pages as in ui_prototypes/prototype_3_sidebar/
+
 ## Milestone #1 - 1st working prototype with only one user type, opening and seeing and commenting volunteering positions
 
 ### Feature list
@@ -33,14 +41,6 @@ Social network for volunteers and volunteer organizations
 Other info:
   - No register or login page. Prototype will have already created/pre-seeded users in the JSON file
 
-
-### Technical
-
-- **Front-end:** Vanilla JavaScript (no frameworks)
-- **Back-end:** Vanilla PHP (no frameworks)
-- **Data storage:** JSON files (for the prototyping phase, later SQL)
-
-- Split the app between back-end and front-end using REST API
 
 ## Milestone #2 - 1st public testing release
 
