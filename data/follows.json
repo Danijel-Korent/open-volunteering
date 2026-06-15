@@ -1,0 +1,6 @@
+[
+  { "followerId": 1, "followingId": 3, "createdAt": "2026-05-20T10:00:00+02:00" },
+  { "followerId": 1, "followingId": 4, "createdAt": "2026-05-22T11:00:00+02:00" },
+  { "followerId": 2, "followingId": 5, "createdAt": "2026-05-25T09:00:00+02:00" },
+  { "followerId": 2, "followingId": 1, "createdAt": "2026-06-01T08:00:00+02:00" }
+]

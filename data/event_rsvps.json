@@ -1,0 +1,6 @@
+[
+  { "eventId": 1, "userId": 1, "status": "going" },
+  { "eventId": 1, "userId": 2, "status": "maybe" },
+  { "eventId": 3, "userId": 2, "status": "going" },
+  { "eventId": 4, "userId": 1, "status": "going" }
+]

@@ -1,6 +1,19 @@
 # Short description
 
-(Prototype of) Social network for volunteers and volunteer organizations
+(Prototype of) Social network for volunteers and volunteer organizations. Vanilla JS SPA + PHP REST API + JSON storage.
+
+## Pages
+
+- **Feed** — unified posts, positions, events with filters, algorithms, pagination
+- **Positions** — volunteering positions with apply and comments
+- **Calendar** — events for the next 12 months
+- **Map** — Leaflet map of organizations, volunteers, positions, events
+- **Profile** — edit own profile or view others; orgs manage projects/positions
+
+## Requirements
+
+- XAMPP (Apache + PHP)
+- Apache `mod_rewrite` enabled with `AllowOverride All`
 
 # Development plan
 
@@ -16,9 +29,8 @@
 
 ### TODOs
 
-- [] JSON database: In users.json add distinction between organizations and users
-- [] Between menu and feed page, add a section for creating a post. Make it narrow single-line with a post button on the right, user avatar on the left, and input bar in the middle. Make posts of organizations and users differ in color. Open voluntering positions will be a 3rd type of post that will also be different in color than other two posts
-- [] Below the menu add checkboxes for enabling/disabling (filtering) volunteering positions, organization posts, and user posts
+- [] /#/positions: Text no visible on "Apply" button
+- [] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
 - [] Below checkboxes, add a dropdown menu for selecting the algorithm for displaying posts (chorological, last unseen, most popular that day, custom)
 - [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
 
@@ -70,6 +82,12 @@ Other info:
 
   - Someone else's profile page 
     - seeing profile data
+
+## Non-protoype todo
+
+- Email verification, password reset, CSRF tokens, rate limiting
+- Real push/email notifications for subscriptions
+- ActivityPub federation (north-star)
 
 
 # Specifications

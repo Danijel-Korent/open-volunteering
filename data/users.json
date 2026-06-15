@@ -1,0 +1,107 @@
+[
+    {
+        "id": 1,
+        "type": "volunteer",
+        "email": "maria@example.com",
+        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
+        "name": "Maria Santos",
+        "bio": "Community volunteer since 2020. Passionate about food banks and environmental causes.",
+        "location": {
+            "label": "Downtown Community Center",
+            "lat": 45.815,
+            "lng": 15.9819
+        },
+        "skills": [
+            "Cooking",
+            "Event planning",
+            "First aid"
+        ],
+        "experience": [
+            "Food bank volunteer 2020-2024",
+            "Park cleanup organizer 2022"
+        ],
+        "createdAt": "2024-01-15T10:00:00+01:00"
+    },
+    {
+        "id": 2,
+        "type": "volunteer",
+        "email": "james@example.com",
+        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
+        "name": "James Chen",
+        "bio": "Software developer volunteering tech skills on weekends.",
+        "location": {
+            "label": "Tech Hub Zagreb",
+            "lat": 45.812,
+            "lng": 15.978
+        },
+        "skills": [
+            "Web development",
+            "Teaching",
+            "Translation"
+        ],
+        "experience": [
+            "Coding workshops for youth 2023"
+        ],
+        "createdAt": "2024-03-20T14:00:00+01:00"
+    },
+    {
+        "id": 3,
+        "type": "organization",
+        "email": "green@example.com",
+        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
+        "name": "Green City Initiative",
+        "bio": "Local environmental organization. We plant trees, clean parks, and promote sustainable living.",
+        "location": {
+            "label": "Green City HQ, Zagreb",
+            "lat": 45.817,
+            "lng": 15.985
+        },
+        "skills": [],
+        "experience": [],
+        "createdAt": "2023-06-01T09:00:00+01:00"
+    },
+    {
+        "id": 4,
+        "type": "organization",
+        "email": "shelter@example.com",
+        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
+        "name": "Community Shelter",
+        "bio": "Providing shelter and support for those in need since 2015.",
+        "location": {
+            "label": "Community Shelter, Zagreb",
+            "lat": 45.808,
+            "lng": 15.972
+        },
+        "skills": [],
+        "experience": [],
+        "createdAt": "2023-01-10T08:00:00+01:00"
+    },
+    {
+        "id": 5,
+        "type": "organization",
+        "email": "youth@example.com",
+        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
+        "name": "Youth Mentors Network",
+        "bio": "Connecting young people with mentors and learning opportunities.",
+        "location": {
+            "label": "Youth Center, Zagreb",
+            "lat": 45.82,
+            "lng": 15.99
+        },
+        "skills": [],
+        "experience": [],
+        "createdAt": "2023-09-15T11:00:00+01:00"
+    },
+    {
+        "id": 6,
+        "type": "volunteer",
+        "email": "test1@test.com",
+        "passwordHash": "$2y$10$Fr1NzjGOksO2.bZGmTq1OeN.VImAqkVXRpi7sHxl2TvGi7ZU8udya",
+        "name": "test1",
+        "bio": "test test",
+        "location": null,
+        "skills": [],
+        "experience": [],
+        "createdAt": "2026-06-15T09:48:07+02:00"
+    }
+]

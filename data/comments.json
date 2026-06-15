@@ -1,0 +1,8 @@
+[
+  { "id": 1, "targetType": "post", "targetId": 1, "authorId": 2, "content": "So inspiring! I'll join next time.", "createdAt": "2026-06-01T12:00:00+02:00" },
+  { "id": 2, "targetType": "post", "targetId": 3, "authorId": 1, "content": "Congratulations on the campaign!", "createdAt": "2026-06-02T14:00:00+02:00" },
+  { "id": 3, "targetType": "position", "targetId": 1, "authorId": 1, "content": "I've done this before — highly recommend!", "createdAt": "2026-05-29T16:00:00+02:00" },
+  { "id": 4, "targetType": "position", "targetId": 2, "authorId": 2, "content": "Is there a minimum age requirement?", "createdAt": "2026-05-31T10:00:00+02:00" },
+  { "id": 5, "targetType": "event", "targetId": 1, "authorId": 2, "content": "Count me in for the cleanup!", "createdAt": "2026-06-02T09:00:00+02:00" },
+  { "id": 6, "targetType": "post", "targetId": 5, "authorId": 3, "content": "We'd love to collaborate on this.", "createdAt": "2026-06-05T15:00:00+02:00" }
+]

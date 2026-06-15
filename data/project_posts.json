@@ -1,0 +1,5 @@
+[
+  { "id": 1, "projectId": 1, "content": "First community garden opened in Trešnjevka — 200 sqm of fresh produce for neighbors!", "createdAt": "2026-05-20T12:00:00+02:00" },
+  { "id": 2, "projectId": 1, "content": "Volunteers planted 50 fruit trees this week. Next up: irrigation system.", "createdAt": "2026-06-05T10:00:00+02:00" },
+  { "id": 3, "projectId": 2, "content": "Collected over 500 coats during our November drive. Distribution starts Dec 1.", "createdAt": "2026-05-15T14:00:00+02:00" }
+]

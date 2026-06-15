@@ -1,0 +1,83 @@
+[
+    {
+        "id": 1,
+        "authorId": 1,
+        "postType": "user_post",
+        "content": "Had an amazing day at the food bank today! So grateful for everyone who showed up.",
+        "likeCount": 12,
+        "shareCount": 2,
+        "createdAt": "2026-06-01T09:30:00+02:00"
+    },
+    {
+        "id": 2,
+        "authorId": 2,
+        "postType": "user_post",
+        "content": "Looking for fellow volunteers interested in teaching basic coding to kids. Who's in?",
+        "likeCount": 8,
+        "shareCount": 1,
+        "createdAt": "2026-06-03T14:00:00+02:00"
+    },
+    {
+        "id": 3,
+        "authorId": 3,
+        "postType": "org_post",
+        "content": "Our spring tree planting campaign was a huge success — 500 trees planted across the city!",
+        "likeCount": 45,
+        "shareCount": 10,
+        "createdAt": "2026-06-02T11:00:00+02:00"
+    },
+    {
+        "id": 4,
+        "authorId": 4,
+        "postType": "org_post",
+        "content": "Thank you to all volunteers who helped with our winter clothing drive. You made a difference.",
+        "likeCount": 32,
+        "shareCount": 5,
+        "createdAt": "2026-06-04T16:00:00+02:00"
+    },
+    {
+        "id": 5,
+        "authorId": 5,
+        "postType": "org_post",
+        "content": "New mentorship program launching next month. We're looking for mentors with diverse backgrounds.",
+        "likeCount": 18,
+        "shareCount": 3,
+        "createdAt": "2026-06-05T10:00:00+02:00"
+    },
+    {
+        "id": 6,
+        "authorId": 1,
+        "postType": "user_post",
+        "content": "Just completed my first aid certification — ready to help at community events!",
+        "likeCount": 15,
+        "shareCount": 0,
+        "createdAt": "2026-06-08T08:00:00+02:00"
+    },
+    {
+        "id": 7,
+        "authorId": 3,
+        "postType": "org_post",
+        "content": "Reminder: Park cleanup this Saturday at 9 AM. Bring gloves and water!",
+        "likeCount": 22,
+        "shareCount": 7,
+        "createdAt": "2026-06-10T12:00:00+02:00"
+    },
+    {
+        "id": 8,
+        "authorId": 2,
+        "postType": "user_post",
+        "content": "Great workshop yesterday — 20 kids learned their first HTML page. Proud moment.",
+        "likeCount": 20,
+        "shareCount": 4,
+        "createdAt": "2026-06-12T18:00:00+02:00"
+    },
+    {
+        "id": 9,
+        "authorId": 1,
+        "postType": "user_post",
+        "content": "Test test test",
+        "likeCount": 1,
+        "shareCount": 2,
+        "createdAt": "2026-06-15T09:10:27+02:00"
+    }
+]

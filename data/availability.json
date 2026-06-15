@@ -1,0 +1,35 @@
+[
+    {
+        "id": 1,
+        "volunteerId": 1,
+        "targetType": "organization",
+        "targetId": 3,
+        "skillsOffered": [
+            "Event planning",
+            "First aid"
+        ],
+        "createdAt": "2026-06-01T10:00:00+02:00"
+    },
+    {
+        "id": 2,
+        "volunteerId": 2,
+        "targetType": "event",
+        "targetId": 6,
+        "skillsOffered": [
+            "Web development",
+            "Teaching"
+        ],
+        "createdAt": "2026-06-10T14:00:00+02:00"
+    },
+    {
+        "id": 3,
+        "volunteerId": 1,
+        "targetType": "post",
+        "targetId": 9,
+        "skillsOffered": [
+            "Skill1",
+            "Skill2"
+        ],
+        "createdAt": "2026-06-15T09:10:51+02:00"
+    }
+]

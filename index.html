@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Volunteering</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-inner">
+        <div class="header-brand-row">
+          <a href="#/feed" class="logo" data-testid="logo">Open Volunteering</a>
+          <div id="auth-status" class="auth-status" data-testid="auth-status"></div>
+        </div>
+        <nav class="header-nav" aria-label="Main">
+          <a href="#/feed" data-route="feed" data-testid="nav-feed"><span class="icon" aria-hidden="true">📋</span> Feed</a>
+          <a href="#/positions" data-route="positions" data-testid="nav-positions"><span class="icon" aria-hidden="true">🤝</span> Volunteering Positions</a>
+          <a href="#/calendar" data-route="calendar" data-testid="nav-calendar"><span class="icon" aria-hidden="true">📅</span> Calendar</a>
+          <a href="#/map" data-route="map" data-testid="nav-map"><span class="icon" aria-hidden="true">🗺️</span> Map</a>
+          <a href="#/profile" data-route="profile" data-testid="nav-profile"><span class="icon" aria-hidden="true">👤</span> Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="app"></main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="public/js/app.js"></script>
+</body>
+</html>
