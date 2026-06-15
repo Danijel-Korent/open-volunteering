@@ -16,7 +16,7 @@
 
 ### TODOs
 
-- [] JSON database: Add distinction between organizations and users
+- [] JSON database: In users.json add distinction between organizations and users
 - [] Between menu and feed page, add a section for creating a post. Make it narrow single-line with a post button on the right, user avatar on the left, and input bar in the middle. Make posts of organizations and users differ in color. Open voluntering positions will be a 3rd type of post that will also be different in color than other two posts
 - [] Below the menu add checkboxes for enabling/disabling (filtering) volunteering positions, organization posts, and user posts
 - [] Below checkboxes, add a dropdown menu for selecting the algorithm for displaying posts (chorological, last unseen, most popular that day, custom)
