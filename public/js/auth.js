@@ -72,7 +72,7 @@ function escapeHtml(s) {
 }
 
 /**
- * Render login form.
+ * Render login form (name + password).
  *
  * @param {HTMLElement} container
  */
@@ -82,12 +82,12 @@ export function renderLogin(container) {
       <h2>Login</h2>
       <div class="form-error" id="login-error" hidden></div>
       <div class="form-group">
-        <label for="login-email">Email</label>
-        <input type="email" id="login-email" data-testid="login-email" required>
+        <label for="login-name">Name</label>
+        <input type="text" id="login-name" data-testid="login-name" required autocomplete="username">
       </div>
       <div class="form-group">
         <label for="login-password">Password</label>
-        <input type="password" id="login-password" data-testid="login-password" required>
+        <input type="password" id="login-password" data-testid="login-password" required autocomplete="current-password">
       </div>
       <button type="submit" class="btn btn-primary" style="width:100%" data-testid="login-submit">Login</button>
       <p class="form-switch">No account? <a href="#/register">Register</a></p>
@@ -97,10 +97,10 @@ export function renderLogin(container) {
   container.querySelector('form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const errorEl = document.getElementById('login-error');
-    const email = /** @type {HTMLInputElement} */ (document.getElementById('login-email')).value;
+    const name = /** @type {HTMLInputElement} */ (document.getElementById('login-name')).value;
     const password = /** @type {HTMLInputElement} */ (document.getElementById('login-password')).value;
     try {
-      currentUser = /** @type {User} */ (await api.login({ email, password }));
+      currentUser = /** @type {User} */ (await api.login({ name, password }));
       emitAuthChanged();
       window.location.hash = '#/feed';
     } catch (err) {
@@ -113,7 +113,58 @@ export function renderLogin(container) {
 }
 
 /**
- * Render register form.
+ * Show post-registration screen with generated credentials.
+ *
+ * @param {HTMLElement} container
+ * @param {string} name Display name used for login
+ * @param {string} password Server-generated password (shown once)
+ */
+function renderRegisterSuccess(container, name, password) {
+  const loginDetails = `Name: ${name}\nPassword: ${password}`;
+
+  container.innerHTML = `
+    <div class="auth-form auth-success" data-testid="register-success">
+      <h2>Account created</h2>
+      <p class="auth-success-lead">Save your login details — the password is shown only once.</p>
+      <dl class="credential-list">
+        <div class="credential-row">
+          <dt>Name</dt>
+          <dd data-testid="register-success-name">${escapeHtml(name)}</dd>
+        </div>
+        <div class="credential-row credential-row-highlight">
+          <dt>Password</dt>
+          <dd class="credential-password" data-testid="register-success-password">${escapeHtml(password)}</dd>
+        </div>
+      </dl>
+      <button type="button" class="btn btn-secondary" style="width:100%" data-testid="register-copy-credentials">
+        Copy login details
+      </button>
+      <button type="button" class="btn btn-primary" style="width:100%;margin-top:0.75rem" data-testid="register-continue">
+        Continue to profile
+      </button>
+    </div>
+  `;
+
+  container.querySelector('[data-testid="register-copy-credentials"]')?.addEventListener('click', async () => {
+    const btn = container.querySelector('[data-testid="register-copy-credentials"]');
+    try {
+      await navigator.clipboard.writeText(loginDetails);
+      if (btn) btn.textContent = 'Copied!';
+      setTimeout(() => {
+        if (btn) btn.textContent = 'Copy login details';
+      }, 2000);
+    } catch {
+      api.showToast('Could not copy — please write down your password');
+    }
+  });
+
+  container.querySelector('[data-testid="register-continue"]')?.addEventListener('click', () => {
+    window.location.hash = '#/profile';
+  });
+}
+
+/**
+ * Render register form (name + account type only; password is generated server-side).
  *
  * @param {HTMLElement} container
  */
@@ -121,18 +172,11 @@ export function renderRegister(container) {
   container.innerHTML = `
     <form class="auth-form" data-testid="register-form">
       <h2>Register</h2>
+      <p class="auth-form-hint">Enter a display name and account type. A simple password will be generated for you.</p>
       <div class="form-error" id="register-error" hidden></div>
       <div class="form-group">
         <label for="reg-name">Name</label>
-        <input type="text" id="reg-name" data-testid="register-name" required>
-      </div>
-      <div class="form-group">
-        <label for="reg-email">Email</label>
-        <input type="email" id="reg-email" data-testid="register-email" required>
-      </div>
-      <div class="form-group">
-        <label for="reg-password">Password</label>
-        <input type="password" id="reg-password" data-testid="register-password" required>
+        <input type="text" id="reg-name" data-testid="register-name" required autocomplete="name">
       </div>
       <div class="form-group">
         <label for="reg-type">Account type</label>
@@ -149,14 +193,13 @@ export function renderRegister(container) {
   container.querySelector('form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const errorEl = document.getElementById('register-error');
-    const name = /** @type {HTMLInputElement} */ (document.getElementById('reg-name')).value;
-    const email = /** @type {HTMLInputElement} */ (document.getElementById('reg-email')).value;
-    const password = /** @type {HTMLInputElement} */ (document.getElementById('reg-password')).value;
+    const name = /** @type {HTMLInputElement} */ (document.getElementById('reg-name')).value.trim();
     const type = /** @type {HTMLSelectElement} */ (document.getElementById('reg-type')).value;
     try {
-      currentUser = /** @type {User} */ (await api.register({ name, email, password, type }));
+      const result = /** @type {RegisterResponse} */ (await api.register({ name, type }));
+      currentUser = result;
       emitAuthChanged();
-      window.location.hash = '#/profile';
+      renderRegisterSuccess(container, name, result.generatedPassword);
     } catch (err) {
       if (errorEl) {
         errorEl.hidden = false;

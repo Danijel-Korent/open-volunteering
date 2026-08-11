@@ -117,8 +117,8 @@ Authentication uses **PHP server-side sessions** with cookie-based identity.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/auth/register` | No | Register; sets session. Body: `email`, `password`, `name`, `type` (`volunteer` \| `organization`) |
-| POST | `/api/auth/login` | No | Login; sets session. Body: `email`, `password` |
+| POST | `/api/auth/register` | No | Register; sets session. Body: `name`, `type` (`volunteer` \| `organization`). Server generates a word-number password and returns it once as `generatedPassword`. |
+| POST | `/api/auth/login` | No | Login; sets session. Body: `name`, `password` |
 | POST | `/api/auth/logout` | No | Destroy session |
 | GET | `/api/auth/me` | Yes | Current user (401 if not logged in) |
 
@@ -231,8 +231,8 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| POST | `/api/auth/register` | No | Body: `email`, `password`, `name`, `type` |
-| POST | `/api/auth/login` | No | Body: `email`, `password` |
+| POST | `/api/auth/register` | No | Body: `name`, `type`. Response includes one-time `generatedPassword`. |
+| POST | `/api/auth/login` | No | Body: `name`, `password` |
 | POST | `/api/auth/logout` | No | Clears session |
 | GET | `/api/auth/me` | Yes | Current user |
 

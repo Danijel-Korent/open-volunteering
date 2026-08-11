@@ -18,6 +18,11 @@ interface User {
   createdAt?: string;
 }
 
+/** Register response includes the one-time generated password. */
+interface RegisterResponse extends User {
+  generatedPassword: string;
+}
+
 interface Post {
   id: number;
   authorId: number;

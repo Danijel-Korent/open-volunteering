@@ -26,18 +26,19 @@ export async function getMe() {
 
 /**
  * Register a new account and start a session.
+ * Server generates a simple password; returned once as `generatedPassword`.
  *
- * @param {{ email: string, password: string, name: string, type: string }} data
- * @returns {Promise<User>}
+ * @param {{ name: string, type: string }} data
+ * @returns {Promise<RegisterResponse>}
  */
 export async function register(data) {
-  return /** @type {Promise<User>} */ (request('auth/register', { method: 'POST', body: JSON.stringify(data) }));
+  return /** @type {Promise<RegisterResponse>} */ (request('auth/register', { method: 'POST', body: JSON.stringify(data) }));
 }
 
 /**
  * Log in and start a session.
  *
- * @param {{ email: string, password: string }} data
+ * @param {{ name: string, password: string }} data
  * @returns {Promise<User>}
  */
 export async function login(data) {

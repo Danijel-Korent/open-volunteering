@@ -4,15 +4,35 @@ require_once __DIR__ . '/config.php';
 $segments = getPathSegments();
 $action = $segments[1] ?? '';
 
+/**
+ * Generate a simple memorable password (word-number, e.g. apple-42).
+ */
+function generateSimplePassword(): string {
+    $words = [
+        'apple', 'blue', 'cat', 'dog', 'echo', 'fire', 'green', 'happy', 'iron', 'jump',
+        'kite', 'leaf', 'moon', 'nest', 'oak', 'pine', 'quiz', 'red', 'star', 'tree',
+        'unit', 'vine', 'wave', 'yellow', 'zebra',
+    ];
+    $word = $words[array_rand($words)];
+    return $word . '-' . random_int(10, 99);
+}
+
+/**
+ * Build a placeholder email from display name and user id (not used for login).
+ */
+function placeholderEmail(string $name, int $id): string {
+    $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', trim($name)));
+    $slug = trim($slug, '-') ?: 'user';
+    return $slug . '-' . $id . '@open-volunteering.local';
+}
+
 if ($action === 'register' && method() === 'POST') {
     $input = getJsonInput();
-    $email = trim($input['email'] ?? '');
-    $password = $input['password'] ?? '';
     $name = trim($input['name'] ?? '');
     $type = $input['type'] ?? 'volunteer';
 
-    if (!$email || !$password || !$name) {
-        jsonResponse(['error' => 'Email, password, and name are required'], 400);
+    if (!$name) {
+        jsonResponse(['error' => 'Name is required'], 400);
         exit;
     }
     if (!in_array($type, ['volunteer', 'organization'], true)) {
@@ -22,16 +42,18 @@ if ($action === 'register' && method() === 'POST') {
 
     $users = readJson('users.json');
     foreach ($users as $u) {
-        if (strcasecmp($u['email'], $email) === 0) {
-            jsonResponse(['error' => 'Email already registered'], 409);
+        if (strcasecmp($u['name'], $name) === 0) {
+            jsonResponse(['error' => 'Name already taken — choose a different name'], 409);
             exit;
         }
     }
 
+    $password = generateSimplePassword();
+    $id = nextId($users);
     $user = [
-        'id' => nextId($users),
+        'id' => $id,
         'type' => $type,
-        'email' => $email,
+        'email' => placeholderEmail($name, $id),
         'passwordHash' => password_hash($password, PASSWORD_DEFAULT),
         'name' => $name,
         'bio' => '',
@@ -44,24 +66,31 @@ if ($action === 'register' && method() === 'POST') {
     writeJson('users.json', $users);
 
     $_SESSION['userId'] = $user['id'];
-    jsonResponse(publicUser($user), 201);
+    $response = publicUser($user);
+    $response['generatedPassword'] = $password;
+    jsonResponse($response, 201);
     exit;
 }
 
 if ($action === 'login' && method() === 'POST') {
     $input = getJsonInput();
-    $email = trim($input['email'] ?? '');
+    $name = trim($input['name'] ?? '');
     $password = $input['password'] ?? '';
+
+    if (!$name || !$password) {
+        jsonResponse(['error' => 'Name and password are required'], 400);
+        exit;
+    }
 
     $users = readJson('users.json');
     foreach ($users as $user) {
-        if (strcasecmp($user['email'], $email) === 0 && password_verify($password, $user['passwordHash'])) {
+        if (strcasecmp($user['name'], $name) === 0 && password_verify($password, $user['passwordHash'])) {
             $_SESSION['userId'] = (int) $user['id'];
             jsonResponse(publicUser($user));
             exit;
         }
     }
-    jsonResponse(['error' => 'Invalid email or password'], 401);
+    jsonResponse(['error' => 'Invalid name or password'], 401);
     exit;
 }
 

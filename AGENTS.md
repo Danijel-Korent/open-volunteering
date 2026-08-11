@@ -9,15 +9,21 @@
 
 ### Seeded login
 
-All seeded accounts use password: **password123**
+Seeded accounts log in with **name + password** (not email). All seeded accounts use password: **password123**
 
-| Email | Type | Name |
-|-------|------|------|
-| maria@example.com | volunteer | Maria Santos |
-| james@example.com | volunteer | James Chen |
-| green@example.com | organization | Green City Initiative |
-| shelter@example.com | organization | Community Shelter |
-| youth@example.com | organization | Youth Mentors Network |
+| Name | Type | Login password |
+|------|------|----------------|
+| Maria Santos | volunteer | password123 |
+| James Chen | volunteer | password123 |
+| Green City Initiative | organization | password123 |
+| Community Shelter | organization | password123 |
+| Youth Mentors Network | organization | password123 |
+
+### Registration (testing)
+
+The register form only asks for **name** and **account type**. The server generates a simple word-number password (e.g. `apple-42`) and shows it once on a success screen with a copy button. Users must memorize or copy it before continuing.
+
+New accounts log in with their **name** and the generated password.
 
 
 ### Test selectors
@@ -26,6 +32,7 @@ Prefer `data-testid` attributes:
 
 - `nav-feed`, `nav-positions`, `nav-calendar`, `nav-map`, `nav-profile`
 - `btn-login`, `btn-register`, `btn-logout`
+- `login-name`, `login-password`, `register-name`, `register-type`, `register-success`, `register-success-password`, `register-copy-credentials`, `register-continue`
 - `feed-algorithm`, `feed-filter-user-post`, `feed-filter-org-post`, `feed-filter-position`, `feed-filter-event`
 - `post-card-{type}-{id}`, `pagination-next`, `map-container`
 - `calendar-event-{id}`, `create-post-form`, `profile-save`
