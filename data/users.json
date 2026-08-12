@@ -127,5 +127,17 @@
         "skills": [],
         "experience": [],
         "createdAt": "2026-08-11T13:19:16+02:00"
+    },
+    {
+        "id": 9,
+        "type": "volunteer",
+        "email": "volunteer1-9@open-volunteering.local",
+        "passwordHash": "$2y$10$E9zRxVlC7CI3bxoUwtGgiusjq4A4HsSizqAC0SLzlGMPA2PBblGpK",
+        "name": "volunteer1",
+        "bio": "",
+        "location": null,
+        "skills": [],
+        "experience": [],
+        "createdAt": "2026-08-12T08:40:32+02:00"
     }
 ]

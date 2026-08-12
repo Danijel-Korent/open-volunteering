@@ -157,6 +157,27 @@ $page = min($page, $totalPages);
 $offset = ($page - 1) * $perPage;
 $paged = array_slice($items, $offset, $perPage);
 
+$userId = currentUserId();
+if ($userId !== null) {
+    $users = readJson('users.json');
+    $user = findUser($users, $userId);
+    if ($user && $user['type'] === 'volunteer') {
+        $applications = readJson('applications.json');
+        $appliedIds = [];
+        foreach ($applications as $a) {
+            if ((int) $a['volunteerId'] === $userId) {
+                $appliedIds[] = (int) $a['positionId'];
+            }
+        }
+        foreach ($paged as &$item) {
+            if ($item['feedType'] === 'position') {
+                $item['hasApplied'] = in_array((int) $item['id'], $appliedIds, true);
+            }
+        }
+        unset($item);
+    }
+}
+
 jsonResponse([
     'items' => $paged,
     'page' => $page,

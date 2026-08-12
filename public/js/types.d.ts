@@ -84,6 +84,7 @@ interface FeedItem {
   location?: GeoLocation | null;
   remote?: boolean;
   category?: string;
+  hasApplied?: boolean;
 }
 
 interface FeedResponse {

@@ -108,6 +108,38 @@ function updateStats(statsRow, commentCount) {
 }
 
 /**
+ * Set the disabled-reason tooltip on an apply button wrapper.
+ *
+ * @param {HTMLElement} wrap
+ * @param {HTMLButtonElement} applyBtn
+ * @param {string} text
+ */
+function setApplyTooltip(wrap, applyBtn, text) {
+  wrap.dataset.tooltip = text;
+  applyBtn.setAttribute('aria-label', `Apply — ${text}`);
+}
+
+/**
+ * Whether the current user can apply to a position feed item.
+ *
+ * @param {User | null | undefined} user
+ * @param {FeedItem} item
+ * @returns {{ enabled: boolean, title?: string }}
+ */
+function getApplyState(user, item) {
+  if (!user) {
+    return { enabled: false, title: 'Log in as a volunteer to apply' };
+  }
+  if (user.type !== 'volunteer') {
+    return { enabled: false, title: 'Only volunteers can apply to positions' };
+  }
+  if (item.hasApplied) {
+    return { enabled: false, title: 'You have already applied to this position' };
+  }
+  return { enabled: true };
+}
+
+/**
  * Render a single feed item card.
  *
  * @param {FeedItem} item
@@ -210,28 +242,42 @@ export function renderPostCard(item, opts = {}) {
   }
 
   const hasSecondary =
-    (opts.showApply && item.feedType === 'position' && user?.type === 'volunteer')
+    (opts.showApply && item.feedType === 'position')
     || (item.feedType === 'event' && user);
 
   if (hasSecondary) {
     const secondaryRow = document.createElement('div');
     secondaryRow.className = 'post-actions-secondary';
 
-    if (opts.showApply && item.feedType === 'position' && user?.type === 'volunteer') {
+    if (opts.showApply && item.feedType === 'position') {
+      const applyState = getApplyState(user, item);
       const applyBtn = document.createElement('button');
       applyBtn.type = 'button';
-      applyBtn.className = 'post-action-btn btn-primary';
+      applyBtn.className = 'post-apply-btn';
       applyBtn.dataset.testid = `btn-apply-${item.id}`;
       applyBtn.textContent = 'Apply';
+
+      const wrap = document.createElement('span');
+      wrap.className = 'post-apply-btn-wrap';
+      if (!applyState.enabled) {
+        applyBtn.disabled = true;
+        setApplyTooltip(wrap, applyBtn, applyState.title ?? '');
+      }
+
       applyBtn.addEventListener('click', async () => {
+        if (applyBtn.disabled) return;
         try {
           await api.applyPosition(item.id);
+          applyBtn.disabled = true;
+          setApplyTooltip(wrap, applyBtn, 'You have already applied to this position');
           api.showToast('Application submitted!');
         } catch (err) {
           api.showToast(err instanceof Error ? err.message : 'Apply failed');
         }
       });
-      secondaryRow.appendChild(applyBtn);
+
+      wrap.appendChild(applyBtn);
+      secondaryRow.appendChild(wrap);
     }
 
     if (item.feedType === 'event' && user) {

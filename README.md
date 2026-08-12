@@ -25,11 +25,11 @@
   - not one central server but organizations can run their own servers that communicates with each other
   - Fediverse/ActivityPub compatible
 
-## Milestone #0 - Make a proper UX prototype for all pub-testing features, then implement features
+## Milestone #0 - Make it good enought to put it on-line for UI/UX people to take a look
 
 ### TODOs
 
-- [] /#/positions: Text not visible on "Apply" button
+- [x] /#/positions: Text not visible on "Apply" button
 - [] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
 - [] Below checkboxes, add a dropdown menu for selecting the algorithm for displaying posts (chorological, last unseen, most popular that day, custom)
 - [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
