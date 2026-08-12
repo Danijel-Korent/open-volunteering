@@ -1,5 +1,5 @@
 import * as api from './api.js';
-import { renderFeedControls, getFeedPrefs } from './components/feed-controls.js';
+import { renderFeedControls, renderPerPageControl, getFeedPrefs } from './components/feed-controls.js';
 import { renderPagination } from './components/pagination.js';
 import { renderPostCard } from './components/post-card.js';
 
@@ -16,12 +16,23 @@ export async function renderPositions(container) {
     <h1 class="page-title">Volunteering Positions</h1>
     <div id="positions-controls-mount"></div>
     <div id="positions-list" data-testid="positions-list"></div>
-    <div id="positions-pagination"></div>
+    <div id="positions-pagination">
+      <div id="positions-per-page-mount"></div>
+      <div id="positions-pagination-nav"></div>
+    </div>
   `;
 
   const controlsMount = document.getElementById('positions-controls-mount');
   if (controlsMount) {
     renderFeedControls(controlsMount, { showTypeFilters: false, positionsOnly: true }, () => {
+      currentPage = 1;
+      void loadPositions();
+    });
+  }
+
+  const perPageMount = document.getElementById('positions-per-page-mount');
+  if (perPageMount) {
+    renderPerPageControl(perPageMount, () => {
       currentPage = 1;
       void loadPositions();
     });
@@ -35,7 +46,7 @@ export async function renderPositions(container) {
  */
 async function loadPositions() {
   const list = document.getElementById('positions-list');
-  const paginationMount = document.getElementById('positions-pagination');
+  const paginationMount = document.getElementById('positions-pagination-nav');
   if (!list || !paginationMount) return;
 
   const prefs = getFeedPrefs();

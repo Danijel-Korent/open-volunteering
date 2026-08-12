@@ -44,14 +44,6 @@ export function renderFeedControls(container, opts, onChange) {
           <option value="following" ${prefs.algorithm === 'following' ? 'selected' : ''}>Following</option>
         </select>
       </div>
-      <div>
-        <label for="feed-per-page">Posts per page</label>
-        <select id="feed-per-page" data-testid="feed-per-page">
-          <option value="5" ${prefs.perPage === 5 ? 'selected' : ''}>5</option>
-          <option value="10" ${prefs.perPage === 10 ? 'selected' : ''}>10</option>
-          <option value="20" ${prefs.perPage === 20 ? 'selected' : ''}>20</option>
-        </select>
-      </div>
       ${showTypes ? `
       <div class="filter-checkboxes" data-testid="feed-type-filters">
         <label><input type="checkbox" data-type="user_post" data-testid="feed-filter-user-post" ${prefs.types.includes('user_post') ? 'checked' : ''}> User posts</label>
@@ -67,11 +59,6 @@ export function renderFeedControls(container, opts, onChange) {
     onChange();
   });
 
-  container.querySelector('#feed-per-page')?.addEventListener('change', (e) => {
-    saveFeedPref('feedPerPage', /** @type {HTMLSelectElement} */ (e.target).value);
-    onChange();
-  });
-
   container.querySelectorAll('.filter-checkboxes input').forEach((cb) => {
     cb.addEventListener('change', () => {
       const types = [];
@@ -81,5 +68,31 @@ export function renderFeedControls(container, opts, onChange) {
       localStorage.setItem('feedTypes', JSON.stringify(types));
       onChange();
     });
+  });
+}
+
+/**
+ * Render the posts-per-page selector above pagination.
+ *
+ * @param {HTMLElement} container
+ * @param {() => void} onChange
+ */
+export function renderPerPageControl(container, onChange) {
+  const prefs = getFeedPrefs();
+
+  container.innerHTML = `
+    <div class="feed-per-page" data-testid="feed-per-page-control">
+      <label for="feed-per-page">Posts per page</label>
+      <select id="feed-per-page" data-testid="feed-per-page">
+        <option value="5" ${prefs.perPage === 5 ? 'selected' : ''}>5</option>
+        <option value="10" ${prefs.perPage === 10 ? 'selected' : ''}>10</option>
+        <option value="20" ${prefs.perPage === 20 ? 'selected' : ''}>20</option>
+      </select>
+    </div>
+  `;
+
+  container.querySelector('#feed-per-page')?.addEventListener('change', (e) => {
+    saveFeedPref('feedPerPage', /** @type {HTMLSelectElement} */ (e.target).value);
+    onChange();
   });
 }

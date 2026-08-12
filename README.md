@@ -30,8 +30,8 @@
 ### TODOs
 
 - [x] /#/positions: Text not visible on "Apply" button
-- [] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
-- [] Below checkboxes, add a dropdown menu for selecting the algorithm for displaying posts (chorological, last unseen, most popular that day, custom)
+- [x] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
+- [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
 - [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
 
 

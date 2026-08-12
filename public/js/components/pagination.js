@@ -7,33 +7,33 @@
  * @param {(page: number) => void} onPage
  */
 export function renderPagination(container, page, totalPages, onPage) {
-  if (totalPages <= 1) {
-    container.innerHTML = '';
-    return;
-  }
+  const safeTotalPages = Math.max(1, totalPages);
+  const safePage = Math.min(Math.max(1, page), safeTotalPages);
 
   let html = '<nav class="pagination" data-testid="pagination">';
 
-  if (page > 1) {
-    html += `<a href="#" data-page="${page - 1}" data-testid="pagination-prev">Prev</a>`;
+  if (safePage > 1) {
+    html += `<a href="#" data-page="${safePage - 1}" data-testid="pagination-prev">Prev</a>`;
   } else {
-    html += '<span class="disabled">Prev</span>';
+    html += '<span class="disabled" data-testid="pagination-prev">Prev</span>';
   }
 
-  for (let i = 1; i <= totalPages; i++) {
-    if (i === page) {
-      html += `<a href="#" class="active" data-page="${i}" data-testid="pagination-page-${i}">${i}</a>`;
-    } else if (i === 1 || i === totalPages || Math.abs(i - page) <= 1) {
-      html += `<a href="#" data-page="${i}" data-testid="pagination-page-${i}">${i}</a>`;
-    } else if (i === page - 2 || i === page + 2) {
-      html += '<span>…</span>';
+  if (safeTotalPages > 1) {
+    for (let i = 1; i <= safeTotalPages; i++) {
+      if (i === safePage) {
+        html += `<a href="#" class="active" data-page="${i}" data-testid="pagination-page-${i}">${i}</a>`;
+      } else if (i === 1 || i === safeTotalPages || Math.abs(i - safePage) <= 1) {
+        html += `<a href="#" data-page="${i}" data-testid="pagination-page-${i}">${i}</a>`;
+      } else if (i === safePage - 2 || i === safePage + 2) {
+        html += '<span>…</span>';
+      }
     }
   }
 
-  if (page < totalPages) {
-    html += `<a href="#" data-page="${page + 1}" data-testid="pagination-next">Next</a>`;
+  if (safePage < safeTotalPages) {
+    html += `<a href="#" data-page="${safePage + 1}" data-testid="pagination-next">Next</a>`;
   } else {
-    html += '<span class="disabled">Next</span>';
+    html += '<span class="disabled" data-testid="pagination-next">Next</span>';
   }
 
   html += '</nav>';

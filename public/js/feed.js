@@ -1,6 +1,6 @@
 import * as api from './api.js';
 import { getCurrentUser } from './auth.js';
-import { renderFeedControls, getFeedPrefs } from './components/feed-controls.js';
+import { renderFeedControls, renderPerPageControl, getFeedPrefs } from './components/feed-controls.js';
 import { renderPagination } from './components/pagination.js';
 import { renderPostCard } from './components/post-card.js';
 
@@ -18,12 +18,23 @@ export async function renderFeed(container) {
     <div id="feed-controls-mount"></div>
     <div id="create-post-mount"></div>
     <div id="feed-list" data-testid="feed-list"></div>
-    <div id="feed-pagination"></div>
+    <div id="feed-pagination">
+      <div id="feed-per-page-mount"></div>
+      <div id="feed-pagination-nav"></div>
+    </div>
   `;
 
   const controlsMount = document.getElementById('feed-controls-mount');
   if (controlsMount) {
     renderFeedControls(controlsMount, { showTypeFilters: true }, () => {
+      currentPage = 1;
+      void loadFeed();
+    });
+  }
+
+  const perPageMount = document.getElementById('feed-per-page-mount');
+  if (perPageMount) {
+    renderPerPageControl(perPageMount, () => {
       currentPage = 1;
       void loadFeed();
     });
@@ -69,7 +80,7 @@ function renderCreatePost() {
  */
 async function loadFeed() {
   const list = document.getElementById('feed-list');
-  const paginationMount = document.getElementById('feed-pagination');
+  const paginationMount = document.getElementById('feed-pagination-nav');
   if (!list || !paginationMount) return;
 
   const prefs = getFeedPrefs();
