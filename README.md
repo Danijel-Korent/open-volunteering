@@ -19,7 +19,7 @@
 
 ## High-level
 
-1. Initial minimalistic prototype with split between back-end <-> REST API <-> front-end
+1. Initial minimalistic prototype with same repo split between back-end <-> API <-> front-end
 2. Add all features neccessary for public testing
 3. Make it decentralized ala Fediverse/ActivityPub 
   - not one central server but organizations can run their own servers that communicates with each other
@@ -32,12 +32,13 @@
 - [x] /#/positions: Text not visible on "Apply" button
 - [x] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
 - [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
-- [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
-
+- [] Create a completion matrix for all features. Add columns - placeholder, test/proto functionality, full functionality
+- [] For each milestone add how the completion matrix should look like after milestone is done
 
 ## Milestone backlog
 
 - [] Make every post have it's own URL and implement the share button (currently just a placeholder)
+- [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
 
 
 

@@ -220,7 +220,7 @@ export function renderPostCard(item, opts = {}) {
 
   updateCommentButton(commentBtn, commentCount);
 
-  if (user && (item.feedType === 'user_post' || item.feedType === 'org_post')) {
+  if (item.feedType === 'user_post' || item.feedType === 'org_post') {
     const shareBtn = document.createElement('button');
     shareBtn.type = 'button';
     shareBtn.className = 'post-action-btn';
@@ -229,19 +229,26 @@ export function renderPostCard(item, opts = {}) {
     shareBtn.addEventListener('click', async () => {
       const url = `${window.location.origin}${window.location.pathname}#/feed`;
       await navigator.clipboard.writeText(url).catch(() => {});
-      await api.sharePost(item.id);
+      if (user) {
+        await api.sharePost(item.id).catch(() => {});
+      }
       api.showToast('Link copied!');
     });
     actions.appendChild(shareBtn);
   }
 
-  if (user?.type === 'volunteer') {
+  if (!user || user.type === 'volunteer') {
     const availBtn = document.createElement('button');
     availBtn.type = 'button';
     availBtn.className = 'post-action-btn';
     availBtn.dataset.testid = `btn-availability-${item.feedType}-${item.id}`;
     availBtn.innerHTML = `${ICONS.skills}<span>Offer skills</span>`;
     availBtn.addEventListener('click', () => {
+      if (!user) {
+        api.showToast('Log in as a volunteer to offer skills');
+        window.location.hash = '#/login';
+        return;
+      }
       showAvailabilityModal(item);
     });
     actions.appendChild(availBtn);
