@@ -286,34 +286,12 @@ main#app {
   margin-bottom: 0.5rem;
 }
 
-.post-stats {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-  min-height: 24px;
-  font-size: 0.9375rem;
-  color: var(--fb-muted);
-}
-
-.post-stats-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.post-stats-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .post-actions {
   display: flex;
   align-items: stretch;
   flex-wrap: wrap;
   margin: 0 -8px;
+  border-top: 1px solid var(--border);
 }
 
 .post-actions-secondary {

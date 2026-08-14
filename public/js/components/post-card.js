@@ -93,18 +93,31 @@ function formatDate(iso) {
 }
 
 /**
- * Update comment count in the post card stats bar.
+ * Label for the Comment action button, including the current count.
  *
- * @param {HTMLElement} statsRow
+ * @param {number} commentCount
+ * @returns {string}
+ */
+function commentButtonLabel(commentCount) {
+  return commentCount > 0 ? `Comment (${commentCount})` : 'Comment';
+}
+
+/**
+ * Update the Comment button label and accessible name with the current count.
+ *
+ * @param {HTMLButtonElement} commentBtn
  * @param {number} commentCount
  */
-function updateStats(statsRow, commentCount) {
-  const commentsSummaryEl = statsRow.querySelector('.js-comments-summary');
-  if (!(commentsSummaryEl instanceof HTMLElement)) return;
-
-  commentsSummaryEl.textContent =
-    commentCount === 1 ? '1 comment' : commentCount > 1 ? `${commentCount} comments` : '';
-  statsRow.hidden = commentCount === 0;
+function updateCommentButton(commentBtn, commentCount) {
+  commentBtn.innerHTML = `${ICONS.comment}<span>${commentButtonLabel(commentCount)}</span>`;
+  commentBtn.setAttribute(
+    'aria-label',
+    commentCount === 1
+      ? 'Comment, 1 comment'
+      : commentCount > 1
+        ? `Comment, ${commentCount} comments`
+        : 'Comment',
+  );
 }
 
 /**
@@ -169,19 +182,11 @@ export function renderPostCard(item, opts = {}) {
       ${item.title ? `<div class="post-title">${escapeHtml(item.title)}</div>` : ''}
       <div class="post-content">${escapeHtml(item.content)}</div>
     </div>
-    <div class="post-stats">
-      <div class="post-stats-right">
-        <span class="js-comments-summary"></span>
-      </div>
-    </div>
     <div class="post-actions"></div>
   `;
 
-  const statsRow = card.querySelector('.post-stats');
   const actions = card.querySelector('.post-actions');
-  if (!(statsRow instanceof HTMLElement) || !(actions instanceof HTMLElement)) return card;
-
-  updateStats(statsRow, commentCount);
+  if (!(actions instanceof HTMLElement)) return card;
 
   const targetType = commentTargetType(item);
 
@@ -205,14 +210,15 @@ export function renderPostCard(item, opts = {}) {
   commentBtn.type = 'button';
   commentBtn.className = 'post-action-btn';
   commentBtn.dataset.testid = `btn-comment-${item.feedType}-${item.id}`;
-  commentBtn.innerHTML = `${ICONS.comment}<span>Comment</span>`;
   commentBtn.addEventListener('click', () => {
     void toggleComments(card, targetType, item.id, (count) => {
       commentCount = count;
-      updateStats(statsRow, commentCount);
+      updateCommentButton(commentBtn, commentCount);
     });
   });
   actions.appendChild(commentBtn);
+
+  updateCommentButton(commentBtn, commentCount);
 
   if (user && (item.feedType === 'user_post' || item.feedType === 'org_post')) {
     const shareBtn = document.createElement('button');
@@ -300,7 +306,7 @@ export function renderPostCard(item, opts = {}) {
 
   void api.getComments(targetType, item.id).then((comments) => {
     commentCount = comments.length;
-    updateStats(statsRow, commentCount);
+    updateCommentButton(commentBtn, commentCount);
   }).catch(() => {});
 
   return card;

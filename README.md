@@ -25,7 +25,7 @@
   - not one central server but organizations can run their own servers that communicates with each other
   - Fediverse/ActivityPub compatible
 
-## Milestone #0 - Make it good enought to put it on-line for UI/UX people to take a look
+## Milestone #0 - Make it good enough to put it on-line for UI/UX people to take a look
 
 ### TODOs
 
@@ -33,6 +33,12 @@
 - [x] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
 - [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
 - [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
+
+
+## Milestone backlog
+
+- [] Make every post have it's own URL and implement the share button (currently just a placeholder)
+
 
 
 ## Milestone #1 - 1st working prototype with only one user type, opening and seeing and commenting volunteering positions

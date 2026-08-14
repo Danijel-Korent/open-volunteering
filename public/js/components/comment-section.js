@@ -133,16 +133,3 @@ export async function toggleComments(cardEl, targetType, targetId, onCountChange
   cardEl.appendChild(wrapper);
   await renderCommentSection(wrapper, targetType, targetId, onCountChange);
 }
-
-/**
- * Update comment count display on a post card stats row.
- *
- * @param {HTMLElement} cardEl
- * @param {number} count
- */
-export function updateCommentStats(cardEl, count) {
-  const summary = cardEl.querySelector('.js-comments-summary');
-  if (summary instanceof HTMLElement) {
-    summary.textContent = count === 1 ? '1 comment' : count > 1 ? `${count} comments` : '';
-  }
-}

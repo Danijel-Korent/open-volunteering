@@ -77,7 +77,7 @@
         "postType": "user_post",
         "content": "Test test test",
         "likeCount": 1,
-        "shareCount": 2,
+        "shareCount": 4,
         "createdAt": "2026-06-15T09:10:27+02:00"
     }
 ]

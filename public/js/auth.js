@@ -181,7 +181,7 @@ export function renderRegister(container) {
       <div class="form-group">
         <label for="reg-type">Account type</label>
         <select id="reg-type" data-testid="register-type">
-          <option value="volunteer">Volunteer</option>
+          <option value="volunteer">Person / Volunteer</option>
           <option value="organization">Organization</option>
         </select>
       </div>
