@@ -32,7 +32,7 @@
 - [x] /#/positions: Text not visible on "Apply" button
 - [x] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
 - [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
-- [] Create a completion matrix for all features. Add columns - placeholder, test/proto functionality, full functionality
+- [x] Create a completion matrix for all features. Add columns - placeholder, prototype, full functionality + notes
 - [] For each milestone add how the completion matrix should look like after milestone is done
 
 ## Milestone backlog
