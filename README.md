@@ -25,6 +25,19 @@
   - not one central server but organizations can run their own servers that communicates with each other
   - Fediverse/ActivityPub compatible
 
+High-level features
+  - basic facebook / linkedin features for users/orgs
+    - post
+    - comment
+    - like/support
+  - volunteer or paid positions
+  - events and calendar
+  - map of local NGOs, users, events, ...
+  - list/overview of open public tenders / founding announcements
+    - register for notification
+  - de-centralized using ActivityPub
+
+
 ## Milestone #0 - Make it good enough to put it on-line for UI/UX people to take a look
 
 ### TODOs
@@ -33,7 +46,38 @@
 - [x] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
 - [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
 - [x] Create a completion matrix for all features. Add columns - placeholder, prototype, full functionality + notes
-- [] For each milestone add how the completion matrix should look like after milestone is done
+- [] For 1st milestone add how the completion matrix should look like after milestone is done (only add features for this milestone)
+    - [] List here all features the prototype currently support
+    - [] Add features that it should support, either as mock, proto or full
+
+
+## Milestone feature matrix
+
+Feature list:
+
+- Registration: prototype | can create profiles, but no password input/change
+
+- Non-logged / public
+  - can see all posts | full
+  - can see all events | full
+  - can see all map | full
+
+- User profile
+  - can comment posts | full
+  - can like posts | ???
+  - can offer help | mock only ??
+  - can apply to valunteer adds | mock only ??
+  - can see people offering a skill | to check
+
+- NGO profile
+  - can see all posts | to check
+  - can comment | to check
+  - can create posts | to check
+  - can create events | to check
+  - can create open positions | to check
+  - can see people applied to possitions | to check
+  - can see people offering a skill | to check
+
 
 ## Milestone backlog
 
