@@ -51,42 +51,70 @@ High-level features
 - [] For 1st milestone add how the completion matrix should look like after milestone is done (only add features for this milestone)
     - [x] List here all features the prototype currently support
     - [x] Add features that it should support, either as mock, proto or full
-    - [] Update current status for every feature
+    - [] Update current status for every feature - non-logged
+    - [] Update current status for every feature - users / volunteers
+    - [] Update current status for every feature - orgs
+
+- [] Positions: Apply button only visible in "Feed" but not in "Volunteering Positions"
+- [] Create a API/subcomponent for image upload
+  - [] Ask AI for 3 different suggestions for API
+  - [] Pick/merge and clean the suggestions
+  - []  
 
 ## Milestone #1 feature table ✓
 
 ✅︎  - Current state
 🎯︎  - Target
 
-| Feature name                                      | Mock | Proto | Full | Notes                                             |
-| ------------------------------------------------- | ---- | ----- | ---- | ------------------------------------------------- |
-| Registration                                      |      |  ✅︎🎯︎ |      | can create profiles, but no password input/change |
-| Non-logged / public: can see all posts            |      |       |  🎯︎  |                                                   |
-| Non-logged / public: can see all events           |      |       |  🎯︎  |                                                   |
-| Non-logged / public: can see all map              |      |       |  🎯︎  |                                                   |
-| User profile: can comment posts                   |      |       |  🎯︎  |                                                   |
-| User profile: can like posts                      |      |       |  🎯︎  |                                                   |
-| User profile: can offer help                      |      |       |  🎯︎  |                                                   |
-| User profile: can apply to valunteer adds         |      |       |  🎯︎  |                                                   |
-| User profile: can see people offering a skill     |      |       |  🎯︎  |                                                   |
-| User profile: can send DM                         |      |       |  🎯︎  |                                                   |
-| User profile: can read DM                         |      |       |  🎯︎  |                                                   |
-| User profile: Notification for post comment       |      |       |  🎯︎  |                                                   |
-| User profile: Notification for accepted position  |      |       |  🎯︎  |                                                   |
-| User profile: Notification for accepted skill     |      |       |  🎯︎  |                                                   |
-| NGO profile: can see all posts                    |      |       |  🎯︎  |                                                   |
-| NGO profile: can comment                          |      |       |  🎯︎  |                                                   |
-| NGO profile: can create posts                     |      |       |  🎯︎  |                                                   |
-| NGO profile: can create events                    |      |       |  🎯︎  |                                                   |
-| NGO profile: can create open positions            |      |       |  🎯︎  |                                                   |
-| NGO profile: can close opened positions           |      |       |  🎯︎  |                                                   |
-| NGO profile: can see people applied to possitions |      |       |  🎯︎  |                                                   |
-| NGO profile: can see people offering a skill      |      |       |  🎯︎  |                                                   |
-| NGO profile: can send DM                          |      |       |  🎯︎  |                                                   |
-| NGO profile: can read DM                          |      |       |  🎯︎  |                                                   |
-| NGO profile: Notification for post comment        |      |       |  🎯︎  |                                                   |
-| NGO profile: Notification for applied possition   |      |       |  🎯︎  |                                                   |
-| NGO profile: Notification for offered skill       |      |       |  🎯︎  |                                                   |
+| Feature name                                      | None | Mock | Proto | Full  | Notes                                             |
+| ------------------------------------------------- | ---- | ---- | ----- | ----- | ------------------------------------------------- |
+| Registration                                      |      |      |  ✅︎🎯︎ |       | can create profiles, but no password input/change |
+| Non-logged / public: can see all posts            |      |      |       | ✅︎ 🎯︎ |                                                   |
+| Non-logged / public: can see all events           |      |      |       | ✅︎ 🎯︎ |                                                   |
+| Non-logged / public: can see all map              |      |      |       | ✅︎ 🎯︎ |                                                   |
+| User profile: can create posts                    |      |      |       | ✅︎ 🎯︎ |                                                   |
+| User profile: can create posts with image         | ✅︎   |      |       |   🎯︎  |                                                   |
+| User profile: can delete posts                    | ✅︎   |      |       |   🎯︎  |                                                   |
+| User profile: can edit posts                      | ✅︎   |      |       |   🎯︎  |                                                   |
+| User profile: can comment posts                   |      |      |       | ✅︎ 🎯︎ |                                                   |
+| User profile: can like posts                      |      |  ✅︎  |       |   🎯︎  | Colors a like button, but dissapers on refresh    |
+| User profile: can see likes (own posts)           |  ✅︎  |      |       |   🎯︎  | No counter at all, or ways to see who liked       |
+| User profile: can offer skills                    |      |  ✅︎  |       |   🎯︎  | There is a dialog, need to check if it goes to DB |
+| User profile: can apply to valunteer adds         |      |      |   ✅︎  |   🎯︎  | Button in "Positions" tab, but not in "Feed"      |
+| User profile: can see offered skills              |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: can send DM                         |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: can read DM                         |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: can create group DMs                |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: Notification for post comment       |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: Notification for accepted position  |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: Notification for accepted skill     |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can see all posts                    |      |      |       | ✅︎ 🎯︎ |                                                   |
+| NGO profile: can comment                          |      |      |       | ✅︎ 🎯︎ |                                                   |
+| NGO profile: can like posts                       |      | ✅︎   |       |   🎯︎  |                                                   |
+| NGO profile: can see likes (own posts)            | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can create posts                     |      |      |       | ✅︎ 🎯︎ |                                                   |
+| NGO profile: can create posts with image          | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can delete posts                     | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can edit posts                       | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can create events                    |      |      |  ✅︎   |   🎯︎  | Only in profile page. Block on empty desc, no warning why |
+| NGO profile: can create events - with image       | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can cancel events                    | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can delete events                    | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can edit events                      | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can see list of goers                | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can create open positions            | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can create open positions - with img | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can delete positions                 | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can edit positions                   |      |      |       |   🎯︎  |                                                   |
+| NGO profile: can close opened positions           |      |      |       |   🎯︎  |                                                   |
+| NGO profile: can see people applied to possitions |      |      |       |   🎯︎  |                                                   |
+| NGO profile: can see people offering a skill      |      |      |       |   🎯︎  |                                                   |
+| NGO profile: can send DM                          |      |      |       |   🎯︎  |                                                   |
+| NGO profile: can read DM                          |      |      |       |   🎯︎  |                                                   |
+| NGO profile: can create group DMs                 |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: Notification for post comment        |      |      |       |   🎯︎  |                                                   |
+| NGO profile: Notification for applied possition   |      |      |       |   🎯︎  |                                                   |
+| NGO profile: Notification for offered skill       |      |      |       |   🎯︎  |                                                   |
 
 
 ## Milestone backlog
@@ -97,9 +125,12 @@ High-level features
 
 ## Non-protoype todo
 
-- Email verification, password reset, CSRF tokens, rate limiting
+- ActivityPub federation (this should be the first thing on the list after prototype is ready!)
+- Email verification, password reset, 
 - Real push/email notifications for subscriptions
-- ActivityPub federation (north-star)
+- CSRF tokens, rate limiting
+- A real database (currently bunch of human readable JSON files - about one JSON file per each future table)
+- Well defined REST API seperation for ability to have independent implementations of BE and FE (API versioning must be robust!)
 
 
 # Specifications
@@ -150,7 +181,7 @@ A social-network-like web page where people/organizations could perform the foll
 - organizations and volunteers can create events (some activity/actions with specific date/range, and physical or online location)
 - volunteer can subscribe for new volunteering positions and events from organizations
 - organizations and volunteer can set going/maybe on the events
-- organizations and volunteer can see a calendar page with list of events happening in next 4 weeks
+- organizations and volunteer can see a calendar page with list of events happening in next 12 months
 - organizations and volunteer can create a project page which contains description of a project and news posts about it
 - A volunteer can set themselves available to an organization, project, or event
   - a volunteer can add which skills they are offering to the organization, project, or event

@@ -139,5 +139,17 @@
         "skills": [],
         "experience": [],
         "createdAt": "2026-08-12T08:40:32+02:00"
+    },
+    {
+        "id": 10,
+        "type": "organization",
+        "email": "ngo1-10@open-volunteering.local",
+        "passwordHash": "$2y$10$UuQrmOSxPtDO0XXZfrsNde.p3yvTWT8Ki2TiVVYoTPWYDtRe02NAu",
+        "name": "ngo1",
+        "bio": "",
+        "location": null,
+        "skills": [],
+        "experience": [],
+        "createdAt": "2026-08-23T07:54:26+02:00"
     }
 ]

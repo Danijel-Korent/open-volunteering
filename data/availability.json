@@ -31,5 +31,27 @@
             "Skill2"
         ],
         "createdAt": "2026-06-15T09:10:51+02:00"
+    },
+    {
+        "id": 4,
+        "volunteerId": 9,
+        "targetType": "organization",
+        "targetId": 3,
+        "skillsOffered": [
+            "skil1",
+            "skil2"
+        ],
+        "createdAt": "2026-08-23T07:47:38+02:00"
+    },
+    {
+        "id": 5,
+        "volunteerId": 9,
+        "targetType": "post",
+        "targetId": 10,
+        "skillsOffered": [
+            "skil1",
+            "skil2"
+        ],
+        "createdAt": "2026-08-23T07:47:48+02:00"
     }
 ]

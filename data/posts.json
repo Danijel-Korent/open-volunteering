@@ -58,7 +58,7 @@
         "authorId": 3,
         "postType": "org_post",
         "content": "Reminder: Park cleanup this Saturday at 9 AM. Bring gloves and water!",
-        "likeCount": 22,
+        "likeCount": 23,
         "shareCount": 7,
         "createdAt": "2026-06-10T12:00:00+02:00"
     },
@@ -67,7 +67,7 @@
         "authorId": 2,
         "postType": "user_post",
         "content": "Great workshop yesterday — 20 kids learned their first HTML page. Proud moment.",
-        "likeCount": 20,
+        "likeCount": 21,
         "shareCount": 4,
         "createdAt": "2026-06-12T18:00:00+02:00"
     },
@@ -76,8 +76,26 @@
         "authorId": 1,
         "postType": "user_post",
         "content": "Test test test",
-        "likeCount": 1,
+        "likeCount": 2,
         "shareCount": 4,
         "createdAt": "2026-06-15T09:10:27+02:00"
+    },
+    {
+        "id": 10,
+        "authorId": 9,
+        "postType": "user_post",
+        "content": "Test post",
+        "likeCount": 3,
+        "shareCount": 0,
+        "createdAt": "2026-08-23T07:36:41+02:00"
+    },
+    {
+        "id": 11,
+        "authorId": 10,
+        "postType": "org_post",
+        "content": "Test NGO1",
+        "likeCount": 0,
+        "shareCount": 0,
+        "createdAt": "2026-08-23T07:55:41+02:00"
     }
 ]

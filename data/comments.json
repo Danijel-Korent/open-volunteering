@@ -62,5 +62,21 @@
         "authorId": 9,
         "content": "test2",
         "createdAt": "2026-08-13T08:43:20+02:00"
+    },
+    {
+        "id": 9,
+        "targetType": "post",
+        "targetId": 8,
+        "authorId": 9,
+        "content": "test test",
+        "createdAt": "2026-08-23T07:34:54+02:00"
+    },
+    {
+        "id": 10,
+        "targetType": "post",
+        "targetId": 10,
+        "authorId": 10,
+        "content": "test ngo1",
+        "createdAt": "2026-08-23T08:00:49+02:00"
     }
 ]
