@@ -30,6 +30,8 @@ High-level features
     - post
     - comment
     - like/support
+    - IM/DM
+    - notifications
   - volunteer or paid positions
   - events and calendar
   - map of local NGOs, users, events, ...
@@ -38,7 +40,7 @@ High-level features
   - de-centralized using ActivityPub
 
 
-## Milestone #0 - Make it good enough to put it on-line for UI/UX people to take a look
+## Milestone #1 - Make it good enough to put it on-line for UI/UX people to take a look
 
 ### TODOs
 
@@ -47,36 +49,44 @@ High-level features
 - [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
 - [x] Create a completion matrix for all features. Add columns - placeholder, prototype, full functionality + notes
 - [] For 1st milestone add how the completion matrix should look like after milestone is done (only add features for this milestone)
-    - [] List here all features the prototype currently support
-    - [] Add features that it should support, either as mock, proto or full
+    - [x] List here all features the prototype currently support
+    - [x] Add features that it should support, either as mock, proto or full
+    - [] Update current status for every feature
 
+## Milestone #1 feature table ✓
 
-## Milestone feature matrix
+✅︎  - Current state
+🎯︎  - Target
 
-Feature list:
-
-- Registration: prototype | can create profiles, but no password input/change
-
-- Non-logged / public
-  - can see all posts | full
-  - can see all events | full
-  - can see all map | full
-
-- User profile
-  - can comment posts | full
-  - can like posts | ???
-  - can offer help | mock only ??
-  - can apply to valunteer adds | mock only ??
-  - can see people offering a skill | to check
-
-- NGO profile
-  - can see all posts | to check
-  - can comment | to check
-  - can create posts | to check
-  - can create events | to check
-  - can create open positions | to check
-  - can see people applied to possitions | to check
-  - can see people offering a skill | to check
+| Feature name                                      | Mock | Proto | Full | Notes                                             |
+| ------------------------------------------------- | ---- | ----- | ---- | ------------------------------------------------- |
+| Registration                                      |      |  ✅︎🎯︎ |      | can create profiles, but no password input/change |
+| Non-logged / public: can see all posts            |      |       |  🎯︎  |                                                   |
+| Non-logged / public: can see all events           |      |       |  🎯︎  |                                                   |
+| Non-logged / public: can see all map              |      |       |  🎯︎  |                                                   |
+| User profile: can comment posts                   |      |       |  🎯︎  |                                                   |
+| User profile: can like posts                      |      |       |  🎯︎  |                                                   |
+| User profile: can offer help                      |      |       |  🎯︎  |                                                   |
+| User profile: can apply to valunteer adds         |      |       |  🎯︎  |                                                   |
+| User profile: can see people offering a skill     |      |       |  🎯︎  |                                                   |
+| User profile: can send DM                         |      |       |  🎯︎  |                                                   |
+| User profile: can read DM                         |      |       |  🎯︎  |                                                   |
+| User profile: Notification for post comment       |      |       |  🎯︎  |                                                   |
+| User profile: Notification for accepted position  |      |       |  🎯︎  |                                                   |
+| User profile: Notification for accepted skill     |      |       |  🎯︎  |                                                   |
+| NGO profile: can see all posts                    |      |       |  🎯︎  |                                                   |
+| NGO profile: can comment                          |      |       |  🎯︎  |                                                   |
+| NGO profile: can create posts                     |      |       |  🎯︎  |                                                   |
+| NGO profile: can create events                    |      |       |  🎯︎  |                                                   |
+| NGO profile: can create open positions            |      |       |  🎯︎  |                                                   |
+| NGO profile: can close opened positions           |      |       |  🎯︎  |                                                   |
+| NGO profile: can see people applied to possitions |      |       |  🎯︎  |                                                   |
+| NGO profile: can see people offering a skill      |      |       |  🎯︎  |                                                   |
+| NGO profile: can send DM                          |      |       |  🎯︎  |                                                   |
+| NGO profile: can read DM                          |      |       |  🎯︎  |                                                   |
+| NGO profile: Notification for post comment        |      |       |  🎯︎  |                                                   |
+| NGO profile: Notification for applied possition   |      |       |  🎯︎  |                                                   |
+| NGO profile: Notification for offered skill       |      |       |  🎯︎  |                                                   |
 
 
 ## Milestone backlog
@@ -84,55 +94,6 @@ Feature list:
 - [] Make every post have it's own URL and implement the share button (currently just a placeholder)
 - [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
 
-
-
-## Milestone #1 - 1st working prototype with only one user type, opening and seeing and commenting volunteering positions
-
-### Feature list
-
-- Pages:
-  - Feed page
-    - You can open a volunteering position
-    - You can scroll through all already existing volunteering positions
-    - You can comment on a volunteering position
-
-  - Profile page
-    - User can see its name and bio
-
-- Common to all pages
-  - User switcher - development tool to easily switch between users for testing purposes
-  - Navigation page at the top of the screen containing buttons for opening feed page or a profile page
-
-
-Other info:
-  - No register or login page. Prototype will have already created/pre-seeded users in the JSON file
-
-
-## Milestone #2 - 1st public testing release
-
-### Feature list
-
-- Can register as user and select zero, one or more roles (volunteer, organization member)
-- User can edit its roles anytime
-- Registered user can create an organization, that can be registered organization or unofficial/informal organization
-- User can switch between user profile and profile of organization he/she manages
-- Organization can open a volunteering position
-- Users and organizations can
-  - Create a post
-  - Comment on a post
-
-- The app has 3 pages
-  - Available volunteer positions page 
-    - Lists all open volunteer positions
-
-  - Feed page 
-    - where all post of users and organizations can be seen
-
-  - Your own profile page (either user or organization) 
-    - for seeing/editing profile data
-
-  - Someone else's profile page 
-    - seeing profile data
 
 ## Non-protoype todo
 
