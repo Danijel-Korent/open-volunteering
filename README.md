@@ -42,26 +42,7 @@ High-level features
 
 ## Milestone #1 - Make it good enough to put it on-line for UI/UX people to take a look
 
-### TODOs
-
-- [x] /#/positions: Text not visible on "Apply" button
-- [x] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
-- [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
-- [x] Create a completion matrix for all features. Add columns - placeholder, prototype, full functionality + notes
-- [] For 1st milestone add how the completion matrix should look like after milestone is done (only add features for this milestone)
-    - [x] List here all features the prototype currently support
-    - [x] Add features that it should support, either as mock, proto or full
-    - [] Update current status for every feature - non-logged
-    - [] Update current status for every feature - users / volunteers
-    - [] Update current status for every feature - orgs
-
-- [] Positions: Apply button only visible in "Feed" but not in "Volunteering Positions"
-- [] Create a API/subcomponent for image upload
-  - [] Ask AI for 3 different suggestions for API
-  - [] Pick/merge and clean the suggestions
-  - []  
-
-## Milestone #1 feature table ✓
+### Milestone #1 feature table ✓
 
 ✅︎  - Current state
 🎯︎  - Target
@@ -73,9 +54,9 @@ High-level features
 | Non-logged / public: can see all events           |      |      |       | ✅︎ 🎯︎ |                                                   |
 | Non-logged / public: can see all map              |      |      |       | ✅︎ 🎯︎ |                                                   |
 | User profile: can create posts                    |      |      |       | ✅︎ 🎯︎ |                                                   |
-| User profile: can create posts with image         | ✅︎   |      |       |   🎯︎  |                                                   |
-| User profile: can delete posts                    | ✅︎   |      |       |   🎯︎  |                                                   |
-| User profile: can edit posts                      | ✅︎   |      |       |   🎯︎  |                                                   |
+| User profile: can create posts with image         |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: can delete posts                    |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: can edit posts                      |  ✅︎  |      |       |   🎯︎  |                                                   |
 | User profile: can comment posts                   |      |      |       | ✅︎ 🎯︎ |                                                   |
 | User profile: can like posts                      |      |  ✅︎  |       |   🎯︎  | Colors a like button, but dissapers on refresh    |
 | User profile: can see likes (own posts)           |  ✅︎  |      |       |   🎯︎  | No counter at all, or ways to see who liked       |
@@ -88,38 +69,64 @@ High-level features
 | User profile: Notification for post comment       |  ✅︎  |      |       |   🎯︎  |                                                   |
 | User profile: Notification for accepted position  |  ✅︎  |      |       |   🎯︎  |                                                   |
 | User profile: Notification for accepted skill     |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: Follow post option                  |  ✅︎  |      |       |   🎯︎  |                                                   |
 | NGO profile: can see all posts                    |      |      |       | ✅︎ 🎯︎ |                                                   |
 | NGO profile: can comment                          |      |      |       | ✅︎ 🎯︎ |                                                   |
 | NGO profile: can like posts                       |      | ✅︎   |       |   🎯︎  |                                                   |
-| NGO profile: can see likes (own posts)            | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can see likes (own posts)            |  ✅︎  |      |       |   🎯︎  |                                                   |
 | NGO profile: can create posts                     |      |      |       | ✅︎ 🎯︎ |                                                   |
-| NGO profile: can create posts with image          | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can delete posts                     | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can edit posts                       | ✅︎   |      |       |   🎯︎  |                                                   |
+| NGO profile: can create posts with image          |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can delete posts                     |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can edit posts                       |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can send DM                          |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can read DM                          |  ✅︎  |      |       |   🎯︎  |                                                   |
 | NGO profile: can create events                    |      |      |  ✅︎   |   🎯︎  | Only in profile page. Block on empty desc, no warning why |
-| NGO profile: can create events - with image       | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can cancel events                    | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can delete events                    | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can edit events                      | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can see list of goers                | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can create open positions            | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can create open positions - with img | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can delete positions                 | ✅︎   |      |       |   🎯︎  |                                                   |
-| NGO profile: can edit positions                   |      |      |       |   🎯︎  |                                                   |
-| NGO profile: can close opened positions           |      |      |       |   🎯︎  |                                                   |
-| NGO profile: can see people applied to possitions |      |      |       |   🎯︎  |                                                   |
-| NGO profile: can see people offering a skill      |      |      |       |   🎯︎  |                                                   |
-| NGO profile: can send DM                          |      |      |       |   🎯︎  |                                                   |
-| NGO profile: can read DM                          |      |      |       |   🎯︎  |                                                   |
+| NGO profile: can create events - with image       |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can cancel events                    |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can delete events                    |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can edit events                      |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can see list of goers                |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can create open positions            |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can create open positions - with img |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can delete positions                 |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can edit positions                   |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can close open position              |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can see people applied to possition  |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can see people offering a skill      |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: can DM people applied to possitions  |  ✅︎  |      |       |   🎯︎  | From the list of applied people                   |
+| NGO profile: can DM people offering a skill       |  ✅︎  |      |       |   🎯︎  | From the list of applied people                   |
 | NGO profile: can create group DMs                 |  ✅︎  |      |       |   🎯︎  |                                                   |
-| NGO profile: Notification for post comment        |      |      |       |   🎯︎  |                                                   |
-| NGO profile: Notification for applied possition   |      |      |       |   🎯︎  |                                                   |
-| NGO profile: Notification for offered skill       |      |      |       |   🎯︎  |                                                   |
+| NGO profile: Notification for post comment        |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: Notification for applied possition   |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: Notification for offered skill       |  ✅︎  |      |       |   🎯︎  |                                                   |
+| NGO profile: Follow post option                   |  ✅︎  |      |       |   🎯︎  |                                                   |
 
 
-## Milestone backlog
+### TODOs
 
-- [] Make every post have it's own URL and implement the share button (currently just a placeholder)
+- [x] /#/positions: Text not visible on "Apply" button
+- [x] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
+- [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
+- [x] Create a completion matrix for all features. Add columns - placeholder, prototype, full functionality + notes
+- [x] For 1st milestone add how the completion matrix should look like after milestone is done (only add features for this milestone)
+    - [x] List here all features the prototype currently support
+    - [x] Add features that it should support, either as mock, proto or full
+    - [x] Update current status for every feature - non-logged
+    - [x] Update current status for every feature - users / volunteers
+    - [x] Update current status for every feature - orgs
+
+- [] Positions: Apply button only visible in "Volunteering Positions" but not in "Feed"
+- [] Create a API/subcomponent for image upload
+  - [] Ask AI for 3 different suggestions for API
+  - [] Pick/merge and clean the suggestions
+  - []  
+
+
+## Feature backlog
+
+- [] Implement a internal share - from feed to your profile  (currently just a placeholder)
+- [] Make every post have it's own URL and implement the external share button
+- [] NGO can create project pages/feeds
 - [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
 
 
