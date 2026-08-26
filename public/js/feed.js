@@ -99,7 +99,7 @@ async function loadFeed() {
       list.innerHTML = '<p class="empty-state">No posts to show.</p>';
     } else {
       data.items.forEach((item) => {
-        list.appendChild(renderPostCard(item));
+        list.appendChild(renderPostCard(item, { showApply: true }));
       });
     }
 
