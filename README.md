@@ -104,36 +104,34 @@ High-level features
 
 ### TODOs
 
-- [x] /#/positions: Text not visible on "Apply" button
-- [x] Move "Post per page" somewhere else. Nobody will chaning it constantly to be on "prime" position
-- [x] Above checkboxes, add a dropdown menu for selecting the algorithm for displaying posts 
-- [x] Create a completion matrix for all features. Add columns - placeholder, prototype, full functionality + notes
-- [x] For 1st milestone add how the completion matrix should look like after milestone is done (only add features for this milestone)
-    - [x] List here all features the prototype currently support
-    - [x] Add features that it should support, either as mock, proto or full
-    - [x] Update current status for every feature - non-logged
-    - [x] Update current status for every feature - users / volunteers
-    - [x] Update current status for every feature - orgs
+- [ ] Create a API/subcomponent for image upload
+  - [ ] Write prompt to ask AI for 3 different suggestions for API
+  - [ ] Pick/merge and clean the suggestions
+  - [ ] Generate plan
+  - [ ]
 
-- [] Positions: Apply button only visible in "Volunteering Positions" but not in "Feed"
-- [] Create a API/subcomponent for image upload
-  - [] Ask AI for 3 different suggestions for API
-  - [] Pick/merge and clean the suggestions
-  - []  
+- [ ] Add ability to upload profile image
+- [ ] Add ability to upload post image
+
+- [ ] Implement single and group chat functionality
 
 
 ## Feature backlog
 
-- [] Implement a internal share - from feed to your profile  (currently just a placeholder)
-- [] Make every post have it's own URL and implement the external share button
-- [] NGO can create project pages/feeds
+- [] Make every post have it's own URL and implement the external share button (just copies URL)
+- [] Implement a internal post share - from feed to your profile  (currently just a placeholder)
+- [] Following/subscriptions to post/profiles/pages/
+- [] Circle functionality - custom feeds
+- [] NGO/users can create project pages/feeds
+- [] NGO/users can create forums/groups
 - [] Add "Stats" page - Displaying total number of users, organizations, and all 3 type of post count
 
 
 ## Non-protoype todo
 
-- ActivityPub federation (this should be the first thing on the list after prototype is ready!)
-- Email verification, password reset, 
+- ActivityPub: Basic federadecentralization (this should be the first thing on the list after prototype is ready!)
+- ActivityPub: Profile and images migration
+- Email verification, password reset
 - Real push/email notifications for subscriptions
 - CSRF tokens, rate limiting
 - A real database (currently bunch of human readable JSON files - about one JSON file per each future table)
