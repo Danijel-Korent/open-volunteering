@@ -189,11 +189,19 @@ main#app {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.create-post-composer {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 0.5rem 0.75rem;
   margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.create-post-composer .create-post-bar {
+  border-top: 1px solid var(--border);
 }
 
 .create-post-bar input {
@@ -233,6 +241,106 @@ main#app {
   align-items: center;
   justify-content: center;
   line-height: 1;
+}
+
+.post-card-avatar--img,
+.profile-avatar--img {
+  object-fit: cover;
+  display: block;
+}
+
+.post-image {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.image-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 0.5rem 0.75rem;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.image-dropzone.is-dragover {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.image-dropzone.is-uploading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.image-dropzone-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.image-dropzone-label.is-hidden {
+  display: none;
+}
+
+.image-dropzone-preview-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.image-dropzone-preview {
+  max-width: 100%;
+  max-height: 160px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.profile-avatar,
+.profile-avatar--img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+}
+
+.profile-avatar {
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-header-top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-header-top .profile-name {
+  margin: 0;
+}
+
+.profile-avatar-section .image-dropzone {
+  width: 100%;
+  max-width: 320px;
+  margin: 0;
 }
 
 .post-card-headline {

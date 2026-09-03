@@ -1,6 +1,7 @@
 import * as api from './api.js';
 import { getCurrentUser } from './auth.js';
 import { renderFeedControls, renderPerPageControl, getFeedPrefs } from './components/feed-controls.js';
+import { setupImageDropzone } from './components/image-dropzone.js';
 import { renderPagination } from './components/pagination.js';
 import { renderPostCard } from './components/post-card.js';
 
@@ -45,7 +46,7 @@ export async function renderFeed(container) {
 }
 
 /**
- * Render create post bar for logged-in users.
+ * Render create post composer for logged-in users.
  */
 function renderCreatePost() {
   const mount = document.getElementById('create-post-mount');
@@ -56,22 +57,54 @@ function renderCreatePost() {
   }
 
   mount.innerHTML = `
-    <form class="create-post-bar" data-testid="create-post-form">
-      <input type="text" placeholder="What's on your mind?" data-testid="create-post-input" required>
-      <button type="submit" class="btn btn-primary btn-sm" data-testid="create-post-submit">Post</button>
+    <form class="create-post-composer" data-testid="create-post-form">
+      <div id="create-post-dropzone-mount"></div>
+      <div class="create-post-bar">
+        <input type="text" placeholder="What's on your mind?" data-testid="create-post-input" required>
+        <button type="submit" class="btn btn-primary btn-sm" data-testid="create-post-submit">Post</button>
+      </div>
     </form>
   `;
 
-  mount.querySelector('form')?.addEventListener('submit', async (e) => {
+  const form = /** @type {HTMLFormElement} */ (mount.querySelector('form'));
+  const input = /** @type {HTMLInputElement} */ (mount.querySelector('[data-testid="create-post-input"]'));
+  const submitBtn = /** @type {HTMLButtonElement} */ (mount.querySelector('[data-testid="create-post-submit"]'));
+  const dropzoneMount = /** @type {HTMLElement} */ (mount.querySelector('#create-post-dropzone-mount'));
+
+  const dropzone = setupImageDropzone(dropzoneMount, {
+    dropzoneTestId: 'create-post-dropzone',
+    fileInputTestId: 'create-post-file-input',
+    previewTestId: 'create-post-image-preview',
+    label: 'Add a photo — drop here or tap',
+    onChange: ({ uploading }) => {
+      submitBtn.disabled = uploading;
+    },
+  });
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const input = /** @type {HTMLInputElement} */ (mount.querySelector('input'));
+    if (dropzone.isUploading()) return;
     const content = input.value.trim();
     if (!content) return;
-    await api.createPost({ content });
-    input.value = '';
-    api.showToast('Post created!');
-    currentPage = 1;
-    await loadFeed();
+
+    submitBtn.disabled = true;
+    /** @type {{ content: string, imageFileId?: number }} */
+    const payload = { content };
+    const imageFileId = dropzone.getFileId();
+    if (imageFileId) payload.imageFileId = imageFileId;
+
+    try {
+      await api.createPost(payload);
+      input.value = '';
+      await dropzone.clear();
+      api.showToast('Post created!');
+      currentPage = 1;
+      await loadFeed();
+    } catch (err) {
+      api.showToast(err instanceof Error ? err.message : 'Failed to create post');
+    } finally {
+      submitBtn.disabled = dropzone.isUploading();
+    }
   });
 }
 

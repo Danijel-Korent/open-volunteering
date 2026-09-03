@@ -21,6 +21,7 @@ $routes = [
     'subscriptions' => 'subscriptions.php',
     'availability' => 'availability.php',
     'map' => 'map.php',
+    'files' => 'files.php',
 ];
 
 if (isset($routes[$resource])) {

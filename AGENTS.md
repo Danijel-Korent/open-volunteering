@@ -35,7 +35,9 @@ Prefer `data-testid` attributes:
 - `login-name`, `login-password`, `register-name`, `register-type`, `register-success`, `register-success-password`, `register-copy-credentials`, `register-continue`
 - `feed-algorithm`, `feed-filter-user-post`, `feed-filter-org-post`, `feed-filter-position`, `feed-filter-event`
 - `post-card-{type}-{id}`, `pagination-next`, `map-container`
-- `calendar-event-{id}`, `create-post-form`, `profile-save`
+- `calendar-event-{id}`, `create-post-form`, `create-post-dropzone`, `create-post-file-input`, `create-post-image-preview`, `profile-save`
+- `profile-avatar-section`, `profile-avatar-dropzone`, `profile-avatar-file-input`, `profile-avatar-display`
+- `post-image-{type}-{id}` (e.g. `post-image-user_post-1`)
 
 ## UI style
 

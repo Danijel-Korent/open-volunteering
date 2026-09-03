@@ -74,6 +74,7 @@ Three routing layers connect the browser to persisted data.
 | `subscriptions` | `subscriptions.php` |
 | `availability` | `availability.php` |
 | `map` | `map.php` |
+| `files` | `files.php` |
 
 Each handler reads further path segments via `getPathSegments()` and dispatches on HTTP method.
 
@@ -174,8 +175,11 @@ erDiagram
 | Event RSVPs | `event_rsvps.json` | `events.php` |
 | Subscriptions | `subscriptions.json` | `subscriptions.php` |
 | Availability | `availability.json` | `availability.php` |
+| Stored files | `files.json` + `data/uploads/*` | `files.php` |
 
 Map markers are computed at request time in `map.php` (not stored separately).
+
+**File storage:** Image blobs live under `data/uploads/` (not web-accessible; `data/.htaccess` denies direct HTTP). Metadata is in `files.json` (usage-agnostic catalog). Parent records reference files by id: `Post.imageFileId`, `User.avatarFileId`. When attached, the file record gets `attachedTo: { type, id }`.
 
 ### Schema reference
 
@@ -183,10 +187,13 @@ Canonical field definitions live in [`public/js/types.d.ts`](public/js/types.d.t
 
 ```typescript
 // User
-{ id, type: 'volunteer' | 'organization', email, name, bio?, location?, skills?, experience?, createdAt? }
+{ id, type: 'volunteer' | 'organization', email, name, bio?, location?, skills?, experience?, avatarFileId?, createdAt? }
 
 // Post
-{ id, authorId, postType: 'user_post' | 'org_post', content, likeCount, shareCount, createdAt }
+{ id, authorId, postType: 'user_post' | 'org_post', content, likeCount, shareCount, imageFileId?, createdAt }
+
+// StoredFile (files.json)
+{ id, ownerId, originalName, storedName, mimeType, byteSize, width, height, createdAt, attachedTo? }
 
 // Position
 { id, authorId, title, description, category, remote, location?, likeCount, createdAt }
@@ -214,6 +221,7 @@ From [`api/config.php`](api/config.php):
 - IDs are assigned by `nextId()` (max existing `id` + 1).
 - Reads and writes are **whole-file** (`readJson` / `writeJson`); there are no transactions or referential integrity checks.
 - `GeoLocation` is `{ label, lat, lng }`; distance sorting uses `haversineKm()`.
+- Uploaded images: max 2 MB; JPEG/PNG/WebP only; validated with `finfo` + `getimagesize`.
 
 ## 6. API reference
 
@@ -242,7 +250,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 |--------|------|------|-------|
 | GET | `/api/users` | No | List all users |
 | GET | `/api/users/{id}` | No | Single user |
-| PATCH | `/api/users/{id}` | Yes (own profile) | Body: `name`, `bio`, `location`, `skills`, `experience` |
+| PATCH | `/api/users/{id}` | Yes (own profile) | Body: `name`, `bio`, `location`, `skills`, `experience`, `avatarFileId` |
 | POST | `/api/users/{id}/follow` | Yes | Follow user |
 | DELETE | `/api/users/{id}/follow` | Yes | Unfollow user |
 | GET | `/api/users/{id}/feed` | No | Profile-scoped feed (delegates to `feed.php`) |
@@ -252,9 +260,18 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
 | GET | `/api/posts` | No | List all posts |
-| POST | `/api/posts` | Yes | Body: `content`. Type auto-set from user (`user_post` / `org_post`) |
+| POST | `/api/posts` | Yes | Body: `content`, optional `imageFileId`. Type auto-set from user (`user_post` / `org_post`) |
 | POST | `/api/posts/{id}/like` | Yes | Increment like count |
 | POST | `/api/posts/{id}/share` | Yes | Increment share count |
+
+### files — `/api/files[/{id}[/content]]`
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| POST | `/api/files` | Yes | `multipart/form-data` with `file` (JPEG/PNG/WebP, max 2 MB) |
+| GET | `/api/files/{id}` | No | File metadata + `url` |
+| GET | `/api/files/{id}/content` | No | Binary image (not JSON) |
+| DELETE | `/api/files/{id}` | Yes (owner) | Remove catalog entry and blob |
 
 ### positions — `/api/positions[/{id}[/{sub}]]`
 

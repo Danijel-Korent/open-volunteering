@@ -41,11 +41,31 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
         exit;
     }
 
-    $allowed = ['name', 'bio', 'location', 'skills', 'experience'];
+    $allowed = ['name', 'bio', 'location', 'skills', 'experience', 'avatarFileId'];
     foreach ($allowed as $field) {
-        if (array_key_exists($field, $input)) {
-            $users[$idx][$field] = $input[$field];
+        if (!array_key_exists($field, $input)) {
+            continue;
         }
+        if ($field === 'avatarFileId') {
+            $avatarFileId = $input['avatarFileId'] !== null ? (int) $input['avatarFileId'] : null;
+            if ($avatarFileId === null || $avatarFileId === 0) {
+                $oldAvatarId = isset($users[$idx]['avatarFileId']) ? (int) $users[$idx]['avatarFileId'] : null;
+                if ($oldAvatarId) {
+                    deleteStoredFile($oldAvatarId);
+                }
+                unset($users[$idx]['avatarFileId']);
+            } else {
+                requireAttachableFile($avatarFileId, $userId);
+                $oldAvatarId = isset($users[$idx]['avatarFileId']) ? (int) $users[$idx]['avatarFileId'] : null;
+                if ($oldAvatarId && $oldAvatarId !== $avatarFileId) {
+                    deleteStoredFile($oldAvatarId);
+                }
+                $users[$idx]['avatarFileId'] = $avatarFileId;
+                attachFileTo($avatarFileId, 'user', $id);
+            }
+            continue;
+        }
+        $users[$idx][$field] = $input[$field];
     }
     writeJson('users.json', $users);
     jsonResponse(publicUser($users[$idx]));

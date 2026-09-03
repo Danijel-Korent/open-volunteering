@@ -19,7 +19,7 @@ function buildFeedItems(?int $authorId = null): array {
     foreach (readJson('posts.json') as $p) {
         if ($authorId !== null && (int) $p['authorId'] !== $authorId) continue;
         $author = $userMap[(int) $p['authorId']] ?? null;
-        $items[] = [
+        $item = [
             'feedType' => $p['postType'],
             'id' => (int) $p['id'],
             'authorId' => (int) $p['authorId'],
@@ -30,6 +30,12 @@ function buildFeedItems(?int $authorId = null): array {
             'createdAt' => $p['createdAt'],
             'location' => $author['location'] ?? null,
         ];
+        if (!empty($p['imageFileId'])) {
+            $imageFileId = (int) $p['imageFileId'];
+            $item['imageFileId'] = $imageFileId;
+            $item['imageUrl'] = fileContentUrl($imageFileId);
+        }
+        $items[] = $item;
     }
 
     foreach (readJson('positions.json') as $p) {

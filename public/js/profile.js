@@ -1,5 +1,6 @@
 import * as api from './api.js';
-import { getCurrentUser } from './auth.js';
+import { getCurrentUser, loadCurrentUser } from './auth.js';
+import { renderAvatarHtml, setupImageDropzone } from './components/image-dropzone.js';
 import { renderPostCard } from './components/post-card.js';
 
 /**
@@ -64,6 +65,12 @@ export async function renderProfile(container, userId, projectId) {
 async function renderOwnProfile(container, user) {
   container.innerHTML = `
     <h1 class="page-title">My Profile</h1>
+    <div class="profile-avatar-section" data-testid="profile-avatar-section">
+      <div id="profile-avatar-display" data-testid="profile-avatar-display">
+        ${renderAvatarHtml(user, 'profile-avatar')}
+      </div>
+      <div id="profile-avatar-dropzone-mount"></div>
+    </div>
     <div class="profile-form" data-testid="profile-edit-form">
       <div class="form-group">
         <label>Name</label>
@@ -101,6 +108,33 @@ async function renderOwnProfile(container, user) {
     <h2 class="page-title" style="font-size:1rem">Your feed</h2>
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
+
+  /** @type {number | undefined} */
+  let savedAvatarFileId = user.avatarFileId;
+  const avatarDisplay = /** @type {HTMLElement} */ (container.querySelector('#profile-avatar-display'));
+  const avatarDropzoneMount = /** @type {HTMLElement} */ (container.querySelector('#profile-avatar-dropzone-mount'));
+
+  const dropzone = setupImageDropzone(avatarDropzoneMount, {
+    dropzoneTestId: 'profile-avatar-dropzone',
+    fileInputTestId: 'profile-avatar-file-input',
+    previewTestId: 'profile-avatar-preview',
+    label: 'Change profile photo — drop or tap',
+    onChange: ({ fileId, uploading }) => {
+      if (uploading || !fileId || fileId === savedAvatarFileId) return;
+      void (async () => {
+        try {
+          const updated = await api.updateUser(user.id, { avatarFileId: fileId });
+          savedAvatarFileId = updated.avatarFileId;
+          await loadCurrentUser();
+          avatarDisplay.innerHTML = renderAvatarHtml(updated, 'profile-avatar');
+          dropzone.release();
+          api.showToast('Profile photo updated!');
+        } catch (err) {
+          api.showToast(err instanceof Error ? err.message : 'Failed to update photo');
+        }
+      })();
+    },
+  });
 
   container.querySelector('[data-testid="profile-save"]')?.addEventListener('click', async () => {
     const locLabel = /** @type {HTMLInputElement} */ (document.getElementById('profile-loc-label')).value;
@@ -386,8 +420,13 @@ async function renderPublicProfile(container, user) {
   const current = getCurrentUser();
   container.innerHTML = `
     <div class="profile-header" data-testid="profile-header">
-      <h1 class="profile-name">${escapeHtml(user.name)}</h1>
-      <div class="profile-type">${user.type}</div>
+      <div class="profile-header-top">
+        ${renderAvatarHtml(user, 'profile-avatar')}
+        <div>
+          <h1 class="profile-name">${escapeHtml(user.name)}</h1>
+          <div class="profile-type">${user.type}</div>
+        </div>
+      </div>
       <p class="profile-bio">${escapeHtml(user.bio || '')}</p>
       ${user.location?.label ? `<p class="post-meta">📍 ${escapeHtml(user.location.label)}</p>` : ''}
       ${user.type === 'volunteer' && user.skills?.length ? `

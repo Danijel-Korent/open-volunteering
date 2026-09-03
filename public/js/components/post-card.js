@@ -1,5 +1,6 @@
 import * as api from '../api.js';
 import { getCurrentUser } from '../auth.js';
+import { renderAvatarHtml } from './image-dropzone.js';
 import { toggleComments } from './comment-section.js';
 
 /**
@@ -30,22 +31,6 @@ const ICONS = {
   share: '<svg class="action-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>',
   skills: '<svg class="action-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>',
 };
-
-/**
- * Get initials from a display name.
- *
- * @param {string} name
- * @returns {string}
- */
-function getInitials(name) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase() || '?';
-}
 
 /**
  * Build the gray metadata subline shown under the author name.
@@ -172,7 +157,7 @@ export function renderPostCard(item, opts = {}) {
 
   card.innerHTML = `
     <div class="post-card-header">
-      <div class="post-card-avatar" aria-hidden="true">${escapeHtml(getInitials(authorName))}</div>
+      ${renderAvatarHtml({ avatarFileId: item.author?.avatarFileId, name: authorName })}
       <div class="post-card-headline">
         <a class="post-author" href="${authorLink}">${escapeHtml(authorName)}</a>
         <div class="post-meta-line">${buildMetaSubline(item)}</div>
@@ -181,6 +166,7 @@ export function renderPostCard(item, opts = {}) {
     <div class="post-body">
       ${item.title ? `<div class="post-title">${escapeHtml(item.title)}</div>` : ''}
       <div class="post-content">${escapeHtml(item.content)}</div>
+      ${item.imageFileId ? `<img class="post-image" src="${api.fileContentUrl(item.imageFileId)}" alt="" data-testid="post-image-${item.feedType}-${item.id}">` : ''}
     </div>
     <div class="post-actions"></div>
   `;

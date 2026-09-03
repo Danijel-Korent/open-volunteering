@@ -15,7 +15,21 @@ interface User {
   location?: GeoLocation | null;
   skills?: string[];
   experience?: string[];
+  avatarFileId?: number;
   createdAt?: string;
+}
+
+interface StoredFile {
+  id: number;
+  ownerId: number;
+  originalName: string;
+  mimeType: string;
+  byteSize: number;
+  width: number;
+  height: number;
+  createdAt: string;
+  url: string;
+  attachedTo?: { type: 'post' | 'user'; id: number } | null;
 }
 
 /** Register response includes the one-time generated password. */
@@ -30,6 +44,7 @@ interface Post {
   content: string;
   likeCount: number;
   shareCount: number;
+  imageFileId?: number;
   createdAt: string;
 }
 
@@ -85,6 +100,8 @@ interface FeedItem {
   remote?: boolean;
   category?: string;
   hasApplied?: boolean;
+  imageFileId?: number;
+  imageUrl?: string;
 }
 
 interface FeedResponse {

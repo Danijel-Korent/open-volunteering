@@ -97,5 +97,15 @@
         "likeCount": 0,
         "shareCount": 0,
         "createdAt": "2026-08-23T07:55:41+02:00"
+    },
+    {
+        "id": 12,
+        "authorId": 1,
+        "postType": "user_post",
+        "content": "Test post with image",
+        "likeCount": 0,
+        "shareCount": 0,
+        "createdAt": "2026-09-03T16:06:24+02:00",
+        "imageFileId": 1
     }
 ]

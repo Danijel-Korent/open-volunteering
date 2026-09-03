@@ -102,9 +102,43 @@ export async function getUserFeed(userId, params = {}) {
   return /** @type {Promise<FeedResponse>} */ (request(`users/${userId}/feed?${qs}`));
 }
 
-/** Create a new post. @param {{ content: string }} data @returns {Promise<Post>} */
+/** Create a new post. @param {{ content: string, imageFileId?: number }} data @returns {Promise<Post>} */
 export async function createPost(data) {
   return /** @type {Promise<Post>} */ (request('posts', { method: 'POST', body: JSON.stringify(data) }));
+}
+
+/**
+ * Build URL for file binary content (for img src).
+ *
+ * @param {number} id
+ * @returns {string}
+ */
+export function fileContentUrl(id) {
+  return `${API_BASE}/files/${id}/content`;
+}
+
+/**
+ * Upload an image file; returns catalog metadata with id and url.
+ *
+ * @param {File} file
+ * @returns {Promise<StoredFile>}
+ */
+export async function uploadFile(file) {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_BASE}/files`, {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return /** @type {StoredFile} */ (data);
+}
+
+/** Delete an uploaded file by id. @param {number} id @returns {Promise<unknown>} */
+export async function deleteFile(id) {
+  return request(`files/${id}`, { method: 'DELETE' });
 }
 
 /** Increment like count on a post. @param {number} id @returns {Promise<Post>} */

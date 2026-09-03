@@ -27,6 +27,10 @@ if ($id === null && method() === 'POST') {
     }
     $postType = $user['type'] === 'organization' ? 'org_post' : 'user_post';
     $posts = readJson('posts.json');
+    $imageFileId = isset($input['imageFileId']) ? (int) $input['imageFileId'] : null;
+    if ($imageFileId) {
+        requireAttachableFile($imageFileId, $userId);
+    }
     $post = [
         'id' => nextId($posts),
         'authorId' => $userId,
@@ -36,8 +40,14 @@ if ($id === null && method() === 'POST') {
         'shareCount' => 0,
         'createdAt' => date('c'),
     ];
+    if ($imageFileId) {
+        $post['imageFileId'] = $imageFileId;
+    }
     $posts[] = $post;
     writeJson('posts.json', $posts);
+    if ($imageFileId) {
+        attachFileTo($imageFileId, 'post', (int) $post['id']);
+    }
     jsonResponse($post, 201);
     exit;
 }

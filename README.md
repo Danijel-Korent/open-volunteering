@@ -104,14 +104,9 @@ High-level features
 
 ### TODOs
 
-- [ ] Create a API/subcomponent for image upload
-  - [ ] Write prompt to ask AI for 3 different suggestions for API
-  - [ ] Pick/merge and clean the suggestions
-  - [ ] Generate plan
-  - [ ]
-
-- [ ] Add ability to upload profile image
-- [ ] Add ability to upload post image
+- [x] Create a API/subcomponent for image upload (`/api/files`)
+- [x] Add ability to upload profile image
+- [x] Add ability to upload post image
 
 - [ ] Implement single and group chat functionality
 
