@@ -75,6 +75,7 @@ Three routing layers connect the browser to persisted data.
 | `availability` | `availability.php` |
 | `map` | `map.php` |
 | `files` | `files.php` |
+| `conversations` | `conversations.php` |
 
 Each handler reads further path segments via `getPathSegments()` and dispatches on HTTP method.
 
@@ -146,6 +147,10 @@ erDiagram
   User ||--o{ Follow : followerId
   User ||--o{ Follow : followingId
   User ||--o{ EventRsvp : userId
+  User ||--o{ ConversationParticipant : userId
+  Conversation ||--o{ ConversationParticipant : conversationId
+  Conversation ||--o{ Message : conversationId
+  User ||--o{ Message : authorId
   Project ||--o{ ProjectPost : projectId
   Post ||--o{ Comment : "targetType=post"
   Position ||--o{ Comment : "targetType=position"
@@ -175,6 +180,9 @@ erDiagram
 | Event RSVPs | `event_rsvps.json` | `events.php` |
 | Subscriptions | `subscriptions.json` | `subscriptions.php` |
 | Availability | `availability.json` | `availability.php` |
+| Conversations | `conversations.json` | `conversations.php` |
+| Conversation participants | `conversation_participants.json` | `conversations.php` |
+| Messages | `messages.json` | `conversations.php` |
 | Stored files | `files.json` + `data/uploads/*` | `files.php` |
 
 Map markers are computed at request time in `map.php` (not stored separately).
@@ -280,6 +288,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | GET | `/api/positions` | No | List positions (newest first) |
 | POST | `/api/positions` | Yes (organization) | Body: `title`, `description`, optional `category`, `remote`, `location` |
 | POST | `/api/positions/{id}/apply` | Yes (volunteer) | Apply to position |
+| GET | `/api/positions/{id}/applications` | Yes (position owner org) | List applications with embedded `volunteer` |
 | POST | `/api/positions/{id}/like` | Yes | Increment like count |
 
 ### events — `/api/events[/{id}[/{sub}]]`
@@ -364,8 +373,21 @@ The most complex handler. Aggregates posts, positions, and events into a unified
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| GET | `/api/availability` | No* | Query: `targetType` + `targetId`, or `mine=1` (logged-in volunteer's entries) |
+| GET | `/api/availability` | No* | Query: `targetType` + `targetId`, `mine=1`, or `forOrgId` (org owner only) |
 | POST | `/api/availability` | Yes (volunteer) | Body: `targetType`, `targetId`, `skillsOffered` (upsert) |
+
+### conversations — `/api/conversations[/{id}[/{sub}]]`
+
+Private messaging. Only conversation participants may read or write.
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| GET | `/api/conversations` | Yes | Inbox: paginated list with `displayName`, `unreadCount`, `totalUnread` |
+| POST | `/api/conversations` | Yes | Body: `type` (`direct` \| `group`), `participantIds`, optional `title`. Direct threads are deduplicated per user pair |
+| GET | `/api/conversations/{id}` | Yes (participant) | Conversation metadata + participants |
+| GET | `/api/conversations/{id}/messages` | Yes (participant) | Paginated messages, oldest first |
+| POST | `/api/conversations/{id}/messages` | Yes (participant) | Body: `content` (max 2000 chars) |
+| POST | `/api/conversations/{id}/read` | Yes (participant) | Mark conversation read for current user |
 
 ### map — `/api/map/markers`
 
@@ -390,10 +412,12 @@ Hash-based SPA routing in [`public/js/app.js`](public/js/app.js):
 | `#/profile` | `profile.js` (own profile) |
 | `#/profile/{userId}` | `profile.js` (other user) |
 | `#/profile/{userId}/project/{projectId}` | `profile.js` (project detail) |
+| `#/messages` | `messages.js` (inbox) |
+| `#/messages/{conversationId}` | `messages.js` (thread) |
 | `#/login` | `auth.js` |
 | `#/register` | `auth.js` |
 
-Navigation links in [`index.html`](index.html) use `data-route` attributes matching the first path segment.
+Navigation links in [`index.html`](index.html) use `data-route` attributes matching the first path segment. Messages is accessed via a header link in [`auth.js`](public/js/auth.js), not the main nav.
 
 ### Module conventions
 
@@ -428,8 +452,9 @@ app.js
 ├── positions.js   → api, auth, comment-section, post-card
 ├── calendar.js    → api
 ├── map.js         → api (+ Leaflet global)
-├── profile.js     → api, auth, feed-controls, pagination, post-card, comment-section
-└── auth.js        → api
+├── profile.js     → api, auth, feed-controls, pagination, post-card, comment-section, messages
+├── messages.js    → api, auth, image-dropzone
+└── auth.js        → api (unread badge via getConversations)
 ```
 
 ## 8. Key design decisions
@@ -450,6 +475,7 @@ app.js
 - **CORS `*`** and **no CSRF protection** — acceptable for local prototype only.
 - **Subscriptions** are stored but there is no real push or email delivery.
 - **Public read access** for most content by design (no private posts or positions).
+- **Messages** are private to conversation participants; the client polls for updates (no WebSockets).
 
 ### Planned evolution
 

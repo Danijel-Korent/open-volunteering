@@ -22,6 +22,7 @@ $routes = [
     'availability' => 'availability.php',
     'map' => 'map.php',
     'files' => 'files.php',
+    'conversations' => 'conversations.php',
 ];
 
 if (isset($routes[$resource])) {

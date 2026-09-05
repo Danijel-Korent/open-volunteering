@@ -6,7 +6,7 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 | -------- | -------------------------------------------------------------------- |
 | ✓        | Current status for this feature                                      |
 
-**Last updated:** 2026-08-15 (based on codebase review)
+**Last updated:** 2026-09-05 (chat messaging added)
 
 ---
 
@@ -152,6 +152,21 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 
 ---
 
+## Messaging
+
+| Feature                                                    |  Placeholder  |  Prototype  |         Full         | Notes                                                                |
+| ---------------------------------------------------------- | :-----------: | :---------: | :------------------: | -------------------------------------------------------------------- |
+| Direct messages (1:1)                                      |               |      ✓      |                      | From profile, org applicant/offer lists; deduplicated threads        |
+| Group messages                                             |               |      ✓      |                      | 3–20 participants; optional title; via inbox modal                   |
+| Inbox with unread badge                                    |               |      ✓      |                      | Header link; polls every 15s on inbox                                |
+| Message thread view                                        |               |      ✓      |                      | `#/messages/{id}`; polls every 10s; mark read on open                |
+| Org: message position applicants                           |               |      ✓      |                      | Own org profile → Position applicants section                        |
+| Org: message skill offers                                  |               |      ✓      |                      | Own org profile → Skill offers section                               |
+| Image attachments in chat                                  |       ✓       |             |                      | Text only for prototype                                              |
+| Real-time delivery (WebSockets)                            |       ✓       |             |                      | HTTP polling only                                                    |
+
+---
+
 ## Platform & infrastructure
 
 | Feature                                                    |  Placeholder  |  Prototype  |         Full         | Notes                                                                |
@@ -167,11 +182,11 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 
 | Status                 |   Count |
 | ---------------------- | ------: |
-| Placeholder            |      18 |
-| Prototype              |      42 |
+| Placeholder            |      20 |
+| Prototype              |      49 |
 | Full                   |       0 |
 
-*60 features tracked.*
+*68 features tracked.*
 
 ---
 

@@ -286,6 +286,93 @@ export async function getMapMarkers() {
 }
 
 /**
+ * List conversations for the current user (inbox).
+ *
+ * @param {{ page?: number, perPage?: number }} [params]
+ * @returns {Promise<ConversationInboxResponse>}
+ */
+export async function getConversations(params = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params).map(([k, v]) => [k, String(v)])
+  ).toString();
+  return /** @type {Promise<ConversationInboxResponse>} */ (request(`conversations?${qs}`));
+}
+
+/**
+ * Create or get a conversation.
+ *
+ * @param {{ type: 'direct' | 'group', participantIds: number[], title?: string }} data
+ * @returns {Promise<Conversation>}
+ */
+export async function createConversation(data) {
+  return /** @type {Promise<Conversation>} */ (request('conversations', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }));
+}
+
+/** Get a single conversation by ID. @param {number} id @returns {Promise<Conversation>} */
+export async function getConversation(id) {
+  return /** @type {Promise<Conversation>} */ (request(`conversations/${id}`));
+}
+
+/**
+ * List messages in a conversation.
+ *
+ * @param {number} conversationId
+ * @param {{ page?: number, perPage?: number }} [params]
+ * @returns {Promise<MessagesResponse>}
+ */
+export async function getMessages(conversationId, params = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params).map(([k, v]) => [k, String(v)])
+  ).toString();
+  return /** @type {Promise<MessagesResponse>} */ (request(`conversations/${conversationId}/messages?${qs}`));
+}
+
+/**
+ * Send a message in a conversation.
+ *
+ * @param {number} conversationId
+ * @param {string} content
+ * @returns {Promise<Message>}
+ */
+export async function sendMessage(conversationId, content) {
+  return /** @type {Promise<Message>} */ (request(`conversations/${conversationId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  }));
+}
+
+/** Mark a conversation as read. @param {number} conversationId @returns {Promise<{ lastReadAt: string }>} */
+export async function markConversationRead(conversationId) {
+  return /** @type {Promise<{ lastReadAt: string }>} */ (request(`conversations/${conversationId}/read`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  }));
+}
+
+/**
+ * List applications for a position (organization owner only).
+ *
+ * @param {number} positionId
+ * @returns {Promise<Application[]>}
+ */
+export async function getPositionApplications(positionId) {
+  return /** @type {Promise<Application[]>} */ (request(`positions/${positionId}/applications`));
+}
+
+/**
+ * List inbound skill offers for an organization.
+ *
+ * @param {number} orgId
+ * @returns {Promise<Availability[]>}
+ */
+export async function getInboundAvailability(orgId) {
+  return /** @type {Promise<Availability[]>} */ (request(`availability?forOrgId=${orgId}`));
+}
+
+/**
  * Show a brief toast message.
  *
  * @param {string} message

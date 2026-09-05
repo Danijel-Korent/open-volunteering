@@ -2,6 +2,7 @@ import * as api from './api.js';
 import { getCurrentUser, loadCurrentUser } from './auth.js';
 import { renderAvatarHtml, setupImageDropzone } from './components/image-dropzone.js';
 import { renderPostCard } from './components/post-card.js';
+import { startDirectMessage } from './messages.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -105,6 +106,16 @@ async function renderOwnProfile(container, user) {
     </div>
     ${user.type === 'organization' ? renderOrgActions() : renderVolunteerActions()}
     ${user.type === 'volunteer' ? renderSubscriptionsSection() : ''}
+    ${user.type === 'organization' ? `
+      <div class="profile-section" data-testid="org-applicants-section">
+        <h3>Position applicants</h3>
+        <div id="org-applicants-list"><p class="empty-state">Loading…</p></div>
+      </div>
+      <div class="profile-section" data-testid="org-availability-section">
+        <h3>Skill offers</h3>
+        <div id="org-availability-list"><p class="empty-state">Loading…</p></div>
+      </div>
+    ` : ''}
     <h2 class="page-title" style="font-size:1rem">Your feed</h2>
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
@@ -158,6 +169,7 @@ async function renderOwnProfile(container, user) {
 
   if (user.type === 'organization') {
     setupOrgForms(container, user.id);
+    await loadOrgMessagingSections(container, user.id);
   } else if (user.type === 'volunteer') {
     setupVolunteerEventForm(container);
     setupSubscriptions(container);
@@ -257,7 +269,7 @@ function setupVolunteerEventForm(container) {
         title: /** @type {HTMLInputElement} */ (document.getElementById('evt-title')).value,
         description: /** @type {HTMLTextAreaElement} */ (document.getElementById('evt-desc')).value,
         startDate: new Date(start).toISOString(),
-        locationType: /** @type {HTMLSelectElement} */ (document.getElementById('evt-loc-type')).value,
+        locationType: /** @type {'physical' | 'online'} */ (/** @type {HTMLSelectElement} */ (document.getElementById('evt-loc-type')).value),
       });
       api.showToast('Event created!');
       mount.innerHTML = '';
@@ -322,7 +334,7 @@ async function setupOrgForms(container, orgId) {
         title: /** @type {HTMLInputElement} */ (document.getElementById('evt-title')).value,
         description: /** @type {HTMLTextAreaElement} */ (document.getElementById('evt-desc')).value,
         startDate: new Date(start).toISOString(),
-        locationType: /** @type {HTMLSelectElement} */ (document.getElementById('evt-loc-type')).value,
+        locationType: /** @type {'physical' | 'online'} */ (/** @type {HTMLSelectElement} */ (document.getElementById('evt-loc-type')).value),
       });
       api.showToast('Event created!');
       mount.innerHTML = '';
@@ -401,7 +413,7 @@ async function setupSubscriptions(container) {
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     await api.createSubscription({
-      filterType: /** @type {HTMLSelectElement} */ (document.getElementById('sub-type')).value,
+      filterType: /** @type {'category' | 'organization' | 'location'} */ (/** @type {HTMLSelectElement} */ (document.getElementById('sub-type')).value),
       value: /** @type {HTMLInputElement} */ (document.getElementById('sub-value')).value,
     });
     await refresh();
@@ -438,7 +450,10 @@ async function renderPublicProfile(container, user) {
           <ul>${user.experience.map((e) => `<li>${escapeHtml(e)}</li>`).join('')}</ul>
         </div>` : ''}
       ${current && current.id !== user.id ? `
-        <button class="btn btn-primary" data-testid="btn-follow">Follow</button>
+        <div class="profile-actions">
+          <button class="btn btn-primary" data-testid="btn-follow">Follow</button>
+          <button class="btn btn-primary" data-testid="btn-message-user-${user.id}">Message</button>
+        </div>
       ` : ''}
     </div>
     ${user.type === 'organization' ? '<div id="projects-list"></div>' : ''}
@@ -451,11 +466,116 @@ async function renderPublicProfile(container, user) {
     api.showToast('Following!');
   });
 
+  container.querySelector(`[data-testid="btn-message-user-${user.id}"]`)?.addEventListener('click', async () => {
+    try {
+      await startDirectMessage(user.id);
+    } catch (err) {
+      api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
+    }
+  });
+
   if (user.type === 'organization') {
     await loadProjects(container.querySelector('#projects-list'), user.id);
   }
 
   await loadProfileFeed(user.id);
+}
+
+/**
+ * Load applicant and availability lists for an organization's own profile.
+ *
+ * @param {HTMLElement} container
+ * @param {number} orgId
+ * @returns {Promise<void>}
+ */
+async function loadOrgMessagingSections(container, orgId) {
+  const applicantsEl = container.querySelector('#org-applicants-list');
+  const availabilityEl = container.querySelector('#org-availability-list');
+
+  if (applicantsEl) {
+    try {
+      const positions = await api.getPositions();
+      const orgPositions = positions.filter((p) => p.authorId === orgId);
+      if (orgPositions.length === 0) {
+        applicantsEl.innerHTML = '<p class="empty-state">No open positions.</p>';
+      } else {
+        const blocks = [];
+        for (const position of orgPositions) {
+          const apps = await api.getPositionApplications(position.id);
+          if (apps.length === 0) continue;
+          blocks.push(`
+            <div class="org-list-block">
+              <h4>${escapeHtml(position.title)}</h4>
+              <ul class="org-messaging-list">
+                ${apps.map((app) => {
+                  const vol = app.volunteer;
+                  if (!vol) return '';
+                  return `
+                    <li>
+                      <span>${escapeHtml(vol.name)}</span>
+                      <button type="button" class="btn btn-sm btn-primary"
+                        data-testid="btn-message-applicant-${vol.id}"
+                        data-volunteer-id="${vol.id}">Message</button>
+                    </li>
+                  `;
+                }).join('')}
+              </ul>
+            </div>
+          `);
+        }
+        applicantsEl.innerHTML = blocks.length > 0
+          ? blocks.join('')
+          : '<p class="empty-state">No applicants yet.</p>';
+      }
+    } catch (err) {
+      applicantsEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load'}</p>`;
+    }
+  }
+
+  if (availabilityEl) {
+    try {
+      const offers = await api.getInboundAvailability(orgId);
+      if (offers.length === 0) {
+        availabilityEl.innerHTML = '<p class="empty-state">No skill offers yet.</p>';
+      } else {
+        availabilityEl.innerHTML = `
+          <ul class="org-messaging-list">
+            ${offers.map((offer) => {
+              const vol = offer.volunteer;
+              if (!vol) return '';
+              const skills = (offer.skillsOffered || []).join(', ');
+              const target = `${offer.targetType} #${offer.targetId}`;
+              return `
+                <li>
+                  <div>
+                    <strong>${escapeHtml(vol.name)}</strong>
+                    <div class="post-meta">${escapeHtml(skills)} · ${escapeHtml(target)}</div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-primary"
+                    data-testid="btn-message-volunteer-${vol.id}"
+                    data-volunteer-id="${vol.id}">Message</button>
+                </li>
+              `;
+            }).join('')}
+          </ul>
+        `;
+      }
+    } catch (err) {
+      availabilityEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load'}</p>`;
+    }
+  }
+
+  container.querySelectorAll('[data-volunteer-id]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const volunteerId = parseInt(btn.getAttribute('data-volunteer-id') || '0', 10);
+      if (!volunteerId) return;
+      try {
+        await startDirectMessage(volunteerId);
+      } catch (err) {
+        api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
+      }
+    });
+  });
 }
 
 /**

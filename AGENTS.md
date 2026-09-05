@@ -1,5 +1,15 @@
 # Project Instructions
 
+## Code style
+- ALWAYS add type hinting!
+- If you have added/modified a function, ALWAYS add or update documentation, using standard practice (PHPDoc, JSDoc, type hinting, JSDoc typedefs and parameter types, etc...)
+- After code changes, ALWAYS check JS typing with the command "npx tsc -p code/js/jsconfig.json --noEmit"
+
+
+## UI style
+
+- Mobile-first; The main priority for the UX is to be mobile and touch-screen friendly
+
 ## Testing
 
 - The code is live at the following URL: http://localhost/git/open-volunteering/
@@ -19,13 +29,6 @@ Seeded accounts log in with **name + password** (not email). All seeded accounts
 | Community Shelter | organization | password123 |
 | Youth Mentors Network | organization | password123 |
 
-### Registration (testing)
-
-The register form only asks for **name** and **account type**. The server generates a simple word-number password (e.g. `apple-42`) and shows it once on a success screen with a copy button. Users must memorize or copy it before continuing.
-
-New accounts log in with their **name** and the generated password.
-
-
 ### Test selectors
 
 Prefer `data-testid` attributes:
@@ -38,12 +41,10 @@ Prefer `data-testid` attributes:
 - `calendar-event-{id}`, `create-post-form`, `create-post-dropzone`, `create-post-file-input`, `create-post-image-preview`, `profile-save`
 - `profile-avatar-section`, `profile-avatar-dropzone`, `profile-avatar-file-input`, `profile-avatar-display`
 - `post-image-{type}-{id}` (e.g. `post-image-user_post-1`)
+- `header-messages`, `header-messages-unread`
+- `messages-inbox`, `conversation-row-{id}`, `btn-new-conversation`
+- `message-user-picker`, `message-picker-search`, `group-chat-title`
+- `message-thread-{id}`, `message-list`, `message-{id}`, `message-compose-input`, `message-send`
+- `btn-message-user-{id}`, `btn-message-applicant-{id}`, `btn-message-volunteer-{id}`
+- `org-applicants-section`, `org-availability-section`
 
-## UI style
-
-- Mobile-first; The main priority for the UX is to be mobile and touch-screen friendly
-
-## Code style
-
-- If the function you modified does not have documentation, add it using standard practice (JSDoc, PHPDoc, type hinting)
-- After JS changes: `npx tsc -p public/js/jsconfig.json --noEmit`

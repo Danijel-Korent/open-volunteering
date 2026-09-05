@@ -1,0 +1,19 @@
+[
+    {
+        "id": 1,
+        "type": "direct",
+        "createdBy": 1,
+        "createdAt": "2026-09-05T17:40:34+02:00",
+        "updatedAt": "2026-09-05T17:44:31+02:00",
+        "lastMessagePreview": "Hi Green City - UI test message"
+    },
+    {
+        "id": 2,
+        "type": "group",
+        "title": "Volunteer coordination",
+        "createdBy": 1,
+        "createdAt": "2026-09-05T17:41:13+02:00",
+        "updatedAt": "2026-09-05T17:41:13+02:00",
+        "lastMessagePreview": "Welcome to the group chat!"
+    }
+]

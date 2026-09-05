@@ -1,0 +1,35 @@
+[
+    {
+        "conversationId": 1,
+        "userId": 1,
+        "joinedAt": "2026-09-05T17:40:34+02:00",
+        "role": "member",
+        "lastReadAt": "2026-09-05T17:44:55+02:00"
+    },
+    {
+        "conversationId": 1,
+        "userId": 3,
+        "joinedAt": "2026-09-05T17:40:34+02:00",
+        "role": "member",
+        "lastReadAt": "2026-09-05T17:47:31+02:00"
+    },
+    {
+        "conversationId": 2,
+        "userId": 1,
+        "joinedAt": "2026-09-05T17:41:13+02:00",
+        "role": "admin"
+    },
+    {
+        "conversationId": 2,
+        "userId": 2,
+        "joinedAt": "2026-09-05T17:41:13+02:00",
+        "role": "member"
+    },
+    {
+        "conversationId": 2,
+        "userId": 3,
+        "joinedAt": "2026-09-05T17:41:13+02:00",
+        "role": "member",
+        "lastReadAt": "2026-09-05T18:01:09+02:00"
+    }
+]

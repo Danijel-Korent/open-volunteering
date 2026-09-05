@@ -152,6 +152,72 @@ interface ProjectDetailResponse {
   posts: Array<{ id: number; projectId: number; content: string; createdAt: string }>;
 }
 
+interface Application {
+  id: number;
+  positionId: number;
+  volunteerId: number;
+  status: 'pending' | string;
+  createdAt: string;
+  volunteer?: User | null;
+}
+
+interface ConversationParticipant {
+  conversationId: number;
+  userId: number;
+  joinedAt: string;
+  lastReadAt?: string;
+  role: 'member' | 'admin';
+}
+
+interface Conversation {
+  id: number;
+  type: 'direct' | 'group';
+  title?: string | null;
+  createdBy: number;
+  createdAt: string;
+  updatedAt: string;
+  lastMessagePreview?: string;
+  displayName?: string;
+  participants?: User[];
+}
+
+interface ConversationInboxItem {
+  id: number;
+  type: 'direct' | 'group';
+  title?: string | null;
+  displayName: string;
+  participants: User[];
+  lastMessagePreview: string;
+  updatedAt: string;
+  unreadCount: number;
+}
+
+interface ConversationInboxResponse {
+  items: ConversationInboxItem[];
+  page: number;
+  perPage: number;
+  totalPages: number;
+  totalItems: number;
+  totalUnread: number;
+}
+
+interface Message {
+  id: number;
+  conversationId: number;
+  authorId: number;
+  content: string;
+  createdAt: string;
+  author?: { id: number; name: string; type: string } | null;
+}
+
+interface MessagesResponse {
+  items: Message[];
+  page: number;
+  perPage: number;
+  totalPages: number;
+  totalItems: number;
+}
+
 /** Leaflet global from CDN */
 declare const L: {
   map: (id: string) => LMap;

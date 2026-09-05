@@ -45,6 +45,46 @@ if ($id === null && method() === 'POST') {
     exit;
 }
 
+if ($id !== null && $sub === 'applications' && method() === 'GET') {
+    // List applications for a position (organization owner only).
+    $userId = requireAuth();
+    $positions = readJson('positions.json');
+    $position = null;
+    foreach ($positions as $p) {
+        if ((int) $p['id'] === $id) {
+            $position = $p;
+            break;
+        }
+    }
+    if ($position === null) {
+        jsonResponse(['error' => 'Position not found'], 404);
+        exit;
+    }
+    if ((int) $position['authorId'] !== $userId) {
+        jsonResponse(['error' => 'Forbidden'], 403);
+        exit;
+    }
+
+    $applications = readJson('applications.json');
+    $users = readJson('users.json');
+    $filtered = array_values(array_filter(
+        $applications,
+        fn($a) => (int) $a['positionId'] === $id
+    ));
+    usort($filtered, fn($a, $b) => strcmp($b['createdAt'], $a['createdAt']));
+
+    $result = [];
+    foreach ($filtered as $app) {
+        $volunteer = findUser($users, (int) $app['volunteerId']);
+        $result[] = [
+            ...$app,
+            'volunteer' => $volunteer ? publicUser($volunteer) : null,
+        ];
+    }
+    jsonResponse($result);
+    exit;
+}
+
 if ($id !== null && $sub === 'apply' && method() === 'POST') {
     $userId = requireAuth();
     $users = readJson('users.json');

@@ -42,6 +42,8 @@ export function renderAuthStatus() {
 
   if (currentUser) {
     el.innerHTML = `
+      <a href="#/messages" class="header-messages-link" data-testid="header-messages">Messages</a>
+      <span class="unread-badge" data-testid="header-messages-unread" hidden></span>
       <span class="user-name" data-testid="current-user-name">${escapeHtml(currentUser.name)}</span>
       <button class="btn btn-sm" data-testid="btn-logout" id="btn-logout">Logout</button>
     `;
@@ -51,11 +53,34 @@ export function renderAuthStatus() {
       emitAuthChanged();
       window.location.hash = '#/feed';
     });
+    void refreshMessagesUnreadBadge();
   } else {
     el.innerHTML = `
       <a href="#/login" data-testid="btn-login">Login</a>
       <a href="#/register" data-testid="btn-register">Register</a>
     `;
+  }
+}
+
+/**
+ * Refresh the unread messages badge in the header.
+ *
+ * @returns {Promise<void>}
+ */
+export async function refreshMessagesUnreadBadge() {
+  const badge = /** @type {HTMLElement | null} */ (document.querySelector('[data-testid="header-messages-unread"]'));
+  if (!badge || !currentUser) return;
+  try {
+    const data = await api.getConversations({ perPage: 50 });
+    const total = data.totalUnread ?? 0;
+    if (total > 0) {
+      badge.textContent = total > 99 ? '99+' : String(total);
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
+  } catch {
+    badge.hidden = true;
   }
 }
 
@@ -208,3 +233,12 @@ export function renderRegister(container) {
     }
   });
 }
+
+/**
+ * Keep the header unread badge in sync after inbox/thread activity.
+ * Listens for `messageschanged` from messages.js to avoid a circular import
+ * (messages.js cannot import refreshMessagesUnreadBadge from auth.js).
+ */
+window.addEventListener('messageschanged', () => {
+  void refreshMessagesUnreadBadge();
+});

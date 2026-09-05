@@ -32,9 +32,9 @@ High-level features
 
 #### TODO
 
-- [ ] Suggest specs for single and group chat functionality
+- [x] Suggest specs for single and group chat functionality
 - [ ] Do at least 1 round of review
-- [ ] Implement
+- [x] Implement
 
 #### Milestone feature table ✓
 

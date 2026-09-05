@@ -8,7 +8,8 @@
 - **Positions** — volunteering positions with apply and comments
 - **Calendar** — events for the next 12 months
 - **Map** — Leaflet map of organizations, volunteers, positions, events
-- **Profile** — edit own profile or view others; orgs manage projects/positions
+- **Profile** — edit own profile or view others; orgs manage projects/positions; private messaging entry points
+- **Messages** — inbox and threads for 1:1 and group chat (header link when logged in)
 
 ## Requirements
 
@@ -61,6 +62,8 @@ A social-network-like web page where people/organizations could perform the foll
 - organizations and volunteers can follow profiles of organizations and volunteers 
 - organizations and volunteers can choose algorithm which chooses what they see in their feed
 - organizations and volunteers can leave a comment on public posts
+- logged-in users can send private direct messages and group chats to other users
+- organizations can message position applicants and volunteers who offered skills from their profile
 - organizations and volunteers can create events (some activity/actions with specific date/range, and physical or online location)
 - volunteer can subscribe for new volunteering positions and events from organizations
 - organizations and volunteer can set going/maybe on the events
