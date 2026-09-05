@@ -1,10 +1,15 @@
 # Project Instructions
 
+## IMPORTANT
+
+- NEVER modify AGENTS.md without asking first
+- NEVER do "git push"
+
 ## Code style
 - ALWAYS add type hinting!
 - If you have added/modified a function, ALWAYS add or update documentation, using standard practice (PHPDoc, JSDoc, type hinting, JSDoc typedefs and parameter types, etc...)
 - After code changes, ALWAYS check JS typing with the command "npx tsc -p code/js/jsconfig.json --noEmit"
-
+- After code changes, ALWAYS check PHP typing with the command "php.exe tools\phpstan.phar analyse"
 
 ## UI style
 
@@ -47,4 +52,3 @@ Prefer `data-testid` attributes:
 - `message-thread-{id}`, `message-list`, `message-{id}`, `message-compose-input`, `message-send`
 - `btn-message-user-{id}`, `btn-message-applicant-{id}`, `btn-message-volunteer-{id}`
 - `org-applicants-section`, `org-availability-section`
-
