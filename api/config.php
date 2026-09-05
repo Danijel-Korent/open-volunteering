@@ -275,7 +275,7 @@ function validateImageUpload(array $upload): ?array {
     }
 
     $info = @getimagesize($tmpPath);
-    if ($info === false || !in_array($info[2] ?? 0, [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP], true)) {
+    if ($info === false || !in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP], true)) {
         return null;
     }
 
@@ -294,9 +294,9 @@ function validateImageUpload(array $upload): ?array {
  *
  * @param int $fileId
  * @param int $userId
- * @return array{idx: int, record: array<string, mixed>}|null Null when invalid; sends JSON error and exits
+ * @return array{idx: int, record: array<string, mixed>} Sends JSON error and exits when invalid
  */
-function requireAttachableFile(int $fileId, int $userId): ?array {
+function requireAttachableFile(int $fileId, int $userId): array {
     $files = readJson(FILES_JSON);
     $found = findFileRecord($files, $fileId);
     if ($found === null) {
