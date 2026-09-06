@@ -31,11 +31,32 @@ High-level features
 
 ### Milestone #1 - Direct and group messages ✓
 
-### Milestone #2 - Support for notifications
+### Milestone #x - More flexible org profile manageemnt
 
-  - []
+  - Instead of single username/password for organizations, let user create org, add and remove members/moderators/admins
+  - I decided that this is better to do as early as possible then to "move around" the whole code with already implemented features
 
-### Milestone #2 - feature table
+#### TODO
+
+  - [] FIRST define how everything will be stored on disk
+  - [] Define API calls between BE and FE
+  - [] Write a prompt with defined data layer and API layer
+  - [] Do it
+  - [] Test it
+
+#### Milestone #x - feature table  ✓
+
+
+
+
+### Milestone #x - Support for notifications
+
+#### TODO
+
+  - [] For applied possition - Check if we can accept offer
+  - [] For offered skill - Check if we can accept offer
+
+#### Milestone #x - feature table  ✓
 
 | User profile: Notification for post comment       |  ✅︎  |      |       |   🎯︎  |                                                   |
 | User profile: Notification for accepted position  |  ✅︎  |      |       |   🎯︎  |                                                   |
