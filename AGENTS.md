@@ -7,7 +7,7 @@
 
 ## Code style
 - ALWAYS add type hinting!
-- If you have added/modified a function, ALWAYS add or update documentation, using standard practice (PHPDoc, JSDoc, type hinting, JSDoc typedefs and parameter types, etc...)
+- If you have added/modified a function, ALWAYS add or update documentation, using standard practice (PHPDoc, JSDoc, type hinting, typedefs and parameter types, etc...)
 - After code changes, ALWAYS check JS typing with the command "npx tsc -p code/js/jsconfig.json --noEmit"
 - After code changes, ALWAYS check PHP typing with the command "php.exe tools\phpstan.phar analyse"
 

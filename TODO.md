@@ -26,28 +26,41 @@ High-level features
 
 ## PHASE - UI/UX check: Make it good/complete enough to put it on-line for UI/UX people to take a look
 
+- I don't think it makes sense to ask for UI/UX check until all major development is done, so I can focus on UX
 - Basically add as much clickable/interactive stuff and dialogs so that UX people have something to looks at + DM support for communication
 
-### Milestone #1 - Bare minimal to be usable and lookable
+### Milestone #1 - Direct and group messages ✓
 
-#### TODO
+### Milestone #2 - Support for notifications
 
-- [x] Suggest specs for single and group chat functionality
-- [ ] Do at least 1 round of review
-- [x] Implement
+  - []
 
-#### Milestone feature table ✓
+### Milestone #2 - feature table
 
-- Add DM messages If we want to communicate on the platform itself
+| User profile: Notification for post comment       |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: Notification for accepted position  |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: Notification for accepted skill     |  ✅︎  |      |       |   🎯︎  |                                                   |
+| Org profile: Notification for post comment        |  ✅︎  |      |       |   🎯︎  |                                                   |
+| Org profile: Notification for applied possition   |  ✅︎  |      |       |   🎯︎  |                                                   |
+| Org profile: Notification for offered skill       |  ✅︎  |      |       |   🎯︎  |                                                   |
 
-| Feature name                                      | None | Mock | Proto | Full  | Notes                                             |
-| ------------------------------------------------- | ---- | ---- | ----- | ----- | ------------------------------------------------- |
-| User profile: can send DM                         |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can read DM                         |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can create group DMs                |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can send DM                          |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can read DM                          |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can create group DMs                 |  ✅︎  |      |       |   🎯︎  |                                                   |
+### Milestone #x - Follow post feature
+### Milestone #x - Follow organization feature
+
+### Milestone #x - Deleting posts/events/positions
+### Milestone #x - Editing posts/events/positions
+
+### Milestone #x - Full functionality for applying to position
+
+  - [ ] Check what currently works and does't work
+
+### Milestone #x - Full functionality for offering skils
+
+  - [ ] Check what currently works and does't work
+
+### Milestone #x - Full functionality for events
+
+  - [ ] Check what currently works and does't work
 
 ### Milestone #x - 
 ### Milestone #x - 
@@ -65,7 +78,7 @@ High-level features
 | Non-logged / public: can see all map              |      |      |       | ✅︎ 🎯︎ |                                                   |
 |        --- Ordinary users ---                                                                                                      |
 | User profile: can create posts                    |      |      |       | ✅︎ 🎯︎ |                                                   |
-| User profile: can create posts with image         |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: can create posts with image         |      |      |       | ✅︎ 🎯︎ |                                                   |
 | User profile: can delete posts                    |  ✅︎  |      |       |   🎯︎  |                                                   |
 | User profile: can edit posts                      |  ✅︎  |      |       |   🎯︎  |                                                   |
 | User profile: can comment posts                   |      |      |       | ✅︎ 🎯︎ |                                                   |
@@ -74,9 +87,9 @@ High-level features
 | User profile: can offer skills                    |      |  ✅︎  |       |   🎯︎  | There is a dialog, need to check if it goes to DB |
 | User profile: can apply to valunteer adds         |      |      |   ✅︎  |   🎯︎  | Button in "Positions" tab, but not in "Feed"      |
 | User profile: can see offered skills              |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can send DM                         |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can read DM                         |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can create group DMs                |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: can send DM                         |      |      |       | ✅︎ 🎯︎ |                                                   |
+| User profile: can read DM                         |      |      |       | ✅︎ 🎯︎ |                                                   |
+| User profile: can create group DMs                |      |      |       | ✅︎ 🎯︎ |                                                   |
 | User profile: Notification for post comment       |  ✅︎  |      |       |   🎯︎  |                                                   |
 | User profile: Notification for accepted position  |  ✅︎  |      |       |   🎯︎  |                                                   |
 | User profile: Notification for accepted skill     |  ✅︎  |      |       |   🎯︎  |                                                   |
@@ -87,13 +100,13 @@ High-level features
 | Org profile: can like posts                       |      | ✅︎   |       |   🎯︎  |                                                   |
 | Org profile: can see likes (own posts)            |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: can create posts                     |      |      |       | ✅︎ 🎯︎ |                                                   |
-| Org profile: can create posts with image          |  ✅︎  |      |       |   🎯︎  |                                                   |
+| Org profile: can create posts with image          |      |      |       | ✅︎ 🎯︎ |                                                   |
 | Org profile: can delete posts                     |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: can edit posts                       |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can send DM                          |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can read DM                          |  ✅︎  |      |       |   🎯︎  |                                                   |
+| Org profile: can send DM                          |      |      |       | ✅︎ 🎯︎ |                                                   |
+| Org profile: can read DM                          |      |      |       | ✅︎ 🎯︎ |                                                   |
 | Org profile: can create events                    |      |      |  ✅︎   |   🎯︎  | Only in profile page. Block on empty desc, no warning why |
-| Org profile: can create events - with image       |  ✅︎  |      |       |   🎯︎  |                                                   |
+| Org profile: can create events - with image       |      |      |       | ?? 🎯︎ |                                                   |
 | Org profile: can cancel events                    |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: can delete events                    |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: can edit events                      |  ✅︎  |      |       |   🎯︎  |                                                   |
@@ -105,9 +118,9 @@ High-level features
 | Org profile: can close open position              |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: can see people applied to possition  |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: can see people offering a skill      |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can DM people applied to possitions  |  ✅︎  |      |       |   🎯︎  | From the list of applied people                   |
-| Org profile: can DM people offering a skill       |  ✅︎  |      |       |   🎯︎  | From the list of applied people                   |
-| Org profile: can create group DMs                 |  ✅︎  |      |       |   🎯︎  |                                                   |
+| Org profile: can DM people applied to possitions  |      |      |       | ?? 🎯︎ | From the list of applied people                   |
+| Org profile: can DM people offering a skill       |      |      |       | ?? 🎯︎ | From the list of applied people                   |
+| Org profile: can create group DMs                 |      |      |       | ✅︎ 🎯︎ |                                                   |
 | Org profile: Notification for post comment        |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: Notification for applied possition   |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: Notification for offered skill       |  ✅︎  |      |       |   🎯︎  |                                                   |
@@ -115,7 +128,11 @@ High-level features
 
 
 
+## PHASE - Server maintainence/adminstration
 
+- Add an server administration panel that shows:
+  - General stats (disk usage, number of users)
+  - Health stats (logs of errors and triggered asserts, ...)
 
 ## PHASE - Prototype for real usage tests
 
@@ -221,9 +238,11 @@ High-level features
 
 - [] Add feature table
 
-## PHASE - basic ActivityPub integration
+## PHASE - The most basic ActivityPub integration
 
 - [] Add feature table
+
+## PHASE - Post analytics for posters
 
 ## Feature backlog
 

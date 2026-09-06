@@ -13,5 +13,20 @@
             "type": "post",
             "id": 12
         }
+    },
+    {
+        "id": 2,
+        "ownerId": 9,
+        "originalName": "bird-1382034603Euc.jpg",
+        "storedName": "2.jpg",
+        "mimeType": "image\/jpeg",
+        "byteSize": 30820,
+        "width": 615,
+        "height": 407,
+        "createdAt": "2026-09-06T08:54:49+02:00",
+        "attachedTo": {
+            "type": "user",
+            "id": 9
+        }
     }
 ]

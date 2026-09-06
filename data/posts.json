@@ -107,5 +107,15 @@
         "shareCount": 0,
         "createdAt": "2026-09-03T16:06:24+02:00",
         "imageFileId": 1
+    },
+    {
+        "id": 13,
+        "authorId": 9,
+        "postType": "user_post",
+        "content": "Testing image post feauture with some nice bird",
+        "likeCount": 0,
+        "shareCount": 0,
+        "createdAt": "2026-09-06T08:53:36+02:00",
+        "imageFileId": 2
     }
 ]

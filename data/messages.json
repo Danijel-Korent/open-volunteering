@@ -26,5 +26,19 @@
         "authorId": 1,
         "content": "Hi Green City - UI test message",
         "createdAt": "2026-09-05T17:44:31+02:00"
+    },
+    {
+        "id": 5,
+        "conversationId": 3,
+        "authorId": 9,
+        "content": "Test",
+        "createdAt": "2026-09-05T18:18:31+02:00"
+    },
+    {
+        "id": 6,
+        "conversationId": 4,
+        "authorId": 9,
+        "content": "test",
+        "createdAt": "2026-09-06T08:31:57+02:00"
     }
 ]

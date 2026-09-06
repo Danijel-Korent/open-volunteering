@@ -138,7 +138,8 @@
         "location": null,
         "skills": [],
         "experience": [],
-        "createdAt": "2026-08-12T08:40:32+02:00"
+        "createdAt": "2026-08-12T08:40:32+02:00",
+        "avatarFileId": 2
     },
     {
         "id": 10,
