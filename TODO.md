@@ -23,8 +23,27 @@ High-level features
     - register for notification
   - de-centralized using ActivityPub
 
+## Prompts
 
-## PHASE - UI/UX check: Make it good/complete enough to put it on-line for UI/UX people to take a look
+Do you see any dead code?
+Do you see any technical debt?
+Do you see any duplicated code?
+Do all function names match their behavior?
+Do you see any places in code where adding an interface would be beneficial?
+
+Do you have any suggestions on how to better organize the code?
+Do you have any suggestions on how to better organize the source code files?
+Do you have any suggestions on how to better organize the JavaScript code into multiple files?
+Do you have any suggestions on improving the code architecture?
+Explain what is the "separation of concerns principle". Does the code adhere to the separation of concerns principle?
+Suggest next steps
+
+Are all functions documented? If not, add the documentation. Are all comments in the code up to date? If not, update them. Do not modify code logic.
+Check if README.md or ARCHITECTURE.md need an update
+
+Draw on ASCII-friednly overview of XYZ
+
+## PHASE #1 - UI/UX check: Make it good/complete enough to put it on-line for UI/UX people to take a look
 
 - I don't think it makes sense to ask for UI/UX check until all major development is done, so I can focus on UX
 - Basically add as much clickable/interactive stuff and dialogs so that UX people have something to looks at + DM support for communication
@@ -37,6 +56,8 @@ High-level features
   - I decided that this is better to do as early as possible then to "move around" the whole code with already implemented features
 
 #### TODO
+
+  - [x] Move "type: organization" profiles out of user.json into organizations.json
 
   - [] FIRST define how everything will be stored on disk
   - [] Define API calls between BE and FE
@@ -149,13 +170,13 @@ High-level features
 
 
 
-## PHASE - Server maintainence/adminstration
+## PHASE #2 - Server maintainence/adminstration
 
 - Add an server administration panel that shows:
   - General stats (disk usage, number of users)
   - Health stats (logs of errors and triggered asserts, ...)
 
-## PHASE - Prototype for real usage tests
+## PHASE #3 - Prototype for real usage tests
 
   - Instead of single username/password for organizations, make user create org, add and remove members/moderators/admins
   - Admins - only ones that can add/remove other members/moderators/admins
@@ -247,23 +268,29 @@ High-level features
 | Org members: Groupchats between orgs              |  ✅︎  |      |       |   🎯︎  |                                                   |
 
 
-## PHASE - User/ORG profile can create "movements" and multiple custom feeds (like g. circles)
+## PHASE #4 - User/ORG profile can create "movements" and multiple custom feeds (like g. circles)
 
 ### TODOs
 
 - [] Add feature table
 
-## PHASE - Server moderators
+## PHASE #5 - Server moderators
 
 ### TODOs
 
 - [] Add feature table
 
-## PHASE - The most basic ActivityPub integration
+## PHASE #6 - The most basic ActivityPub integration
 
 - [] Add feature table
 
-## PHASE - Post analytics for posters
+## PHASE #7 - "OV" instances disovery server
+
+  - One or more servers where Open-volunteering instances can register them self so they can be discovered by others instances
+
+- [] Add feature table
+
+## PHASE #8 - Post analytics for posters
 
 ## Feature backlog
 

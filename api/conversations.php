@@ -16,6 +16,17 @@ $id = isset($segments[1]) ? (int) $segments[1] : null;
 $sub = $segments[2] ?? '';
 
 /**
+ * Build a unique key for an account reference.
+ *
+ * @param string $accountType
+ * @param int $accountId
+ * @return string
+ */
+function accountKey(string $accountType, int $accountId): string {
+    return $accountType . ':' . $accountId;
+}
+
+/**
  * Find a conversation by id.
  *
  * @param array<int, array<string, mixed>> $conversations
@@ -46,16 +57,19 @@ function participantsForConversation(array $participants, int $conversationId): 
 }
 
 /**
- * Get participant row for a user in a conversation.
+ * Get participant row for an account in a conversation.
  *
  * @param array<int, array<string, mixed>> $participants
  * @param int $conversationId
- * @param int $userId
+ * @param string $accountType
+ * @param int $accountId
  * @return array<string, mixed>|null
  */
-function findParticipant(array $participants, int $conversationId, int $userId): ?array {
+function findParticipant(array $participants, int $conversationId, string $accountType, int $accountId): ?array {
     foreach ($participants as $p) {
-        if ((int) $p['conversationId'] === $conversationId && (int) $p['userId'] === $userId) {
+        if ((int) $p['conversationId'] === $conversationId
+            && ($p['accountType'] ?? 'volunteer') === $accountType
+            && (int) $p['accountId'] === $accountId) {
             return $p;
         }
     }
@@ -63,15 +77,16 @@ function findParticipant(array $participants, int $conversationId, int $userId):
 }
 
 /**
- * Require that the user is a participant; exit with 403 otherwise.
+ * Require that the account is a participant; exit with 403 otherwise.
  *
  * @param array<int, array<string, mixed>> $participants
  * @param int $conversationId
- * @param int $userId
+ * @param string $accountType
+ * @param int $accountId
  * @return array<string, mixed>
  */
-function requireParticipant(array $participants, int $conversationId, int $userId): array {
-    $participant = findParticipant($participants, $conversationId, $userId);
+function requireParticipant(array $participants, int $conversationId, string $accountType, int $accountId): array {
+    $participant = findParticipant($participants, $conversationId, $accountType, $accountId);
     if ($participant === null) {
         jsonResponse(['error' => 'Forbidden'], 403);
         exit;
@@ -80,21 +95,22 @@ function requireParticipant(array $participants, int $conversationId, int $userI
 }
 
 /**
- * Build public participant list with user details.
+ * Build public participant list with account details.
  *
  * @param array<int, array<string, mixed>> $rows
- * @param array<int, array<string, mixed>> $users
  * @return array<int, array<string, mixed>>
  */
-function publicParticipants(array $rows, array $users): array {
+function publicParticipants(array $rows): array {
     $result = [];
     foreach ($rows as $row) {
-        $user = findUser($users, (int) $row['userId']);
-        if ($user === null) {
+        $type = $row['accountType'] ?? 'volunteer';
+        $accountId = (int) $row['accountId'];
+        $record = resolveAccount($type, $accountId);
+        if ($record === null) {
             continue;
         }
         $result[] = [
-            ...publicUser($user),
+            ...publicAccount($type, $record),
             'role' => $row['role'] ?? 'member',
             'joinedAt' => $row['joinedAt'],
         ];
@@ -129,15 +145,15 @@ function unreadCount(array $messages, int $conversationId, array $participant): 
  *
  * @param array<string, mixed> $conversation
  * @param array<int, array<string, mixed>> $participantRows
- * @param array<int, array<string, mixed>> $users
- * @param int $currentUserId
+ * @param string $currentType
+ * @param int $currentId
  * @return string
  */
 function conversationDisplayName(
     array $conversation,
     array $participantRows,
-    array $users,
-    int $currentUserId
+    string $currentType,
+    int $currentId
 ): string {
     if (($conversation['type'] ?? '') === 'group') {
         $title = trim($conversation['title'] ?? '');
@@ -146,12 +162,14 @@ function conversationDisplayName(
         }
         $names = [];
         foreach ($participantRows as $row) {
-            if ((int) $row['userId'] === $currentUserId) {
+            $type = $row['accountType'] ?? 'volunteer';
+            $accountId = (int) $row['accountId'];
+            if ($type === $currentType && $accountId === $currentId) {
                 continue;
             }
-            $user = findUser($users, (int) $row['userId']);
-            if ($user) {
-                $names[] = $user['name'];
+            $record = resolveAccount($type, $accountId);
+            if ($record) {
+                $names[] = $record['name'];
             }
         }
         if (count($names) <= 3) {
@@ -161,29 +179,37 @@ function conversationDisplayName(
     }
 
     foreach ($participantRows as $row) {
-        if ((int) $row['userId'] !== $currentUserId) {
-            $user = findUser($users, (int) $row['userId']);
-            return $user ? $user['name'] : '[Deleted user]';
+        $type = $row['accountType'] ?? 'volunteer';
+        $accountId = (int) $row['accountId'];
+        if ($type !== $currentType || $accountId !== $currentId) {
+            $record = resolveAccount($type, $accountId);
+            return $record ? $record['name'] : '[Deleted account]';
         }
     }
     return 'Conversation';
 }
 
 /**
- * Find existing direct conversation between two users.
+ * Find existing direct conversation between two accounts.
  *
  * @param array<int, array<string, mixed>> $conversations
  * @param array<int, array<string, mixed>> $participants
- * @param int $userIdA
- * @param int $userIdB
+ * @param string $typeA
+ * @param int $idA
+ * @param string $typeB
+ * @param int $idB
  * @return array<string, mixed>|null
  */
 function findDirectConversation(
     array $conversations,
     array $participants,
-    int $userIdA,
-    int $userIdB
+    string $typeA,
+    int $idA,
+    string $typeB,
+    int $idB
 ): ?array {
+    $keyA = accountKey($typeA, $idA);
+    $keyB = accountKey($typeB, $idB);
     foreach ($conversations as $conversation) {
         if (($conversation['type'] ?? '') !== 'direct') {
             continue;
@@ -192,11 +218,14 @@ function findDirectConversation(
         if (count($rows) !== 2) {
             continue;
         }
-        $ids = array_map(fn($r) => (int) $r['userId'], $rows);
-        sort($ids);
-        $expected = [$userIdA, $userIdB];
+        $keys = array_map(
+            fn($r) => accountKey($r['accountType'] ?? 'volunteer', (int) $r['accountId']),
+            $rows
+        );
+        sort($keys);
+        $expected = [$keyA, $keyB];
         sort($expected);
-        if ($ids === $expected) {
+        if ($keys === $expected) {
             return $conversation;
         }
     }
@@ -216,19 +245,66 @@ function messagePreview(string $content): string {
     return substr($content, 0, PREVIEW_LENGTH - 1) . '…';
 }
 
+/**
+ * Parse participant objects from request input.
+ *
+ * @param array<string, mixed> $input
+ * @return array<int, array{accountType: string, accountId: int}>
+ */
+function parseParticipantInput(array $input): array {
+    $participants = $input['participants'] ?? [];
+    if (!is_array($participants)) {
+        return [];
+    }
+    $result = [];
+    foreach ($participants as $p) {
+        if (!is_array($p)) {
+            continue;
+        }
+        $type = $p['accountType'] ?? '';
+        $accountId = (int) ($p['accountId'] ?? 0);
+        if (!in_array($type, ['volunteer', 'organization'], true) || $accountId <= 0) {
+            continue;
+        }
+        $key = accountKey($type, $accountId);
+        $result[$key] = ['accountType' => $type, 'accountId' => $accountId];
+    }
+    return array_values($result);
+}
+
+/**
+ * Build public author summary for a message.
+ *
+ * @param array<string, mixed> $message
+ * @return array{id: int, name: string, type: string}|null
+ */
+function publicMessageAuthor(array $message): ?array {
+    $authorType = $message['authorType'] ?? 'volunteer';
+    $authorId = (int) $message['authorId'];
+    $author = resolveAccount($authorType, $authorId);
+    if ($author === null) {
+        return null;
+    }
+    return [
+        'id' => $authorId,
+        'name' => $author['name'],
+        'type' => $authorType,
+    ];
+}
+
 if ($id === null && method() === 'GET') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $page = max(1, (int) ($_GET['page'] ?? 1));
     $perPage = min(50, max(1, (int) ($_GET['perPage'] ?? 20)));
 
     $conversations = readJson('conversations.json');
     $participants = readJson('conversation_participants.json');
     $messages = readJson('messages.json');
-    $users = readJson('users.json');
 
     $mine = array_values(array_filter(
         $participants,
-        fn($p) => (int) $p['userId'] === $userId
+        fn($p) => ($p['accountType'] ?? 'volunteer') === $auth['type']
+            && (int) $p['accountId'] === $auth['id']
     ));
     $conversationIds = array_map(fn($p) => (int) $p['conversationId'], $mine);
 
@@ -237,7 +313,7 @@ if ($id === null && method() === 'GET') {
         if (!in_array((int) $conversation['id'], $conversationIds, true)) {
             continue;
         }
-        $participant = findParticipant($participants, (int) $conversation['id'], $userId);
+        $participant = findParticipant($participants, (int) $conversation['id'], $auth['type'], $auth['id']);
         if ($participant === null) {
             continue;
         }
@@ -246,8 +322,8 @@ if ($id === null && method() === 'GET') {
             'id' => (int) $conversation['id'],
             'type' => $conversation['type'],
             'title' => $conversation['title'] ?? null,
-            'displayName' => conversationDisplayName($conversation, $rows, $users, $userId),
-            'participants' => publicParticipants($rows, $users),
+            'displayName' => conversationDisplayName($conversation, $rows, $auth['type'], $auth['id']),
+            'participants' => publicParticipants($rows),
             'lastMessagePreview' => $conversation['lastMessagePreview'] ?? '',
             'updatedAt' => $conversation['updatedAt'],
             'unreadCount' => unreadCount($messages, (int) $conversation['id'], $participant),
@@ -272,10 +348,10 @@ if ($id === null && method() === 'GET') {
 }
 
 if ($id === null && method() === 'POST') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $input = getJsonInput();
     $type = $input['type'] ?? '';
-    $participantIds = array_values(array_unique(array_map('intval', $input['participantIds'] ?? [])));
+    $participantList = parseParticipantInput($input);
     $title = trim($input['title'] ?? '');
 
     if (!in_array($type, ['direct', 'group'], true)) {
@@ -283,18 +359,12 @@ if ($id === null && method() === 'POST') {
         exit;
     }
 
-    $users = readJson('users.json');
-    if (findUser($users, $userId) === null) {
-        jsonResponse(['error' => 'User not found'], 404);
-        exit;
-    }
-
-    foreach ($participantIds as $pid) {
-        if ($pid === $userId) {
-            jsonResponse(['error' => 'Cannot include yourself in participantIds'], 400);
+    foreach ($participantList as $p) {
+        if ($p['accountType'] === $auth['type'] && $p['accountId'] === $auth['id']) {
+            jsonResponse(['error' => 'Cannot include yourself in participants'], 400);
             exit;
         }
-        if (findUser($users, $pid) === null) {
+        if (resolveAccount($p['accountType'], $p['accountId']) === null) {
             jsonResponse(['error' => 'Participant not found'], 404);
             exit;
         }
@@ -305,18 +375,25 @@ if ($id === null && method() === 'POST') {
     $now = date('c');
 
     if ($type === 'direct') {
-        if (count($participantIds) !== 1) {
+        if (count($participantList) !== 1) {
             jsonResponse(['error' => 'Direct conversations require exactly one other participant'], 400);
             exit;
         }
-        $otherId = $participantIds[0];
-        $existing = findDirectConversation($conversations, $participants, $userId, $otherId);
+        $other = $participantList[0];
+        $existing = findDirectConversation(
+            $conversations,
+            $participants,
+            $auth['type'],
+            $auth['id'],
+            $other['accountType'],
+            $other['accountId']
+        );
         if ($existing !== null) {
             $rows = participantsForConversation($participants, (int) $existing['id']);
             jsonResponse([
                 ...$existing,
-                'participants' => publicParticipants($rows, $users),
-                'displayName' => conversationDisplayName($existing, $rows, $users, $userId),
+                'participants' => publicParticipants($rows),
+                'displayName' => conversationDisplayName($existing, $rows, $auth['type'], $auth['id']),
             ]);
             exit;
         }
@@ -324,7 +401,8 @@ if ($id === null && method() === 'POST') {
         $conversation = [
             'id' => nextId($conversations),
             'type' => 'direct',
-            'createdBy' => $userId,
+            'createdByType' => $auth['type'],
+            'createdBy' => $auth['id'],
             'createdAt' => $now,
             'updatedAt' => $now,
             'lastMessagePreview' => '',
@@ -332,10 +410,15 @@ if ($id === null && method() === 'POST') {
         $conversations[] = $conversation;
         writeJson('conversations.json', $conversations);
 
-        foreach ([$userId, $otherId] as $memberId) {
+        $members = [
+            ['accountType' => $auth['type'], 'accountId' => $auth['id']],
+            $other,
+        ];
+        foreach ($members as $member) {
             $participants[] = [
                 'conversationId' => $conversation['id'],
-                'userId' => $memberId,
+                'accountType' => $member['accountType'],
+                'accountId' => $member['accountId'],
                 'joinedAt' => $now,
                 'role' => 'member',
             ];
@@ -345,18 +428,27 @@ if ($id === null && method() === 'POST') {
         $rows = participantsForConversation($participants, (int) $conversation['id']);
         jsonResponse([
             ...$conversation,
-            'participants' => publicParticipants($rows, $users),
-            'displayName' => conversationDisplayName($conversation, $rows, $users, $userId),
+            'participants' => publicParticipants($rows),
+            'displayName' => conversationDisplayName($conversation, $rows, $auth['type'], $auth['id']),
         ], 201);
         exit;
     }
 
-    $allIds = array_values(array_unique(array_merge([$userId], $participantIds)));
-    if (count($allIds) < 3) {
+    $allMembers = [
+        ['accountType' => $auth['type'], 'accountId' => $auth['id']],
+        ...$participantList,
+    ];
+    $unique = [];
+    foreach ($allMembers as $member) {
+        $unique[accountKey($member['accountType'], $member['accountId'])] = $member;
+    }
+    $allMembers = array_values($unique);
+
+    if (count($allMembers) < 3) {
         jsonResponse(['error' => 'Group conversations require at least 3 participants'], 400);
         exit;
     }
-    if (count($allIds) > MAX_GROUP_SIZE) {
+    if (count($allMembers) > MAX_GROUP_SIZE) {
         jsonResponse(['error' => 'Group conversations allow at most ' . MAX_GROUP_SIZE . ' participants'], 400);
         exit;
     }
@@ -365,7 +457,8 @@ if ($id === null && method() === 'POST') {
         'id' => nextId($conversations),
         'type' => 'group',
         'title' => $title !== '' ? $title : null,
-        'createdBy' => $userId,
+        'createdByType' => $auth['type'],
+        'createdBy' => $auth['id'],
         'createdAt' => $now,
         'updatedAt' => $now,
         'lastMessagePreview' => '',
@@ -373,12 +466,14 @@ if ($id === null && method() === 'POST') {
     $conversations[] = $conversation;
     writeJson('conversations.json', $conversations);
 
-    foreach ($allIds as $memberId) {
+    foreach ($allMembers as $member) {
+        $isCreator = $member['accountType'] === $auth['type'] && $member['accountId'] === $auth['id'];
         $participants[] = [
             'conversationId' => $conversation['id'],
-            'userId' => $memberId,
+            'accountType' => $member['accountType'],
+            'accountId' => $member['accountId'],
             'joinedAt' => $now,
-            'role' => $memberId === $userId ? 'admin' : 'member',
+            'role' => $isCreator ? 'admin' : 'member',
         ];
     }
     writeJson('conversation_participants.json', $participants);
@@ -386,17 +481,16 @@ if ($id === null && method() === 'POST') {
     $rows = participantsForConversation($participants, (int) $conversation['id']);
     jsonResponse([
         ...$conversation,
-        'participants' => publicParticipants($rows, $users),
-        'displayName' => conversationDisplayName($conversation, $rows, $users, $userId),
+        'participants' => publicParticipants($rows),
+        'displayName' => conversationDisplayName($conversation, $rows, $auth['type'], $auth['id']),
     ], 201);
     exit;
 }
 
 if ($id !== null && $sub === '' && method() === 'GET') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $conversations = readJson('conversations.json');
     $participants = readJson('conversation_participants.json');
-    $users = readJson('users.json');
 
     $found = findConversation($conversations, $id);
     if ($found === null) {
@@ -404,30 +498,29 @@ if ($id !== null && $sub === '' && method() === 'GET') {
         exit;
     }
 
-    requireParticipant($participants, $id, $userId);
+    requireParticipant($participants, $id, $auth['type'], $auth['id']);
     $rows = participantsForConversation($participants, $id);
     $conversation = $found['record'];
 
     jsonResponse([
         ...$conversation,
-        'displayName' => conversationDisplayName($conversation, $rows, $users, $userId),
-        'participants' => publicParticipants($rows, $users),
+        'displayName' => conversationDisplayName($conversation, $rows, $auth['type'], $auth['id']),
+        'participants' => publicParticipants($rows),
     ]);
     exit;
 }
 
 if ($id !== null && $sub === 'messages' && method() === 'GET') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $conversations = readJson('conversations.json');
     $participants = readJson('conversation_participants.json');
     $messages = readJson('messages.json');
-    $users = readJson('users.json');
 
     if (findConversation($conversations, $id) === null) {
         jsonResponse(['error' => 'Conversation not found'], 404);
         exit;
     }
-    requireParticipant($participants, $id, $userId);
+    requireParticipant($participants, $id, $auth['type'], $auth['id']);
 
     $page = max(1, (int) ($_GET['page'] ?? 1));
     $perPage = min(100, max(1, (int) ($_GET['perPage'] ?? 50)));
@@ -445,10 +538,9 @@ if ($id !== null && $sub === 'messages' && method() === 'GET') {
 
     $result = [];
     foreach ($paged as $message) {
-        $author = findUser($users, (int) $message['authorId']);
         $result[] = [
             ...$message,
-            'author' => $author ? ['id' => $author['id'], 'name' => $author['name'], 'type' => $author['type']] : null,
+            'author' => publicMessageAuthor($message),
         ];
     }
 
@@ -463,7 +555,7 @@ if ($id !== null && $sub === 'messages' && method() === 'GET') {
 }
 
 if ($id !== null && $sub === 'messages' && method() === 'POST') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $input = getJsonInput();
     $content = trim($input['content'] ?? '');
 
@@ -479,20 +571,20 @@ if ($id !== null && $sub === 'messages' && method() === 'POST') {
     $conversations = readJson('conversations.json');
     $participants = readJson('conversation_participants.json');
     $messages = readJson('messages.json');
-    $users = readJson('users.json');
 
     $found = findConversation($conversations, $id);
     if ($found === null) {
         jsonResponse(['error' => 'Conversation not found'], 404);
         exit;
     }
-    requireParticipant($participants, $id, $userId);
+    requireParticipant($participants, $id, $auth['type'], $auth['id']);
 
     $now = date('c');
     $message = [
         'id' => nextId($messages),
         'conversationId' => $id,
-        'authorId' => $userId,
+        'authorType' => $auth['type'],
+        'authorId' => $auth['id'],
         'content' => $content,
         'createdAt' => $now,
     ];
@@ -503,16 +595,15 @@ if ($id !== null && $sub === 'messages' && method() === 'POST') {
     $conversations[$found['idx']]['lastMessagePreview'] = messagePreview($content);
     writeJson('conversations.json', $conversations);
 
-    $author = findUser($users, $userId);
     jsonResponse([
         ...$message,
-        'author' => $author ? ['id' => $author['id'], 'name' => $author['name'], 'type' => $author['type']] : null,
+        'author' => publicMessageAuthor($message),
     ], 201);
     exit;
 }
 
 if ($id !== null && $sub === 'read' && method() === 'POST') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $conversations = readJson('conversations.json');
     $participants = readJson('conversation_participants.json');
 
@@ -520,11 +611,13 @@ if ($id !== null && $sub === 'read' && method() === 'POST') {
         jsonResponse(['error' => 'Conversation not found'], 404);
         exit;
     }
-    requireParticipant($participants, $id, $userId);
+    requireParticipant($participants, $id, $auth['type'], $auth['id']);
 
     $now = date('c');
     foreach ($participants as $i => $participant) {
-        if ((int) $participant['conversationId'] === $id && (int) $participant['userId'] === $userId) {
+        if ((int) $participant['conversationId'] === $id
+            && ($participant['accountType'] ?? 'volunteer') === $auth['type']
+            && (int) $participant['accountId'] === $auth['id']) {
             $participants[$i]['lastReadAt'] = $now;
             break;
         }

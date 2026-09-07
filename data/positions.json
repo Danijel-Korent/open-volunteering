@@ -1,7 +1,8 @@
 [
     {
         "id": 1,
-        "authorId": 3,
+        "authorType": "organization",
+        "authorId": 1,
         "title": "Park Cleanup Volunteer",
         "description": "Join us for a monthly park cleanup. Gloves and bags provided.",
         "category": "environment",
@@ -16,7 +17,8 @@
     },
     {
         "id": 2,
-        "authorId": 4,
+        "authorType": "organization",
+        "authorId": 2,
         "title": "Soup Kitchen Helper",
         "description": "Help prepare and serve meals at our community shelter every Tuesday evening.",
         "category": "community",
@@ -31,7 +33,8 @@
     },
     {
         "id": 3,
-        "authorId": 5,
+        "authorType": "organization",
+        "authorId": 3,
         "title": "Online Coding Mentor",
         "description": "Mentor students remotely via video calls. 2 hours per week commitment.",
         "category": "education",
@@ -42,7 +45,8 @@
     },
     {
         "id": 4,
-        "authorId": 3,
+        "authorType": "organization",
+        "authorId": 1,
         "title": "Tree Planting Crew",
         "description": "Help plant native trees in urban areas. Physical work, outdoor setting.",
         "category": "environment",
@@ -57,7 +61,8 @@
     },
     {
         "id": 5,
-        "authorId": 4,
+        "authorType": "organization",
+        "authorId": 2,
         "title": "Donation Sorting Volunteer",
         "description": "Sort and organize clothing donations. Flexible hours.",
         "category": "community",
@@ -72,7 +77,8 @@
     },
     {
         "id": 6,
-        "authorId": 5,
+        "authorType": "organization",
+        "authorId": 3,
         "title": "Remote Translation Volunteer",
         "description": "Translate educational materials from English to Croatian. Work from home.",
         "category": "education",
@@ -83,7 +89,8 @@
     },
     {
         "id": 7,
-        "authorId": 10,
+        "authorType": "organization",
+        "authorId": 5,
         "title": "Test - open position 1 by ngo1",
         "description": "dect",
         "category": "general",
@@ -91,5 +98,17 @@
         "location": null,
         "likeCount": 0,
         "createdAt": "2026-08-23T08:07:48+02:00"
+    },
+    {
+        "id": 8,
+        "authorType": "organization",
+        "authorId": 1,
+        "title": "Test position from org split",
+        "description": "Verification",
+        "category": "general",
+        "remote": true,
+        "location": null,
+        "likeCount": 0,
+        "createdAt": "2026-09-07T08:24:51+02:00"
     }
 ]

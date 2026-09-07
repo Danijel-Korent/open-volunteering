@@ -1,32 +1,28 @@
 [
     {
         "id": 1,
+        "ownerType": "volunteer",
         "ownerId": 1,
         "originalName": "test-image.png",
         "storedName": "1.png",
-        "mimeType": "image\/png",
+        "mimeType": "image/png",
         "byteSize": 70,
         "width": 1,
         "height": 1,
         "createdAt": "2026-09-03T16:06:12+02:00",
-        "attachedTo": {
-            "type": "post",
-            "id": 12
-        }
+        "attachedTo": { "type": "post", "id": 12 }
     },
     {
         "id": 2,
+        "ownerType": "volunteer",
         "ownerId": 9,
         "originalName": "bird-1382034603Euc.jpg",
         "storedName": "2.jpg",
-        "mimeType": "image\/jpeg",
+        "mimeType": "image/jpeg",
         "byteSize": 30820,
         "width": 615,
         "height": 407,
         "createdAt": "2026-09-06T08:54:49+02:00",
-        "attachedTo": {
-            "type": "user",
-            "id": 9
-        }
+        "attachedTo": { "type": "user", "id": 9 }
     }
 ]

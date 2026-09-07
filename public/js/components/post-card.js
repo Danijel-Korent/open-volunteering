@@ -1,5 +1,6 @@
 import * as api from '../api.js';
 import { getCurrentUser } from '../auth.js';
+import { profileLink } from '../account-utils.js';
 import { renderAvatarHtml } from './image-dropzone.js';
 import { toggleComments } from './comment-section.js';
 
@@ -120,7 +121,7 @@ function setApplyTooltip(wrap, applyBtn, text) {
 /**
  * Whether the current user can apply to a position feed item.
  *
- * @param {User | null | undefined} user
+ * @param {Account | null | undefined} user
  * @param {FeedItem} item
  * @returns {{ enabled: boolean, title?: string }}
  */
@@ -151,7 +152,7 @@ export function renderPostCard(item, opts = {}) {
   card.dataset.testid = `post-card-${item.feedType}-${item.id}`;
 
   const authorName = item.author?.name || 'Unknown';
-  const authorLink = item.author ? `#/profile/${item.author.id}` : '#';
+  const authorLink = item.author ? profileLink(item.author) : '#';
   let liked = false;
   let commentCount = 0;
 

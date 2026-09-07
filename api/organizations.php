@@ -5,43 +5,43 @@ $segments = getPathSegments();
 $id = isset($segments[1]) ? (int) $segments[1] : null;
 $sub = $segments[2] ?? '';
 
-$users = readVolunteers();
+$orgs = readOrganizations();
 
 if ($id === null && method() === 'GET') {
-    jsonResponse(array_map('publicVolunteer', $users));
+    jsonResponse(array_map('publicOrganization', $orgs));
     exit;
 }
 
 if ($id !== null && $sub === '' && method() === 'GET') {
-    $user = findVolunteer($users, $id);
-    if (!$user) {
-        jsonResponse(['error' => 'User not found'], 404);
+    $org = findOrganization($orgs, $id);
+    if (!$org) {
+        jsonResponse(['error' => 'Organization not found'], 404);
         exit;
     }
-    jsonResponse(publicVolunteer($user));
+    jsonResponse(publicOrganization($org));
     exit;
 }
 
 if ($id !== null && $sub === '' && method() === 'PATCH') {
     $auth = requireAuth();
-    if ($auth['type'] !== 'volunteer' || $auth['id'] !== $id) {
+    if ($auth['type'] !== 'organization' || $auth['id'] !== $id) {
         jsonResponse(['error' => 'Forbidden'], 403);
         exit;
     }
     $input = getJsonInput();
     $idx = null;
-    foreach ($users as $i => $u) {
-        if ((int) $u['id'] === $id) {
+    foreach ($orgs as $i => $o) {
+        if ((int) $o['id'] === $id) {
             $idx = $i;
             break;
         }
     }
     if ($idx === null) {
-        jsonResponse(['error' => 'User not found'], 404);
+        jsonResponse(['error' => 'Organization not found'], 404);
         exit;
     }
 
-    $allowed = ['name', 'bio', 'location', 'skills', 'experience', 'avatarFileId'];
+    $allowed = ['name', 'bio', 'location', 'avatarFileId'];
     foreach ($allowed as $field) {
         if (!array_key_exists($field, $input)) {
             continue;
@@ -49,43 +49,43 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
         if ($field === 'avatarFileId') {
             $avatarFileId = $input['avatarFileId'] !== null ? (int) $input['avatarFileId'] : null;
             if ($avatarFileId === null || $avatarFileId === 0) {
-                $oldAvatarId = isset($users[$idx]['avatarFileId']) ? (int) $users[$idx]['avatarFileId'] : null;
+                $oldAvatarId = isset($orgs[$idx]['avatarFileId']) ? (int) $orgs[$idx]['avatarFileId'] : null;
                 if ($oldAvatarId) {
                     deleteStoredFile($oldAvatarId);
                 }
-                unset($users[$idx]['avatarFileId']);
+                unset($orgs[$idx]['avatarFileId']);
             } else {
-                requireAttachableFile($avatarFileId, 'volunteer', $id);
-                $oldAvatarId = isset($users[$idx]['avatarFileId']) ? (int) $users[$idx]['avatarFileId'] : null;
+                requireAttachableFile($avatarFileId, 'organization', $id);
+                $oldAvatarId = isset($orgs[$idx]['avatarFileId']) ? (int) $orgs[$idx]['avatarFileId'] : null;
                 if ($oldAvatarId && $oldAvatarId !== $avatarFileId) {
                     deleteStoredFile($oldAvatarId);
                 }
-                $users[$idx]['avatarFileId'] = $avatarFileId;
-                attachFileTo($avatarFileId, 'user', $id);
+                $orgs[$idx]['avatarFileId'] = $avatarFileId;
+                attachFileTo($avatarFileId, 'organization', $id);
             }
             continue;
         }
-        $users[$idx][$field] = $input[$field];
+        $orgs[$idx][$field] = $input[$field];
     }
-    writeJson(VOLUNTEERS_JSON, $users);
-    jsonResponse(publicVolunteer($users[$idx]));
+    writeJson(ORGANIZATIONS_JSON, $orgs);
+    jsonResponse(publicOrganization($orgs[$idx]));
     exit;
 }
 
 if ($id !== null && $sub === 'follow' && method() === 'POST') {
     $auth = requireAuth();
-    if ($auth['type'] === 'volunteer' && $auth['id'] === $id) {
+    if ($auth['type'] === 'organization' && $auth['id'] === $id) {
         jsonResponse(['error' => 'Cannot follow yourself'], 400);
         exit;
     }
-    if (!findVolunteer($users, $id)) {
-        jsonResponse(['error' => 'User not found'], 404);
+    if (!findOrganization($orgs, $id)) {
+        jsonResponse(['error' => 'Organization not found'], 404);
         exit;
     }
     $follows = readJson('follows.json');
     foreach ($follows as $f) {
         if ($f['followerType'] === $auth['type'] && (int) $f['followerId'] === $auth['id']
-            && $f['followingType'] === 'volunteer' && (int) $f['followingId'] === $id) {
+            && $f['followingType'] === 'organization' && (int) $f['followingId'] === $id) {
             jsonResponse(['ok' => true, 'following' => true]);
             exit;
         }
@@ -93,7 +93,7 @@ if ($id !== null && $sub === 'follow' && method() === 'POST') {
     $follows[] = [
         'followerType' => $auth['type'],
         'followerId' => $auth['id'],
-        'followingType' => 'volunteer',
+        'followingType' => 'organization',
         'followingId' => $id,
         'createdAt' => date('c'),
     ];
@@ -107,7 +107,7 @@ if ($id !== null && $sub === 'follow' && method() === 'DELETE') {
     $follows = readJson('follows.json');
     $follows = array_values(array_filter($follows, fn($f) =>
         !($f['followerType'] === $auth['type'] && (int) $f['followerId'] === $auth['id']
-            && $f['followingType'] === 'volunteer' && (int) $f['followingId'] === $id)
+            && $f['followingType'] === 'organization' && (int) $f['followingId'] === $id)
     ));
     writeJson('follows.json', $follows);
     jsonResponse(['ok' => true, 'following' => false]);

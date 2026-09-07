@@ -13,7 +13,7 @@ if ($id === null && method() === 'GET') {
 }
 
 if ($id === null && method() === 'POST') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $input = getJsonInput();
     $title = trim($input['title'] ?? '');
     $description = trim($input['description'] ?? '');
@@ -25,7 +25,8 @@ if ($id === null && method() === 'POST') {
     $events = readJson('events.json');
     $event = [
         'id' => nextId($events),
-        'authorId' => $userId,
+        'authorType' => $auth['type'],
+        'authorId' => $auth['id'],
         'title' => $title,
         'description' => $description,
         'startDate' => $startDate,
@@ -42,7 +43,7 @@ if ($id === null && method() === 'POST') {
 }
 
 if ($id !== null && $sub === 'rsvp' && method() === 'POST') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $input = getJsonInput();
     $status = $input['status'] ?? 'going';
     if (!in_array($status, ['going', 'maybe'], true)) {
@@ -64,17 +65,29 @@ if ($id !== null && $sub === 'rsvp' && method() === 'POST') {
     $rsvps = readJson('event_rsvps.json');
     $updated = false;
     foreach ($rsvps as $i => $r) {
-        if ((int) $r['eventId'] === $id && (int) $r['userId'] === $userId) {
+        if ((int) $r['eventId'] === $id
+            && ($r['accountType'] ?? 'volunteer') === $auth['type']
+            && (int) $r['accountId'] === $auth['id']) {
             $rsvps[$i]['status'] = $status;
             $updated = true;
             break;
         }
     }
     if (!$updated) {
-        $rsvps[] = ['eventId' => $id, 'userId' => $userId, 'status' => $status];
+        $rsvps[] = [
+            'eventId' => $id,
+            'accountType' => $auth['type'],
+            'accountId' => $auth['id'],
+            'status' => $status,
+        ];
     }
     writeJson('event_rsvps.json', $rsvps);
-    jsonResponse(['eventId' => $id, 'userId' => $userId, 'status' => $status]);
+    jsonResponse([
+        'eventId' => $id,
+        'accountType' => $auth['type'],
+        'accountId' => $auth['id'],
+        'status' => $status,
+    ]);
     exit;
 }
 

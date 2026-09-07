@@ -1,36 +1,6 @@
 [
-    {
-        "id": 1,
-        "type": "direct",
-        "createdBy": 1,
-        "createdAt": "2026-09-05T17:40:34+02:00",
-        "updatedAt": "2026-09-05T17:44:31+02:00",
-        "lastMessagePreview": "Hi Green City - UI test message"
-    },
-    {
-        "id": 2,
-        "type": "group",
-        "title": "Volunteer coordination",
-        "createdBy": 1,
-        "createdAt": "2026-09-05T17:41:13+02:00",
-        "updatedAt": "2026-09-05T17:41:13+02:00",
-        "lastMessagePreview": "Welcome to the group chat!"
-    },
-    {
-        "id": 3,
-        "type": "direct",
-        "createdBy": 9,
-        "createdAt": "2026-09-05T18:18:22+02:00",
-        "updatedAt": "2026-09-05T18:18:31+02:00",
-        "lastMessagePreview": "Test"
-    },
-    {
-        "id": 4,
-        "type": "group",
-        "title": null,
-        "createdBy": 9,
-        "createdAt": "2026-09-06T08:31:53+02:00",
-        "updatedAt": "2026-09-06T08:31:57+02:00",
-        "lastMessagePreview": "test"
-    }
+    { "id": 1, "type": "direct", "createdByType": "volunteer", "createdBy": 1, "createdAt": "2026-09-05T17:40:34+02:00", "updatedAt": "2026-09-05T17:44:31+02:00", "lastMessagePreview": "Hi Green City - UI test message" },
+    { "id": 2, "type": "group", "title": "Volunteer coordination", "createdByType": "volunteer", "createdBy": 1, "createdAt": "2026-09-05T17:41:13+02:00", "updatedAt": "2026-09-05T17:41:13+02:00", "lastMessagePreview": "Welcome to the group chat!" },
+    { "id": 3, "type": "direct", "createdByType": "volunteer", "createdBy": 9, "createdAt": "2026-09-05T18:18:22+02:00", "updatedAt": "2026-09-05T18:18:31+02:00", "lastMessagePreview": "Test" },
+    { "id": 4, "type": "group", "title": null, "createdByType": "volunteer", "createdBy": 9, "createdAt": "2026-09-06T08:31:53+02:00", "updatedAt": "2026-09-06T08:31:57+02:00", "lastMessagePreview": "test" }
 ]

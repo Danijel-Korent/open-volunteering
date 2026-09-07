@@ -16,10 +16,8 @@ if ($id === null && method() === 'GET') {
 }
 
 if ($id === null && method() === 'POST') {
-    $userId = requireAuth();
-    $users = readJson('users.json');
-    $user = findUser($users, $userId);
-    if (!$user || $user['type'] !== 'organization') {
+    $auth = requireAuth();
+    if ($auth['type'] !== 'organization') {
         jsonResponse(['error' => 'Only organizations can create projects'], 403);
         exit;
     }
@@ -33,7 +31,7 @@ if ($id === null && method() === 'POST') {
     $projects = readJson('projects.json');
     $project = [
         'id' => nextId($projects),
-        'orgId' => $userId,
+        'orgId' => $auth['id'],
         'title' => $title,
         'description' => $description,
         'createdAt' => date('c'),
@@ -65,7 +63,7 @@ if ($id !== null && $sub === '' && method() === 'GET') {
 }
 
 if ($id !== null && $sub === 'posts' && method() === 'POST') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $projects = readJson('projects.json');
     $project = null;
     foreach ($projects as $p) {
@@ -78,7 +76,7 @@ if ($id !== null && $sub === 'posts' && method() === 'POST') {
         jsonResponse(['error' => 'Project not found'], 404);
         exit;
     }
-    if ((int) $project['orgId'] !== $userId) {
+    if ((int) $project['orgId'] !== $auth['id'] || $auth['type'] !== 'organization') {
         jsonResponse(['error' => 'Forbidden'], 403);
         exit;
     }

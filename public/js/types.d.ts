@@ -1,14 +1,17 @@
 /** Shared domain types for checkJs. */
 
+type AccountType = 'volunteer' | 'organization';
+
 interface GeoLocation {
   label: string;
   lat: number;
   lng: number;
 }
 
+/** Volunteer profile (stored in users.json). */
 interface User {
   id: number;
-  type: 'volunteer' | 'organization';
+  type: 'volunteer';
   email: string;
   name: string;
   bio?: string;
@@ -19,8 +22,24 @@ interface User {
   createdAt?: string;
 }
 
+/** Organization profile (stored in organizations.json). */
+interface Organization {
+  id: number;
+  type: 'organization';
+  email: string;
+  name: string;
+  bio?: string;
+  location?: GeoLocation | null;
+  avatarFileId?: number;
+  createdAt?: string;
+}
+
+/** Authenticated session account (volunteer or organization). */
+type Account = User | Organization;
+
 interface StoredFile {
   id: number;
+  ownerType?: AccountType;
   ownerId: number;
   originalName: string;
   mimeType: string;
@@ -29,16 +48,15 @@ interface StoredFile {
   height: number;
   createdAt: string;
   url: string;
-  attachedTo?: { type: 'post' | 'user'; id: number } | null;
+  attachedTo?: { type: 'post' | 'user' | 'organization'; id: number } | null;
 }
 
 /** Register response includes the one-time generated password. */
-interface RegisterResponse extends User {
-  generatedPassword: string;
-}
+type RegisterResponse = Account & { generatedPassword: string };
 
 interface Post {
   id: number;
+  authorType: AccountType;
   authorId: number;
   postType: 'user_post' | 'org_post';
   content: string;
@@ -50,6 +68,7 @@ interface Post {
 
 interface Position {
   id: number;
+  authorType: AccountType;
   authorId: number;
   title: string;
   description: string;
@@ -62,6 +81,7 @@ interface Position {
 
 interface VolEvent {
   id: number;
+  authorType: AccountType;
   authorId: number;
   title: string;
   description: string;
@@ -77,17 +97,19 @@ interface Comment {
   id: number;
   targetType: 'post' | 'position' | 'event';
   targetId: number;
+  authorType: AccountType;
   authorId: number;
   content: string;
   createdAt: string;
-  author?: { id: number; name: string; type: string } | null;
+  author?: { id: number; name: string; type: AccountType } | null;
 }
 
 interface FeedItem {
   feedType: 'user_post' | 'org_post' | 'position' | 'event';
   id: number;
+  authorType: AccountType;
   authorId: number;
-  author?: User | null;
+  author?: Account | null;
   content: string;
   title?: string;
   likeCount: number;
@@ -161,24 +183,22 @@ interface Application {
   volunteer?: User | null;
 }
 
-interface ConversationParticipant {
-  conversationId: number;
-  userId: number;
-  joinedAt: string;
-  lastReadAt?: string;
-  role: 'member' | 'admin';
+interface AccountRef {
+  accountType: AccountType;
+  accountId: number;
 }
 
 interface Conversation {
   id: number;
   type: 'direct' | 'group';
   title?: string | null;
+  createdByType?: AccountType;
   createdBy: number;
   createdAt: string;
   updatedAt: string;
   lastMessagePreview?: string;
   displayName?: string;
-  participants?: User[];
+  participants?: Account[];
 }
 
 interface ConversationInboxItem {
@@ -186,7 +206,7 @@ interface ConversationInboxItem {
   type: 'direct' | 'group';
   title?: string | null;
   displayName: string;
-  participants: User[];
+  participants: Account[];
   lastMessagePreview: string;
   updatedAt: string;
   unreadCount: number;
@@ -204,10 +224,11 @@ interface ConversationInboxResponse {
 interface Message {
   id: number;
   conversationId: number;
+  authorType: AccountType;
   authorId: number;
   content: string;
   createdAt: string;
-  author?: { id: number; name: string; type: string } | null;
+  author?: { id: number; name: string; type: AccountType } | null;
 }
 
 interface MessagesResponse {

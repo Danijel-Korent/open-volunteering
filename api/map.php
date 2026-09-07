@@ -5,17 +5,29 @@ $segments = getPathSegments();
 
 if (($segments[1] ?? '') === 'markers' && method() === 'GET') {
     $markers = [];
-    $users = readJson('users.json');
 
-    foreach ($users as $u) {
+    foreach (readVolunteers() as $u) {
         if (!empty($u['location']['lat']) && !empty($u['location']['lng'])) {
             $markers[] = [
-                'type' => $u['type'] === 'organization' ? 'organization' : 'volunteer',
+                'type' => 'volunteer',
                 'id' => (int) $u['id'],
                 'name' => $u['name'],
                 'lat' => (float) $u['location']['lat'],
                 'lng' => (float) $u['location']['lng'],
                 'label' => $u['location']['label'] ?? '',
+            ];
+        }
+    }
+
+    foreach (readOrganizations() as $o) {
+        if (!empty($o['location']['lat']) && !empty($o['location']['lng'])) {
+            $markers[] = [
+                'type' => 'organization',
+                'id' => (int) $o['id'],
+                'name' => $o['name'],
+                'lat' => (float) $o['location']['lat'],
+                'lng' => (float) $o['location']['lng'],
+                'label' => $o['location']['label'] ?? '',
             ];
         }
     }

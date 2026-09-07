@@ -6,7 +6,7 @@ $id = isset($segments[1]) ? (int) $segments[1] : null;
 $sub = $segments[2] ?? '';
 
 if ($id === null && method() === 'POST') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     if (!isset($_FILES['file'])) {
         jsonResponse(['error' => 'File is required'], 400);
         exit;
@@ -31,7 +31,8 @@ if ($id === null && method() === 'POST') {
 
     $record = [
         'id' => $fileId,
-        'ownerId' => $userId,
+        'ownerType' => $auth['type'],
+        'ownerId' => $auth['id'],
         'originalName' => basename($_FILES['file']['name'] ?? 'upload'),
         'storedName' => $storedName,
         'mimeType' => $validated['mimeType'],
@@ -77,14 +78,15 @@ if ($id !== null && $sub === '' && method() === 'GET') {
 }
 
 if ($id !== null && $sub === '' && method() === 'DELETE') {
-    $userId = requireAuth();
+    $auth = requireAuth();
     $files = readJson(FILES_JSON);
     $found = findFileRecord($files, $id);
     if ($found === null) {
         jsonResponse(['error' => 'File not found'], 404);
         exit;
     }
-    if ((int) $found['record']['ownerId'] !== $userId) {
+    $ownerType = $found['record']['ownerType'] ?? 'volunteer';
+    if ($ownerType !== $auth['type'] || (int) $found['record']['ownerId'] !== $auth['id']) {
         jsonResponse(['error' => 'Forbidden'], 403);
         exit;
     }

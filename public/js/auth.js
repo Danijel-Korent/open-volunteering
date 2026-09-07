@@ -1,21 +1,21 @@
 import * as api from './api.js';
 
-/** @type {User | null} */
+/** @type {Account | null} */
 let currentUser = null;
 
 /**
- * Get cached current user.
+ * Get cached current account (volunteer or organization).
  *
- * @returns {User | null}
+ * @returns {Account | null}
  */
 export function getCurrentUser() {
   return currentUser;
 }
 
 /**
- * Load current user from API.
+ * Load current account from API.
  *
- * @returns {Promise<User | null>}
+ * @returns {Promise<Account | null>}
  */
 export async function loadCurrentUser() {
   try {

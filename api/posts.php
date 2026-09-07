@@ -6,17 +6,15 @@ $id = isset($segments[1]) ? (int) $segments[1] : null;
 $sub = $segments[2] ?? '';
 
 if ($id === null && method() === 'GET') {
-    $posts = readJson('posts.json');
-    jsonResponse($posts);
+    jsonResponse(readJson('posts.json'));
     exit;
 }
 
 if ($id === null && method() === 'POST') {
-    $userId = requireAuth();
-    $users = readJson('users.json');
-    $user = findUser($users, $userId);
-    if (!$user) {
-        jsonResponse(['error' => 'User not found'], 404);
+    $auth = requireAuth();
+    $account = getCurrentAccount();
+    if ($account === null) {
+        jsonResponse(['error' => 'Authentication required'], 401);
         exit;
     }
     $input = getJsonInput();
@@ -25,15 +23,16 @@ if ($id === null && method() === 'POST') {
         jsonResponse(['error' => 'Content is required'], 400);
         exit;
     }
-    $postType = $user['type'] === 'organization' ? 'org_post' : 'user_post';
+    $postType = $auth['type'] === 'organization' ? 'org_post' : 'user_post';
     $posts = readJson('posts.json');
     $imageFileId = isset($input['imageFileId']) ? (int) $input['imageFileId'] : null;
     if ($imageFileId) {
-        requireAttachableFile($imageFileId, $userId);
+        requireAttachableFile($imageFileId, $auth['type'], $auth['id']);
     }
     $post = [
         'id' => nextId($posts),
-        'authorId' => $userId,
+        'authorType' => $auth['type'],
+        'authorId' => $auth['id'],
         'postType' => $postType,
         'content' => $content,
         'likeCount' => 0,

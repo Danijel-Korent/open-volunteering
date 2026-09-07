@@ -1,27 +1,7 @@
 [
-    {
-        "eventId": 1,
-        "userId": 1,
-        "status": "going"
-    },
-    {
-        "eventId": 1,
-        "userId": 2,
-        "status": "maybe"
-    },
-    {
-        "eventId": 3,
-        "userId": 2,
-        "status": "going"
-    },
-    {
-        "eventId": 4,
-        "userId": 1,
-        "status": "going"
-    },
-    {
-        "eventId": 8,
-        "userId": 10,
-        "status": "going"
-    }
+    { "eventId": 1, "accountType": "volunteer", "accountId": 1, "status": "going" },
+    { "eventId": 1, "accountType": "volunteer", "accountId": 2, "status": "maybe" },
+    { "eventId": 3, "accountType": "volunteer", "accountId": 2, "status": "going" },
+    { "eventId": 4, "accountType": "volunteer", "accountId": 1, "status": "going" },
+    { "eventId": 8, "accountType": "organization", "accountId": 5, "status": "going" }
 ]

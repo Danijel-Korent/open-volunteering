@@ -26,13 +26,17 @@
 
 Seeded accounts log in with **name + password** (not email). All seeded accounts use password: **password123**
 
-| Name | Type | Login password |
-|------|------|----------------|
-| Maria Santos | volunteer | password123 |
-| James Chen | volunteer | password123 |
-| Green City Initiative | organization | password123 |
-| Community Shelter | organization | password123 |
-| Youth Mentors Network | organization | password123 |
+Volunteers live in `data/users.json`; organizations live in `data/organizations.json` (separate ID namespaces).
+
+| Name | Type | Org ID | Login password |
+|------|------|--------|----------------|
+| Maria Santos | volunteer | — | password123 |
+| James Chen | volunteer | — | password123 |
+| Green City Initiative | organization | 1 | password123 |
+| Community Shelter | organization | 2 | password123 |
+| Youth Mentors Network | organization | 3 | password123 |
+
+Organization profiles: `#/organization/{id}`. Volunteer profiles: `#/profile/{id}`.
 
 ### Test selectors
 

@@ -74,52 +74,244 @@ function nextId(array $items): int {
     return $max + 1;
 }
 
+define('VOLUNTEERS_JSON', 'users.json');
+define('ORGANIZATIONS_JSON', 'organizations.json');
+
 /**
- * Get current authenticated user ID from session.
+ * Read all volunteer records.
  *
- * @return int|null User ID when logged in, null otherwise
+ * @return array<int, array<string, mixed>>
  */
-function currentUserId(): ?int {
-    return isset($_SESSION['userId']) ? (int) $_SESSION['userId'] : null;
+function readVolunteers(): array {
+    return readJson(VOLUNTEERS_JSON);
 }
 
 /**
- * Require authentication; returns user ID or sends 401 and exits.
+ * Read all organization records.
  *
- * @return int Authenticated user ID
+ * @return array<int, array<string, mixed>>
  */
-function requireAuth(): int {
-    $id = currentUserId();
-    if ($id === null) {
+function readOrganizations(): array {
+    return readJson(ORGANIZATIONS_JSON);
+}
+
+/**
+ * Get current authenticated account from session.
+ *
+ * @return array{type: string, id: int, record: array<string, mixed>}|null
+ */
+function getCurrentAccount(): ?array {
+    $type = $_SESSION['accountType'] ?? null;
+    $id = isset($_SESSION['accountId']) ? (int) $_SESSION['accountId'] : null;
+    if (!in_array($type, ['volunteer', 'organization'], true) || $id === null) {
+        return null;
+    }
+    $record = resolveAccount($type, $id);
+    if ($record === null) {
+        return null;
+    }
+    return ['type' => $type, 'id' => $id, 'record' => $record];
+}
+
+/**
+ * Set session for a volunteer or organization account.
+ *
+ * @param string $type volunteer|organization
+ * @param int $id
+ */
+function setCurrentAccount(string $type, int $id): void {
+    $_SESSION['accountType'] = $type;
+    $_SESSION['accountId'] = $id;
+    unset($_SESSION['userId']);
+}
+
+/**
+ * Get current authenticated account ID from session (legacy helper).
+ *
+ * @return int|null Account ID when logged in, null otherwise
+ */
+function currentUserId(): ?int {
+    $account = getCurrentAccount();
+    return $account !== null ? $account['id'] : null;
+}
+
+/**
+ * Get current authenticated account type from session.
+ *
+ * @return string|null volunteer|organization
+ */
+function currentAccountType(): ?string {
+    $account = getCurrentAccount();
+    return $account !== null ? $account['type'] : null;
+}
+
+/**
+ * Require authentication; returns account type and ID or sends 401 and exits.
+ *
+ * @return array{type: string, id: int}
+ */
+function requireAuth(): array {
+    $account = getCurrentAccount();
+    if ($account === null) {
         jsonResponse(['error' => 'Authentication required'], 401);
         exit;
     }
-    return $id;
+    return ['type' => $account['type'], 'id' => $account['id']];
 }
 
 /**
- * Find user by ID.
+ * Find volunteer by ID.
  *
  * @param array<int, array<string, mixed>> $users
  * @param int $id
  * @return array<string, mixed>|null
  */
-function findUser(array $users, int $id): ?array {
+function findVolunteer(array $users, int $id): ?array {
     foreach ($users as $user) {
-        if ((int) $user['id'] === $id) return $user;
+        if ((int) $user['id'] === $id) {
+            return $user;
+        }
     }
     return null;
 }
 
 /**
- * Strip sensitive fields from user record for API output.
+ * Find organization by ID.
+ *
+ * @param array<int, array<string, mixed>> $orgs
+ * @param int $id
+ * @return array<string, mixed>|null
+ */
+function findOrganization(array $orgs, int $id): ?array {
+    foreach ($orgs as $org) {
+        if ((int) $org['id'] === $id) {
+            return $org;
+        }
+    }
+    return null;
+}
+
+/**
+ * @alias findVolunteer
+ * @param array<int, array<string, mixed>> $users
+ * @param int $id
+ * @return array<string, mixed>|null
+ */
+function findUser(array $users, int $id): ?array {
+    return findVolunteer($users, $id);
+}
+
+/**
+ * Resolve a volunteer or organization record by type and ID.
+ *
+ * @param string $type volunteer|organization
+ * @param int $id
+ * @return array<string, mixed>|null
+ */
+function resolveAccount(string $type, int $id): ?array {
+    if ($type === 'volunteer') {
+        return findVolunteer(readVolunteers(), $id);
+    }
+    if ($type === 'organization') {
+        return findOrganization(readOrganizations(), $id);
+    }
+    return null;
+}
+
+/**
+ * Strip sensitive fields and add type for volunteer API output.
  *
  * @param array<string, mixed> $user
  * @return array<string, mixed>
  */
-function publicUser(array $user): array {
+function publicVolunteer(array $user): array {
     unset($user['passwordHash']);
+    $user['type'] = 'volunteer';
     return $user;
+}
+
+/**
+ * Strip sensitive fields and add type for organization API output.
+ *
+ * @param array<string, mixed> $org
+ * @return array<string, mixed>
+ */
+function publicOrganization(array $org): array {
+    unset($org['passwordHash']);
+    $org['type'] = 'organization';
+    return $org;
+}
+
+/**
+ * Strip sensitive fields from account record for API output.
+ *
+ * @param string $type volunteer|organization
+ * @param array<string, mixed> $record
+ * @return array<string, mixed>
+ */
+function publicAccount(string $type, array $record): array {
+    return $type === 'organization' ? publicOrganization($record) : publicVolunteer($record);
+}
+
+/**
+ * @alias publicVolunteer
+ * @param array<string, mixed> $user
+ * @return array<string, mixed>
+ */
+function publicUser(array $user): array {
+    return publicVolunteer($user);
+}
+
+/**
+ * Build lookup maps for authors keyed by "type:id".
+ *
+ * @return array{volunteers: array<int, array<string, mixed>>, organizations: array<int, array<string, mixed>>}
+ */
+function buildAuthorMaps(): array {
+    $volunteers = [];
+    foreach (readVolunteers() as $u) {
+        $volunteers[(int) $u['id']] = $u;
+    }
+    $organizations = [];
+    foreach (readOrganizations() as $o) {
+        $organizations[(int) $o['id']] = $o;
+    }
+    return ['volunteers' => $volunteers, 'organizations' => $organizations];
+}
+
+/**
+ * Resolve author record from authorType and authorId fields.
+ *
+ * @param array{volunteers: array<int, array<string, mixed>>, organizations: array<int, array<string, mixed>>} $maps
+ * @param string $authorType
+ * @param int $authorId
+ * @return array<string, mixed>|null
+ */
+function resolveAuthor(array $maps, string $authorType, int $authorId): ?array {
+    if ($authorType === 'organization') {
+        return $maps['organizations'][$authorId] ?? null;
+    }
+    return $maps['volunteers'][$authorId] ?? null;
+}
+
+/**
+ * Check whether a display name is already taken by a volunteer or organization.
+ *
+ * @param string $name
+ * @return bool
+ */
+function isNameTaken(string $name): bool {
+    foreach (readVolunteers() as $u) {
+        if (strcasecmp($u['name'], $name) === 0) {
+            return true;
+        }
+    }
+    foreach (readOrganizations() as $o) {
+        if (strcasecmp($o['name'], $name) === 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -194,6 +386,7 @@ function publicFile(array $file): array {
     $id = (int) $file['id'];
     return [
         'id' => $id,
+        'ownerType' => $file['ownerType'] ?? 'volunteer',
         'ownerId' => (int) $file['ownerId'],
         'originalName' => $file['originalName'],
         'mimeType' => $file['mimeType'],
@@ -293,17 +486,19 @@ function validateImageUpload(array $upload): ?array {
  * Verify the current user may attach a file they own.
  *
  * @param int $fileId
- * @param int $userId
+ * @param string $ownerType volunteer|organization
+ * @param int $ownerId
  * @return array{idx: int, record: array<string, mixed>} Sends JSON error and exits when invalid
  */
-function requireAttachableFile(int $fileId, int $userId): array {
+function requireAttachableFile(int $fileId, string $ownerType, int $ownerId): array {
     $files = readJson(FILES_JSON);
     $found = findFileRecord($files, $fileId);
     if ($found === null) {
         jsonResponse(['error' => 'File not found'], 404);
         exit;
     }
-    if ((int) $found['record']['ownerId'] !== $userId) {
+    $recordOwnerType = $found['record']['ownerType'] ?? 'volunteer';
+    if ($recordOwnerType !== $ownerType || (int) $found['record']['ownerId'] !== $ownerId) {
         jsonResponse(['error' => 'Forbidden'], 403);
         exit;
     }
@@ -318,7 +513,7 @@ function requireAttachableFile(int $fileId, int $userId): array {
  * Mark a file as attached to a parent entity.
  *
  * @param int $fileId
- * @param string $type post|user
+ * @param string $type post|user|organization
  * @param int $parentId
  */
 function attachFileTo(int $fileId, string $type, int $parentId): void {

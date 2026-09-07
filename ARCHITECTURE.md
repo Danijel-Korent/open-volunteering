@@ -132,50 +132,52 @@ Not yet implemented (see README "Non-prototype todo"): CSRF tokens, rate limitin
 
 ### Entity relationships
 
-All entities relate via integer IDs. `User` (volunteer or organization) is the central actor.
+All entities relate via integer IDs. **Volunteers** and **organizations** use separate ID namespaces in `users.json` and `organizations.json`. Cross-references that could point to either kind use polymorphic `accountType` + `accountId` (or `authorType` + `authorId` on content).
 
 ```mermaid
 erDiagram
-  User ||--o{ Post : authorId
-  User ||--o{ Position : authorId
-  User ||--o{ VolEvent : authorId
-  User ||--o{ Project : orgId
-  User ||--o{ Comment : authorId
-  User ||--o{ Subscription : userId
-  User ||--o{ Availability : volunteerId
-  User ||--o{ Application : volunteerId
-  User ||--o{ Follow : followerId
-  User ||--o{ Follow : followingId
-  User ||--o{ EventRsvp : userId
-  User ||--o{ ConversationParticipant : userId
-  Conversation ||--o{ ConversationParticipant : conversationId
+  Volunteer ||--o{ Post : "authorType=volunteer"
+  Organization ||--o{ Post : "authorType=organization"
+  Volunteer ||--o{ VolEvent : authorType
+  Organization ||--o{ Position : authorType
+  Organization ||--o{ Project : orgId
+  Volunteer ||--o{ Comment : authorType
+  Organization ||--o{ Comment : authorType
+  Volunteer ||--o{ Subscription : userId
+  Volunteer ||--o{ Availability : volunteerId
+  Volunteer ||--o{ Application : volunteerId
+  Volunteer ||--o{ Follow : followerType
+  Organization ||--o{ Follow : followingType
+  Volunteer ||--o{ EventRsvp : accountType
+  Organization ||--o{ EventRsvp : accountType
+  Volunteer ||--o{ ConversationParticipant : accountType
+  Organization ||--o{ ConversationParticipant : accountType
   Conversation ||--o{ Message : conversationId
-  User ||--o{ Message : authorId
+  Volunteer ||--o{ Message : authorType
+  Organization ||--o{ Message : authorType
   Project ||--o{ ProjectPost : projectId
-  Post ||--o{ Comment : "targetType=post"
-  Position ||--o{ Comment : "targetType=position"
-  VolEvent ||--o{ Comment : "targetType=event"
-  Position ||--o{ Application : positionId
-  VolEvent ||--o{ EventRsvp : eventId
 ```
 
-- **Posts, positions, events** have `authorId` pointing to a user.
-- **Comments** use polymorphic `targetType` (`post` \| `position` \| `event`) + `targetId`.
+- **Posts, positions, events** use `authorType` (`volunteer` \| `organization`) + `authorId`.
+- **Comments** use polymorphic `targetType` (`post` \| `position` \| `event`) + `targetId`, and `authorType` + `authorId`.
 - **Projects** belong to an organization via `orgId`.
-- **Junction records** (follows, applications, RSVPs, subscriptions, availability, project posts) link users to other entities.
+- **Follows** use `followerType`/`followerId` and `followingType`/`followingId`.
+- **Messaging** participants use `accountType` + `accountId`; messages use `authorType` + `authorId`.
+- **Session** stores `accountType` + `accountId` (not a single shared user id).
 
 ### Entity → file → API
 
 | Entity | File | API handler |
 |--------|------|-------------|
-| Users | `users.json` | `auth.php`, `users.php` |
+| Volunteers | `users.json` | `auth.php`, `users.php` |
+| Organizations | `organizations.json` | `auth.php`, `organizations.php` |
 | Posts | `posts.json` | `posts.php` |
 | Positions | `positions.json` | `positions.php` |
 | Events | `events.json` | `events.php` |
 | Comments | `comments.json` | `comments.php` |
 | Projects | `projects.json` | `projects.php` |
 | Project posts | `project_posts.json` | `projects.php` |
-| Follows | `follows.json` | `users.php` |
+| Follows | `follows.json` | `users.php`, `organizations.php` |
 | Applications | `applications.json` | `positions.php` |
 | Event RSVPs | `event_rsvps.json` | `events.php` |
 | Subscriptions | `subscriptions.json` | `subscriptions.php` |
@@ -187,37 +189,38 @@ erDiagram
 
 Map markers are computed at request time in `map.php` (not stored separately).
 
-**File storage:** Image blobs live under `data/uploads/` (not web-accessible; `data/.htaccess` denies direct HTTP). Metadata is in `files.json` (usage-agnostic catalog). Parent records reference files by id: `Post.imageFileId`, `User.avatarFileId`. When attached, the file record gets `attachedTo: { type, id }`.
+**File storage:** Image blobs live under `data/uploads/` (not web-accessible; `data/.htaccess` denies direct HTTP). Metadata is in `files.json` (usage-agnostic catalog). Parent records reference files by id: `Post.imageFileId`, volunteer `User.avatarFileId`, `Organization.avatarFileId`. Files use `ownerType` + `ownerId`. When attached, the file record gets `attachedTo: { type, id }` (`user`, `organization`, or `post`).
 
 ### Schema reference
 
 Canonical field definitions live in [`public/js/types.d.ts`](public/js/types.d.ts). Example shapes:
 
 ```typescript
-// User
-{ id, type: 'volunteer' | 'organization', email, name, bio?, location?, skills?, experience?, avatarFileId?, createdAt? }
+// Volunteer (users.json)
+{ id, email, name, bio?, location?, skills?, experience?, avatarFileId?, createdAt? }
+
+// Organization (organizations.json)
+{ id, email, name, bio?, location?, avatarFileId?, createdAt? }
 
 // Post
-{ id, authorId, postType: 'user_post' | 'org_post', content, likeCount, shareCount, imageFileId?, createdAt }
+{ id, authorType, authorId, postType, content, likeCount, shareCount, imageFileId?, createdAt }
 
 // StoredFile (files.json)
-{ id, ownerId, originalName, storedName, mimeType, byteSize, width, height, createdAt, attachedTo? }
+{ id, ownerType, ownerId, originalName, storedName, mimeType, byteSize, width, height, createdAt, attachedTo? }
 
-// Position
-{ id, authorId, title, description, category, remote, location?, likeCount, createdAt }
-
-// Event (VolEvent)
-{ id, authorId, title, description, startDate, endDate, locationType, location?, likeCount, createdAt }
+// Position / Event
+{ id, authorType, authorId, title, description, ... }
 ```
 
-Records not yet defined in `types.d.ts`:
+Records not yet fully defined in `types.d.ts`:
 
 | Entity | Fields |
 |--------|--------|
-| Follow | `followerId`, `followingId`, `createdAt` |
+| Follow | `followerType`, `followerId`, `followingType`, `followingId`, `createdAt` |
 | Application | `id`, `positionId`, `volunteerId`, `status`, `createdAt` |
-| Event RSVP | `eventId`, `userId`, `status` (`going` \| `maybe`) |
+| Event RSVP | `eventId`, `accountType`, `accountId`, `status` (`going` \| `maybe`) |
 | Project post | `id`, `projectId`, `content`, `createdAt` |
+| Conversation participant | `conversationId`, `accountType`, `accountId`, `joinedAt`, `role`, `lastReadAt?` |
 
 API-only computed types: `FeedItem`, `FeedResponse`, `MapMarker`, `ProjectDetailResponse`.
 
@@ -256,19 +259,30 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| GET | `/api/users` | No | List all users |
-| GET | `/api/users/{id}` | No | Single user |
+| GET | `/api/users` | No | List all volunteers |
+| GET | `/api/users/{id}` | No | Single volunteer |
 | PATCH | `/api/users/{id}` | Yes (own profile) | Body: `name`, `bio`, `location`, `skills`, `experience`, `avatarFileId` |
-| POST | `/api/users/{id}/follow` | Yes | Follow user |
-| DELETE | `/api/users/{id}/follow` | Yes | Unfollow user |
-| GET | `/api/users/{id}/feed` | No | Profile-scoped feed (delegates to `feed.php`) |
+| POST | `/api/users/{id}/follow` | Yes | Follow volunteer |
+| DELETE | `/api/users/{id}/follow` | Yes | Unfollow volunteer |
+| GET | `/api/users/{id}/feed` | No | Volunteer profile feed (delegates to `feed.php`) |
+
+### organizations — `/api/organizations[/{id}[/{sub}]]`
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| GET | `/api/organizations` | No | List all organizations |
+| GET | `/api/organizations/{id}` | No | Single organization |
+| PATCH | `/api/organizations/{id}` | Yes (own org) | Body: `name`, `bio`, `location`, `avatarFileId` |
+| POST | `/api/organizations/{id}/follow` | Yes | Follow organization |
+| DELETE | `/api/organizations/{id}/follow` | Yes | Unfollow organization |
+| GET | `/api/organizations/{id}/feed` | No | Organization profile feed (delegates to `feed.php`) |
 
 ### posts — `/api/posts[/{id}[/{sub}]]`
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
 | GET | `/api/posts` | No | List all posts |
-| POST | `/api/posts` | Yes | Body: `content`, optional `imageFileId`. Type auto-set from user (`user_post` / `org_post`) |
+| POST | `/api/posts` | Yes | Body: `content`, optional `imageFileId`. `authorType`/`postType` set from session account |
 | POST | `/api/posts/{id}/like` | Yes | Increment like count |
 | POST | `/api/posts/{id}/share` | Yes | Increment share count |
 

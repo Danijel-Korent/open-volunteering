@@ -1,6 +1,6 @@
 import { renderFeed } from './feed.js';
 import { renderPositions } from './positions.js';
-import { renderProfile } from './profile.js';
+import { renderProfile, renderOrganization } from './profile.js';
 import { renderCalendar } from './calendar.js';
 import { renderMap } from './map.js';
 import { renderMessages } from './messages.js';
@@ -60,6 +60,10 @@ async function render() {
     const userId = segments[1] ? parseInt(segments[1], 10) : undefined;
     const projectId = segments[2] === 'project' && segments[3] ? parseInt(segments[3], 10) : undefined;
     await renderProfile(app, userId, projectId);
+  } else if (page === 'organization') {
+    const orgId = segments[1] ? parseInt(segments[1], 10) : undefined;
+    const projectId = segments[2] === 'project' && segments[3] ? parseInt(segments[3], 10) : undefined;
+    await renderOrganization(app, orgId, projectId);
   } else if (page === 'login') {
     renderLogin(app);
   } else if (page === 'register') {

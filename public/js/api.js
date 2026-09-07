@@ -19,9 +19,9 @@ async function request(path, options = {}) {
   return data;
 }
 
-/** Get the currently authenticated user. @returns {Promise<User>} */
+/** Get the currently authenticated account. @returns {Promise<Account>} */
 export async function getMe() {
-  return /** @type {Promise<User>} */ (request('auth/me'));
+  return /** @type {Promise<Account>} */ (request('auth/me'));
 }
 
 /**
@@ -39,10 +39,10 @@ export async function register(data) {
  * Log in and start a session.
  *
  * @param {{ name: string, password: string }} data
- * @returns {Promise<User>}
+ * @returns {Promise<Account>}
  */
 export async function login(data) {
-  return /** @type {Promise<User>} */ (request('auth/login', { method: 'POST', body: JSON.stringify(data) }));
+  return /** @type {Promise<Account>} */ (request('auth/login', { method: 'POST', body: JSON.stringify(data) }));
 }
 
 /** End the current session. @returns {Promise<unknown>} */
@@ -50,29 +50,54 @@ export async function logout() {
   return request('auth/logout', { method: 'POST' });
 }
 
-/** List all users. @returns {Promise<User[]>} */
+/** List all volunteers. @returns {Promise<User[]>} */
 export async function getUsers() {
   return /** @type {Promise<User[]>} */ (request('users'));
 }
 
-/** Get a single user by ID. @param {number} id @returns {Promise<User>} */
+/** List all organizations. @returns {Promise<Organization[]>} */
+export async function getOrganizations() {
+  return /** @type {Promise<Organization[]>} */ (request('organizations'));
+}
+
+/** Get a single volunteer by ID. @param {number} id @returns {Promise<User>} */
 export async function getUser(id) {
   return /** @type {Promise<User>} */ (request(`users/${id}`));
 }
 
-/** Update the authenticated user's own profile. @param {number} id @param {Partial<User>} data @returns {Promise<User>} */
+/** Get a single organization by ID. @param {number} id @returns {Promise<Organization>} */
+export async function getOrganization(id) {
+  return /** @type {Promise<Organization>} */ (request(`organizations/${id}`));
+}
+
+/** Update the authenticated volunteer's own profile. @param {number} id @param {Partial<User>} data @returns {Promise<User>} */
 export async function updateUser(id, data) {
   return /** @type {Promise<User>} */ (request(`users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }));
 }
 
-/** Follow a user. @param {number} id @returns {Promise<unknown>} */
+/** Update the authenticated organization's own profile. @param {number} id @param {Partial<Organization>} data @returns {Promise<Organization>} */
+export async function updateOrganization(id, data) {
+  return /** @type {Promise<Organization>} */ (request(`organizations/${id}`, { method: 'PATCH', body: JSON.stringify(data) }));
+}
+
+/** Follow a volunteer. @param {number} id @returns {Promise<unknown>} */
 export async function followUser(id) {
   return request(`users/${id}/follow`, { method: 'POST' });
 }
 
-/** Unfollow a user. @param {number} id @returns {Promise<unknown>} */
+/** Unfollow a volunteer. @param {number} id @returns {Promise<unknown>} */
 export async function unfollowUser(id) {
   return request(`users/${id}/follow`, { method: 'DELETE' });
+}
+
+/** Follow an organization. @param {number} id @returns {Promise<unknown>} */
+export async function followOrganization(id) {
+  return request(`organizations/${id}/follow`, { method: 'POST' });
+}
+
+/** Unfollow an organization. @param {number} id @returns {Promise<unknown>} */
+export async function unfollowOrganization(id) {
+  return request(`organizations/${id}/follow`, { method: 'DELETE' });
 }
 
 /**
@@ -100,6 +125,19 @@ export async function getUserFeed(userId, params = {}) {
   const qs = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => qs.set(k, String(v)));
   return /** @type {Promise<FeedResponse>} */ (request(`users/${userId}/feed?${qs}`));
+}
+
+/**
+ * Fetch an organization's profile-scoped feed.
+ *
+ * @param {number} orgId
+ * @param {Record<string, string|number>} params
+ * @returns {Promise<FeedResponse>}
+ */
+export async function getOrganizationFeed(orgId, params = {}) {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => qs.set(k, String(v)));
+  return /** @type {Promise<FeedResponse>} */ (request(`organizations/${orgId}/feed?${qs}`));
 }
 
 /** Create a new post. @param {{ content: string, imageFileId?: number }} data @returns {Promise<Post>} */
@@ -301,7 +339,7 @@ export async function getConversations(params = {}) {
 /**
  * Create or get a conversation.
  *
- * @param {{ type: 'direct' | 'group', participantIds: number[], title?: string }} data
+ * @param {{ type: 'direct' | 'group', participants: AccountRef[], title?: string }} data
  * @returns {Promise<Conversation>}
  */
 export async function createConversation(data) {

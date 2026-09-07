@@ -1,5 +1,6 @@
 import * as api from './api.js';
 import { getCurrentUser, loadCurrentUser } from './auth.js';
+import { isSameAccount, profileLink, renderProfileBadge } from './account-utils.js';
 import { renderAvatarHtml, setupImageDropzone } from './components/image-dropzone.js';
 import { renderPostCard } from './components/post-card.js';
 import { startDirectMessage } from './messages.js';
@@ -24,14 +25,14 @@ function escapeHtml(s) {
  * @param {number} [projectId]
  */
 export async function renderProfile(container, userId, projectId) {
-  if (projectId && userId) {
-    await renderProjectDetail(container, projectId, userId);
+  const current = getCurrentUser();
+  if (!userId && current?.type === 'organization') {
+    window.location.hash = `#/organization/${current.id}`;
     return;
   }
 
-  const current = getCurrentUser();
-  const isOwn = !userId || (current && current.id === userId);
-  const targetId = userId || current?.id;
+  const isOwn = !userId || (current?.type === 'volunteer' && current.id === userId);
+  const targetId = userId || (current?.type === 'volunteer' ? current.id : undefined);
 
   if (!targetId) {
     container.innerHTML = `
@@ -48,12 +49,58 @@ export async function renderProfile(container, userId, projectId) {
   try {
     const user = await api.getUser(targetId);
     if (isOwn && current) {
-      await renderOwnProfile(container, user);
+      await renderOwnVolunteerProfile(container, user);
     } else {
-      await renderPublicProfile(container, user);
+      await renderPublicVolunteerProfile(container, user);
     }
   } catch (err) {
     container.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Profile not found'}</p>`;
+  }
+}
+
+/**
+ * Render organization profile page.
+ *
+ * @param {HTMLElement} container
+ * @param {number} [orgId]
+ * @param {number} [projectId]
+ */
+export async function renderOrganization(container, orgId, projectId) {
+  const current = getCurrentUser();
+  if (!orgId && current?.type === 'volunteer') {
+    window.location.hash = `#/profile/${current.id}`;
+    return;
+  }
+
+  if (projectId && orgId) {
+    await renderProjectDetail(container, projectId, orgId, 'organization');
+    return;
+  }
+
+  const isOwn = !orgId || (current?.type === 'organization' && current.id === orgId);
+  const targetId = orgId || (current?.type === 'organization' ? current.id : undefined);
+
+  if (!targetId) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <p>Please log in to view your organization profile.</p>
+        <a href="#/login" class="btn btn-primary" data-testid="profile-login-link">Login</a>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '<p class="empty-state">Loading…</p>';
+
+  try {
+    const org = await api.getOrganization(targetId);
+    if (isOwn && current) {
+      await renderOwnOrganizationProfile(container, org);
+    } else {
+      await renderPublicOrganizationProfile(container, org);
+    }
+  } catch (err) {
+    container.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Organization not found'}</p>`;
   }
 }
 
@@ -63,7 +110,7 @@ export async function renderProfile(container, userId, projectId) {
  * @param {HTMLElement} container
  * @param {User} user
  */
-async function renderOwnProfile(container, user) {
+async function renderOwnVolunteerProfile(container, user) {
   container.innerHTML = `
     <h1 class="page-title">My Profile</h1>
     <div class="profile-avatar-section" data-testid="profile-avatar-section">
@@ -93,7 +140,6 @@ async function renderOwnProfile(container, user) {
         <label>Longitude</label>
         <input type="number" step="any" id="profile-lng" data-testid="profile-lng" value="${user.location?.lng ?? ''}">
       </div>
-      ${user.type === 'volunteer' ? `
       <div class="form-group">
         <label>Skills (comma-separated)</label>
         <input type="text" id="profile-skills" data-testid="profile-skills" value="${escapeHtml((user.skills || []).join(', '))}">
@@ -101,21 +147,11 @@ async function renderOwnProfile(container, user) {
       <div class="form-group">
         <label>Experience (one per line)</label>
         <textarea id="profile-experience" data-testid="profile-experience">${escapeHtml((user.experience || []).join('\n'))}</textarea>
-      </div>` : ''}
+      </div>
       <button class="btn btn-primary" data-testid="profile-save">Save profile</button>
     </div>
-    ${user.type === 'organization' ? renderOrgActions() : renderVolunteerActions()}
-    ${user.type === 'volunteer' ? renderSubscriptionsSection() : ''}
-    ${user.type === 'organization' ? `
-      <div class="profile-section" data-testid="org-applicants-section">
-        <h3>Position applicants</h3>
-        <div id="org-applicants-list"><p class="empty-state">Loading…</p></div>
-      </div>
-      <div class="profile-section" data-testid="org-availability-section">
-        <h3>Skill offers</h3>
-        <div id="org-availability-list"><p class="empty-state">Loading…</p></div>
-      </div>
-    ` : ''}
+    ${renderVolunteerActions()}
+    ${renderSubscriptionsSection()}
     <h2 class="page-title" style="font-size:1rem">Your feed</h2>
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
@@ -157,25 +193,112 @@ async function renderOwnProfile(container, user) {
       bio: /** @type {HTMLTextAreaElement} */ (document.getElementById('profile-bio')).value,
       location: locLabel ? { label: locLabel, lat: lat || 0, lng: lng || 0 } : null,
     };
-    if (user.type === 'volunteer') {
-      data.skills = /** @type {HTMLInputElement} */ (document.getElementById('profile-skills')).value
-        .split(',').map((s) => s.trim()).filter(Boolean);
-      data.experience = /** @type {HTMLTextAreaElement} */ (document.getElementById('profile-experience')).value
-        .split('\n').map((s) => s.trim()).filter(Boolean);
-    }
+    data.skills = /** @type {HTMLInputElement} */ (document.getElementById('profile-skills')).value
+      .split(',').map((s) => s.trim()).filter(Boolean);
+    data.experience = /** @type {HTMLTextAreaElement} */ (document.getElementById('profile-experience')).value
+      .split('\n').map((s) => s.trim()).filter(Boolean);
     await api.updateUser(user.id, data);
     api.showToast('Profile saved!');
   });
 
-  if (user.type === 'organization') {
-    setupOrgForms(container, user.id);
-    await loadOrgMessagingSections(container, user.id);
-  } else if (user.type === 'volunteer') {
-    setupVolunteerEventForm(container);
-    setupSubscriptions(container);
-  }
+  setupVolunteerEventForm(container);
+  setupSubscriptions(container);
+  await loadProfileFeed('volunteer', user.id);
+}
 
-  await loadProfileFeed(user.id);
+/**
+ * Render the editable profile page for the logged-in organization.
+ *
+ * @param {HTMLElement} container
+ * @param {Organization} org
+ */
+async function renderOwnOrganizationProfile(container, org) {
+  container.innerHTML = `
+    <h1 class="page-title">My Organization</h1>
+    <div class="profile-avatar-section" data-testid="profile-avatar-section">
+      <div id="profile-avatar-display" data-testid="profile-avatar-display">
+        ${renderAvatarHtml(org, 'profile-avatar')}
+      </div>
+      <div id="profile-avatar-dropzone-mount"></div>
+    </div>
+    <div class="profile-form" data-testid="profile-edit-form">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="profile-name" data-testid="profile-name" value="${escapeHtml(org.name)}">
+      </div>
+      <div class="form-group">
+        <label>Bio</label>
+        <textarea id="profile-bio" data-testid="profile-bio">${escapeHtml(org.bio || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Location label</label>
+        <input type="text" id="profile-loc-label" data-testid="profile-location-label" value="${escapeHtml(org.location?.label || '')}">
+      </div>
+      <div class="form-group">
+        <label>Latitude</label>
+        <input type="number" step="any" id="profile-lat" data-testid="profile-lat" value="${org.location?.lat ?? ''}">
+      </div>
+      <div class="form-group">
+        <label>Longitude</label>
+        <input type="number" step="any" id="profile-lng" data-testid="profile-lng" value="${org.location?.lng ?? ''}">
+      </div>
+      <button class="btn btn-primary" data-testid="profile-save">Save profile</button>
+    </div>
+    ${renderOrgActions()}
+    <div class="profile-section" data-testid="org-applicants-section">
+      <h3>Position applicants</h3>
+      <div id="org-applicants-list"><p class="empty-state">Loading…</p></div>
+    </div>
+    <div class="profile-section" data-testid="org-availability-section">
+      <h3>Skill offers</h3>
+      <div id="org-availability-list"><p class="empty-state">Loading…</p></div>
+    </div>
+    <h2 class="page-title" style="font-size:1rem">Your feed</h2>
+    <div id="profile-feed" data-testid="profile-feed"></div>
+  `;
+
+  /** @type {number | undefined} */
+  let savedAvatarFileId = org.avatarFileId;
+  const avatarDisplay = /** @type {HTMLElement} */ (container.querySelector('#profile-avatar-display'));
+  const avatarDropzoneMount = /** @type {HTMLElement} */ (container.querySelector('#profile-avatar-dropzone-mount'));
+
+  const dropzone = setupImageDropzone(avatarDropzoneMount, {
+    dropzoneTestId: 'profile-avatar-dropzone',
+    fileInputTestId: 'profile-avatar-file-input',
+    previewTestId: 'profile-avatar-preview',
+    label: 'Change profile photo — drop or tap',
+    onChange: ({ fileId, uploading }) => {
+      if (uploading || !fileId || fileId === savedAvatarFileId) return;
+      void (async () => {
+        try {
+          const updated = await api.updateOrganization(org.id, { avatarFileId: fileId });
+          savedAvatarFileId = updated.avatarFileId;
+          await loadCurrentUser();
+          avatarDisplay.innerHTML = renderAvatarHtml(updated, 'profile-avatar');
+          dropzone.release();
+          api.showToast('Profile photo updated!');
+        } catch (err) {
+          api.showToast(err instanceof Error ? err.message : 'Failed to update photo');
+        }
+      })();
+    },
+  });
+
+  container.querySelector('[data-testid="profile-save"]')?.addEventListener('click', async () => {
+    const locLabel = /** @type {HTMLInputElement} */ (document.getElementById('profile-loc-label')).value;
+    const lat = parseFloat(/** @type {HTMLInputElement} */ (document.getElementById('profile-lat')).value);
+    const lng = parseFloat(/** @type {HTMLInputElement} */ (document.getElementById('profile-lng')).value);
+    await api.updateOrganization(org.id, {
+      name: /** @type {HTMLInputElement} */ (document.getElementById('profile-name')).value,
+      bio: /** @type {HTMLTextAreaElement} */ (document.getElementById('profile-bio')).value,
+      location: locLabel ? { label: locLabel, lat: lat || 0, lng: lng || 0 } : null,
+    });
+    api.showToast('Profile saved!');
+  });
+
+  setupOrgForms(container, org.id);
+  await loadOrgMessagingSections(container, org.id);
+  await loadProfileFeed('organization', org.id);
 }
 
 /**
@@ -376,7 +499,7 @@ async function loadProjects(el, orgId) {
   const projects = await api.getProjects(orgId);
   el.innerHTML = projects.map((p) => `
     <div class="project-card">
-      <a href="#/profile/${orgId}/project/${p.id}" data-testid="project-link-${p.id}">${escapeHtml(p.title)}</a>
+      <a href="#/organization/${orgId}/project/${p.id}" data-testid="project-link-${p.id}">${escapeHtml(p.title)}</a>
       <p>${escapeHtml(p.description || '')}</p>
     </div>
   `).join('') || '<p class="post-meta">No projects yet.</p>';
@@ -428,7 +551,7 @@ async function setupSubscriptions(container) {
  * @param {HTMLElement} container
  * @param {User} user
  */
-async function renderPublicProfile(container, user) {
+async function renderPublicVolunteerProfile(container, user) {
   const current = getCurrentUser();
   container.innerHTML = `
     <div class="profile-header" data-testid="profile-header">
@@ -436,27 +559,26 @@ async function renderPublicProfile(container, user) {
         ${renderAvatarHtml(user, 'profile-avatar')}
         <div>
           <h1 class="profile-name">${escapeHtml(user.name)}</h1>
-          <div class="profile-type">${user.type}</div>
+          ${renderProfileBadge('volunteer')}
         </div>
       </div>
       <p class="profile-bio">${escapeHtml(user.bio || '')}</p>
       ${user.location?.label ? `<p class="post-meta">📍 ${escapeHtml(user.location.label)}</p>` : ''}
-      ${user.type === 'volunteer' && user.skills?.length ? `
+      ${user.skills?.length ? `
         <div class="profile-section"><h3>Skills</h3>
           <div class="tag-list">${user.skills.map((s) => `<span class="tag">${escapeHtml(s)}</span>`).join('')}</div>
         </div>` : ''}
-      ${user.type === 'volunteer' && user.experience?.length ? `
+      ${user.experience?.length ? `
         <div class="profile-section"><h3>Experience</h3>
           <ul>${user.experience.map((e) => `<li>${escapeHtml(e)}</li>`).join('')}</ul>
         </div>` : ''}
-      ${current && current.id !== user.id ? `
+      ${current && !isSameAccount(current, user) ? `
         <div class="profile-actions">
           <button class="btn btn-primary" data-testid="btn-follow">Follow</button>
           <button class="btn btn-primary" data-testid="btn-message-user-${user.id}">Message</button>
         </div>
       ` : ''}
     </div>
-    ${user.type === 'organization' ? '<div id="projects-list"></div>' : ''}
     <h2 class="page-title" style="font-size:1rem">Feed</h2>
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
@@ -468,17 +590,61 @@ async function renderPublicProfile(container, user) {
 
   container.querySelector(`[data-testid="btn-message-user-${user.id}"]`)?.addEventListener('click', async () => {
     try {
-      await startDirectMessage(user.id);
+      await startDirectMessage('volunteer', user.id);
     } catch (err) {
       api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
     }
   });
 
-  if (user.type === 'organization') {
-    await loadProjects(container.querySelector('#projects-list'), user.id);
-  }
+  await loadProfileFeed('volunteer', user.id);
+}
 
-  await loadProfileFeed(user.id);
+/**
+ * Render a read-only organization profile page.
+ *
+ * @param {HTMLElement} container
+ * @param {Organization} org
+ */
+async function renderPublicOrganizationProfile(container, org) {
+  const current = getCurrentUser();
+  container.innerHTML = `
+    <div class="profile-header" data-testid="profile-header">
+      <div class="profile-header-top">
+        ${renderAvatarHtml(org, 'profile-avatar')}
+        <div>
+          <h1 class="profile-name">${escapeHtml(org.name)}</h1>
+          ${renderProfileBadge('organization')}
+        </div>
+      </div>
+      <p class="profile-bio">${escapeHtml(org.bio || '')}</p>
+      ${org.location?.label ? `<p class="post-meta">📍 ${escapeHtml(org.location.label)}</p>` : ''}
+      ${current && !isSameAccount(current, org) ? `
+        <div class="profile-actions">
+          <button class="btn btn-primary" data-testid="btn-follow">Follow</button>
+          <button class="btn btn-primary" data-testid="btn-message-user-${org.id}">Message</button>
+        </div>
+      ` : ''}
+    </div>
+    <div id="projects-list"></div>
+    <h2 class="page-title" style="font-size:1rem">Feed</h2>
+    <div id="profile-feed" data-testid="profile-feed"></div>
+  `;
+
+  container.querySelector('[data-testid="btn-follow"]')?.addEventListener('click', async () => {
+    await api.followOrganization(org.id);
+    api.showToast('Following!');
+  });
+
+  container.querySelector(`[data-testid="btn-message-user-${org.id}"]`)?.addEventListener('click', async () => {
+    try {
+      await startDirectMessage('organization', org.id);
+    } catch (err) {
+      api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
+    }
+  });
+
+  await loadProjects(container.querySelector('#projects-list'), org.id);
+  await loadProfileFeed('organization', org.id);
 }
 
 /**
@@ -495,7 +661,9 @@ async function loadOrgMessagingSections(container, orgId) {
   if (applicantsEl) {
     try {
       const positions = await api.getPositions();
-      const orgPositions = positions.filter((p) => p.authorId === orgId);
+      const orgPositions = positions.filter(
+        (p) => p.authorType === 'organization' && p.authorId === orgId
+      );
       if (orgPositions.length === 0) {
         applicantsEl.innerHTML = '<p class="empty-state">No open positions.</p>';
       } else {
@@ -570,7 +738,7 @@ async function loadOrgMessagingSections(container, orgId) {
       const volunteerId = parseInt(btn.getAttribute('data-volunteer-id') || '0', 10);
       if (!volunteerId) return;
       try {
-        await startDirectMessage(volunteerId);
+        await startDirectMessage('volunteer', volunteerId);
       } catch (err) {
         api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
       }
@@ -581,12 +749,15 @@ async function loadOrgMessagingSections(container, orgId) {
 /**
  * Load and render feed items for a user's profile page.
  *
- * @param {number} userId
+ * @param {AccountType} accountType
+ * @param {number} accountId
  */
-async function loadProfileFeed(userId) {
+async function loadProfileFeed(accountType, accountId) {
   const feed = document.getElementById('profile-feed');
   if (!feed) return;
-  const data = await api.getUserFeed(userId, { perPage: 20 });
+  const data = accountType === 'organization'
+    ? await api.getOrganizationFeed(accountId, { perPage: 20 })
+    : await api.getUserFeed(accountId, { perPage: 20 });
   feed.innerHTML = '';
   if (data.items.length === 0) {
     feed.innerHTML = '<p class="empty-state">No posts yet.</p>';
@@ -601,17 +772,18 @@ async function loadProfileFeed(userId) {
  * @param {HTMLElement} container
  * @param {number} projectId
  * @param {number} orgId
+ * @param {AccountType} ownerType
  */
-async function renderProjectDetail(container, projectId, orgId) {
+async function renderProjectDetail(container, projectId, orgId, ownerType = 'organization') {
   container.innerHTML = '<p class="empty-state">Loading…</p>';
   const data = await api.getProject(projectId);
   const project = data.project;
   const posts = data.posts || [];
   const current = getCurrentUser();
-  const isOwner = current && current.id === orgId;
+  const isOwner = current?.type === ownerType && current.id === orgId;
 
   container.innerHTML = `
-    <a href="#/profile/${orgId}" class="btn btn-sm">← Back to profile</a>
+    <a href="${profileLink({ type: ownerType, id: orgId })}" class="btn btn-sm">← Back to profile</a>
     <div class="profile-header" data-testid="project-detail">
       <h1 class="profile-name">${escapeHtml(project.title)}</h1>
       <p class="profile-bio">${escapeHtml(project.description || '')}</p>
@@ -641,6 +813,6 @@ async function renderProjectDetail(container, projectId, orgId) {
     const input = /** @type {HTMLInputElement} */ (container.querySelector('[data-testid="project-post-input"]'));
     await api.createProjectPost(projectId, { content: input.value });
     input.value = '';
-    await renderProjectDetail(container, projectId, orgId);
+    await renderProjectDetail(container, projectId, orgId, 'organization');
   });
 }

@@ -12,6 +12,7 @@ $resource = $segments[0] ?? '';
 $routes = [
     'auth' => 'auth.php',
     'users' => 'users.php',
+    'organizations' => 'organizations.php',
     'posts' => 'posts.php',
     'positions' => 'positions.php',
     'events' => 'events.php',

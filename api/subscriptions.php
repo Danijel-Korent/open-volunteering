@@ -5,15 +5,23 @@ $segments = getPathSegments();
 $id = isset($segments[1]) ? (int) $segments[1] : null;
 
 if ($id === null && method() === 'GET') {
-    $userId = requireAuth();
+    $auth = requireAuth();
+    if ($auth['type'] !== 'volunteer') {
+        jsonResponse(['error' => 'Only volunteers can manage subscriptions'], 403);
+        exit;
+    }
     $subs = readJson('subscriptions.json');
-    $mine = array_values(array_filter($subs, fn($s) => (int) $s['userId'] === $userId));
+    $mine = array_values(array_filter($subs, fn($s) => (int) $s['userId'] === $auth['id']));
     jsonResponse($mine);
     exit;
 }
 
 if ($id === null && method() === 'POST') {
-    $userId = requireAuth();
+    $auth = requireAuth();
+    if ($auth['type'] !== 'volunteer') {
+        jsonResponse(['error' => 'Only volunteers can manage subscriptions'], 403);
+        exit;
+    }
     $input = getJsonInput();
     $filterType = $input['filterType'] ?? '';
     $value = trim($input['value'] ?? '');
@@ -24,7 +32,7 @@ if ($id === null && method() === 'POST') {
     $subs = readJson('subscriptions.json');
     $sub = [
         'id' => nextId($subs),
-        'userId' => $userId,
+        'userId' => $auth['id'],
         'filterType' => $filterType,
         'value' => $value,
         'createdAt' => date('c'),
@@ -36,10 +44,14 @@ if ($id === null && method() === 'POST') {
 }
 
 if ($id !== null && method() === 'DELETE') {
-    $userId = requireAuth();
+    $auth = requireAuth();
+    if ($auth['type'] !== 'volunteer') {
+        jsonResponse(['error' => 'Only volunteers can manage subscriptions'], 403);
+        exit;
+    }
     $subs = readJson('subscriptions.json');
     $subs = array_values(array_filter($subs, fn($s) =>
-        !((int) $s['id'] === $id && (int) $s['userId'] === $userId)
+        !((int) $s['id'] === $id && (int) $s['userId'] === $auth['id'])
     ));
     writeJson('subscriptions.json', $subs);
     jsonResponse(['ok' => true]);

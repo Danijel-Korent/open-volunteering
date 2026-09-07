@@ -1,4 +1,5 @@
 import * as api from './api.js';
+import { profileLink } from './account-utils.js';
 
 /** Leaflet map instance (recreated on each visit to the map page). @type {LMap | null} */
 let mapInstance = null;
@@ -65,8 +66,10 @@ export async function renderMap(container) {
         iconAnchor: [7, 7],
       });
 
-      let link = `#/profile/${m.id}`;
-      if (m.type === 'position') link = '#/positions';
+      let link = '#/feed';
+      if (m.type === 'organization' || m.type === 'volunteer') {
+        link = profileLink({ type: m.type, id: m.id });
+      } else if (m.type === 'position') link = '#/positions';
       else if (m.type === 'event') link = '#/calendar';
 
       const marker = L.marker([m.lat, m.lng], { icon }).addTo(mapInstance);

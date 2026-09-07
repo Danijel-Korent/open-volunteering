@@ -1,5 +1,6 @@
 import * as api from './api.js';
 import { getCurrentUser } from './auth.js';
+import { isSameAccount, renderProfileBadge } from './account-utils.js';
 import { renderAvatarHtml } from './components/image-dropzone.js';
 
 /** @type {number | null} */
@@ -65,15 +66,15 @@ function formatMessageTime(iso) {
  * Get the other participant in a direct conversation for avatar display.
  *
  * @param {ConversationInboxItem | Conversation} conversation
- * @param {number} currentUserId
- * @returns {User | null}
+ * @param {Account} current
+ * @returns {Account | null}
  */
-function otherParticipant(conversation, currentUserId) {
+function otherParticipant(conversation, current) {
   const participants = conversation.participants || [];
   if (conversation.type === 'direct') {
-    return participants.find((p) => p.id !== currentUserId) || participants[0] || null;
+    return participants.find((p) => !isSameAccount(p, current)) || participants[0] || null;
   }
-  return participants.find((p) => p.id !== currentUserId) || null;
+  return participants.find((p) => !isSameAccount(p, current)) || null;
 }
 
 /**
@@ -108,7 +109,7 @@ export async function renderMessages(container, conversationId) {
  * Render the conversation inbox list.
  *
  * @param {HTMLElement} container
- * @param {User} current
+ * @param {Account} current
  * @returns {Promise<void>}
  */
 async function renderInbox(container, current) {
@@ -138,7 +139,7 @@ async function renderInbox(container, current) {
         return;
       }
       list.innerHTML = data.items.map((item) => {
-        const peer = otherParticipant(item, current.id);
+        const peer = otherParticipant(item, current);
         const avatarUser = peer || { id: 0, name: '?', type: 'volunteer', email: '' };
         const unread = item.unreadCount > 0;
         return `
@@ -173,7 +174,7 @@ async function renderInbox(container, current) {
  *
  * @param {HTMLElement} container
  * @param {number} conversationId
- * @param {User} current
+ * @param {Account} current
  * @returns {Promise<void>}
  */
 async function renderThread(container, conversationId, current) {
@@ -215,7 +216,7 @@ async function renderThread(container, conversationId, current) {
       return;
     }
     listEl.innerHTML = data.items.map((msg) => {
-      const isOwn = msg.authorId === current.id;
+      const isOwn = msg.authorType === current.type && msg.authorId === current.id;
       const authorName = msg.author?.name || 'Unknown';
       return `
         <div class="message-bubble-wrap ${isOwn ? 'message-bubble-wrap--own' : ''}" data-testid="message-${msg.id}">
@@ -269,7 +270,7 @@ async function renderThread(container, conversationId, current) {
 /**
  * Show modal to pick users and start a direct or group conversation.
  *
- * @param {User} current
+ * @param {Account} current
  * @returns {Promise<void>}
  */
 async function showNewConversationModal(current) {
@@ -279,8 +280,12 @@ async function showNewConversationModal(current) {
   overlay.innerHTML = `
     <div class="modal message-picker-modal">
       <h3>New conversation</h3>
+      <div class="message-picker-tabs" role="tablist">
+        <button type="button" class="message-picker-tab active" data-tab="volunteer" role="tab" aria-selected="true">Volunteers</button>
+        <button type="button" class="message-picker-tab" data-tab="organization" role="tab" aria-selected="false">Organizations</button>
+      </div>
       <div class="form-group">
-        <label>Search users</label>
+        <label>Search</label>
         <input type="text" id="picker-search" data-testid="message-picker-search" placeholder="Type a name…">
       </div>
       <div id="picker-user-list" class="message-picker-list"></div>
@@ -300,41 +305,51 @@ async function showNewConversationModal(current) {
   const searchInput = /** @type {HTMLInputElement} */ (overlay.querySelector('#picker-search'));
   const groupTitleWrap = /** @type {HTMLElement | null} */ (overlay.querySelector('#picker-group-title-wrap'));
   const groupTitleInput = /** @type {HTMLInputElement} */ (overlay.querySelector('#picker-group-title'));
-  /** @type {Set<number>} */
+  /** @type {Set<string>} */
   const selected = new Set();
+  /** @type {AccountType} */
+  let activeTab = 'volunteer';
   /** @type {User[]} */
-  let users = [];
+  let volunteers = [];
+  /** @type {Organization[]} */
+  let organizations = [];
 
   const close = () => overlay.remove();
   overlay.querySelector('[data-testid="message-picker-cancel"]')?.addEventListener('click', close);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 
+  const accountKey = (type, id) => `${type}:${id}`;
+
   const renderList = () => {
     if (!listEl) return;
     const q = searchInput.value.trim().toLowerCase();
-    const filtered = users.filter((u) =>
-      u.id !== current.id && u.name.toLowerCase().includes(q)
+    const list = activeTab === 'volunteer' ? volunteers : organizations;
+    const filtered = list.filter((u) =>
+      !isSameAccount(u, current) && u.name.toLowerCase().includes(q)
     );
     if (filtered.length === 0) {
-      listEl.innerHTML = '<p class="empty-state">No users found.</p>';
+      listEl.innerHTML = '<p class="empty-state">No accounts found.</p>';
       return;
     }
-    listEl.innerHTML = filtered.map((u) => `
+    listEl.innerHTML = filtered.map((u) => {
+      const key = accountKey(u.type, u.id);
+      return `
       <label class="message-picker-item">
-        <input type="checkbox" value="${u.id}" ${selected.has(u.id) ? 'checked' : ''}>
+        <input type="checkbox" value="${key}" ${selected.has(key) ? 'checked' : ''}>
         ${renderAvatarHtml(u, 'conversation-avatar')}
         <span>${escapeHtml(u.name)}</span>
-        <span class="profile-type">${escapeHtml(u.type)}</span>
+        ${renderProfileBadge(u.type)}
       </label>
-    `).join('');
+    `;
+    }).join('');
 
     listEl.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
       cb.addEventListener('change', () => {
-        const id = parseInt(/** @type {HTMLInputElement} */ (cb).value, 10);
+        const key = /** @type {HTMLInputElement} */ (cb).value;
         if (/** @type {HTMLInputElement} */ (cb).checked) {
-          selected.add(id);
+          selected.add(key);
         } else {
-          selected.delete(id);
+          selected.delete(key);
         }
         if (groupTitleWrap) {
           groupTitleWrap.hidden = selected.size < 2;
@@ -343,12 +358,28 @@ async function showNewConversationModal(current) {
     });
   };
 
+  overlay.querySelectorAll('.message-picker-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const tabType = /** @type {AccountType} */ (/** @type {HTMLElement} */ (tab).dataset.tab || 'volunteer');
+      activeTab = tabType;
+      overlay.querySelectorAll('.message-picker-tab').forEach((t) => {
+        const isActive = /** @type {HTMLElement} */ (t).dataset.tab === tabType;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      renderList();
+    });
+  });
+
   try {
-    users = await api.getUsers();
+    [volunteers, organizations] = await Promise.all([
+      api.getUsers(),
+      api.getOrganizations(),
+    ]);
     renderList();
   } catch (err) {
     if (listEl) {
-      listEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load users'}</p>`;
+      listEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load accounts'}</p>`;
     }
   }
 
@@ -359,12 +390,18 @@ async function showNewConversationModal(current) {
       api.showToast('Select at least one person');
       return;
     }
-    const participantIds = [...selected];
-    const isGroup = participantIds.length >= 2;
+    const participants = [...selected].map((key) => {
+      const [accountType, idStr] = key.split(':');
+      return {
+        accountType: /** @type {AccountType} */ (accountType),
+        accountId: parseInt(idStr, 10),
+      };
+    });
+    const isGroup = participants.length >= 2;
     try {
       const conv = await api.createConversation({
         type: isGroup ? 'group' : 'direct',
-        participantIds,
+        participants,
         title: isGroup ? groupTitleInput.value.trim() : undefined,
       });
       close();
@@ -376,15 +413,16 @@ async function showNewConversationModal(current) {
 }
 
 /**
- * Start or open a direct message with a user and navigate to the thread.
+ * Start or open a direct message with an account and navigate to the thread.
  *
- * @param {number} userId
+ * @param {AccountType} accountType
+ * @param {number} accountId
  * @returns {Promise<void>}
  */
-export async function startDirectMessage(userId) {
+export async function startDirectMessage(accountType, accountId) {
   const conv = await api.createConversation({
     type: 'direct',
-    participantIds: [userId],
+    participants: [{ accountType, accountId }],
   });
   window.location.hash = `#/messages/${conv.id}`;
 }

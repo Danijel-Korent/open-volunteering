@@ -4,21 +4,18 @@ require_once __DIR__ . '/config.php';
 $segments = getPathSegments();
 
 if (method() === 'GET') {
-    $userId = currentUserId();
+    $account = getCurrentAccount();
     $targetType = $_GET['targetType'] ?? null;
     $targetId = isset($_GET['targetId']) ? (int) $_GET['targetId'] : null;
     $forOrgId = isset($_GET['forOrgId']) ? (int) $_GET['forOrgId'] : null;
     $avail = readJson('availability.json');
 
     if ($forOrgId !== null) {
-        // Inbound skill offers for an organization (direct org target or org-authored content).
-        if ($userId === null || $userId !== $forOrgId) {
+        if ($account === null || $account['type'] !== 'organization' || $account['id'] !== $forOrgId) {
             jsonResponse(['error' => 'Forbidden'], 403);
             exit;
         }
-        $users = readJson('users.json');
-        $user = findUser($users, $forOrgId);
-        if (!$user || $user['type'] !== 'organization') {
+        if (findOrganization(readOrganizations(), $forOrgId) === null) {
             jsonResponse(['error' => 'Organization not found'], 404);
             exit;
         }
@@ -29,19 +26,19 @@ if (method() === 'GET') {
 
         $orgPostIds = [];
         foreach ($posts as $post) {
-            if ((int) $post['authorId'] === $forOrgId) {
+            if (($post['authorType'] ?? '') === 'organization' && (int) $post['authorId'] === $forOrgId) {
                 $orgPostIds[] = (int) $post['id'];
             }
         }
         $orgPositionIds = [];
         foreach ($positions as $position) {
-            if ((int) $position['authorId'] === $forOrgId) {
+            if (($position['authorType'] ?? '') === 'organization' && (int) $position['authorId'] === $forOrgId) {
                 $orgPositionIds[] = (int) $position['id'];
             }
         }
         $orgEventIds = [];
         foreach ($events as $event) {
-            if ((int) $event['authorId'] === $forOrgId) {
+            if (($event['authorType'] ?? '') === 'organization' && (int) $event['authorId'] === $forOrgId) {
                 $orgEventIds[] = (int) $event['id'];
             }
         }
@@ -67,19 +64,19 @@ if (method() === 'GET') {
         $avail = array_values(array_filter($avail, fn($a) =>
             $a['targetType'] === $targetType && (int) $a['targetId'] === $targetId
         ));
-    } elseif ($userId !== null) {
+    } elseif ($account !== null) {
         $mine = $_GET['mine'] ?? '';
-        if ($mine === '1') {
-            $avail = array_values(array_filter($avail, fn($a) => (int) $a['volunteerId'] === $userId));
+        if ($mine === '1' && $account['type'] === 'volunteer') {
+            $avail = array_values(array_filter($avail, fn($a) => (int) $a['volunteerId'] === $account['id']));
         }
     }
-    $users = readJson('users.json');
+    $users = readVolunteers();
     $result = [];
     foreach ($avail as $a) {
-        $vol = findUser($users, (int) $a['volunteerId']);
+        $vol = findVolunteer($users, (int) $a['volunteerId']);
         $result[] = [
             ...$a,
-            'volunteer' => $vol ? publicUser($vol) : null,
+            'volunteer' => $vol ? publicVolunteer($vol) : null,
         ];
     }
     jsonResponse($result);
@@ -87,10 +84,8 @@ if (method() === 'GET') {
 }
 
 if (method() === 'POST') {
-    $userId = requireAuth();
-    $users = readJson('users.json');
-    $user = findUser($users, $userId);
-    if (!$user || $user['type'] !== 'volunteer') {
+    $auth = requireAuth();
+    if ($auth['type'] !== 'volunteer') {
         jsonResponse(['error' => 'Only volunteers can set availability'], 403);
         exit;
     }
@@ -104,7 +99,7 @@ if (method() === 'POST') {
     }
     $avail = readJson('availability.json');
     foreach ($avail as $i => $a) {
-        if ((int) $a['volunteerId'] === $userId && $a['targetType'] === $targetType && (int) $a['targetId'] === $targetId) {
+        if ((int) $a['volunteerId'] === $auth['id'] && $a['targetType'] === $targetType && (int) $a['targetId'] === $targetId) {
             $avail[$i]['skillsOffered'] = $skillsOffered;
             writeJson('availability.json', $avail);
             jsonResponse($avail[$i]);
@@ -113,7 +108,7 @@ if (method() === 'POST') {
     }
     $entry = [
         'id' => nextId($avail),
-        'volunteerId' => $userId,
+        'volunteerId' => $auth['id'],
         'targetType' => $targetType,
         'targetId' => $targetId,
         'skillsOffered' => $skillsOffered,

@@ -1,7 +1,6 @@
 [
     {
         "id": 1,
-        "type": "volunteer",
         "email": "maria@example.com",
         "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
         "name": "Maria Santos",
@@ -24,7 +23,6 @@
     },
     {
         "id": 2,
-        "type": "volunteer",
         "email": "james@example.com",
         "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
         "name": "James Chen",
@@ -45,56 +43,7 @@
         "createdAt": "2024-03-20T14:00:00+01:00"
     },
     {
-        "id": 3,
-        "type": "organization",
-        "email": "green@example.com",
-        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
-        "name": "Green City Initiative",
-        "bio": "Local environmental organization. We plant trees, clean parks, and promote sustainable living.",
-        "location": {
-            "label": "Green City HQ, Zagreb",
-            "lat": 45.817,
-            "lng": 15.985
-        },
-        "skills": [],
-        "experience": [],
-        "createdAt": "2023-06-01T09:00:00+01:00"
-    },
-    {
-        "id": 4,
-        "type": "organization",
-        "email": "shelter@example.com",
-        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
-        "name": "Community Shelter",
-        "bio": "Providing shelter and support for those in need since 2015.",
-        "location": {
-            "label": "Community Shelter, Zagreb",
-            "lat": 45.808,
-            "lng": 15.972
-        },
-        "skills": [],
-        "experience": [],
-        "createdAt": "2023-01-10T08:00:00+01:00"
-    },
-    {
-        "id": 5,
-        "type": "organization",
-        "email": "youth@example.com",
-        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
-        "name": "Youth Mentors Network",
-        "bio": "Connecting young people with mentors and learning opportunities.",
-        "location": {
-            "label": "Youth Center, Zagreb",
-            "lat": 45.82,
-            "lng": 15.99
-        },
-        "skills": [],
-        "experience": [],
-        "createdAt": "2023-09-15T11:00:00+01:00"
-    },
-    {
         "id": 6,
-        "type": "volunteer",
         "email": "test1@test.com",
         "passwordHash": "$2y$10$Fr1NzjGOksO2.bZGmTq1OeN.VImAqkVXRpi7sHxl2TvGi7ZU8udya",
         "name": "test1",
@@ -105,20 +54,7 @@
         "createdAt": "2026-06-15T09:48:07+02:00"
     },
     {
-        "id": 7,
-        "type": "organization",
-        "email": "test-org-alpha-7@open-volunteering.local",
-        "passwordHash": "$2y$10$CK9g4AEjXW8J.IbXQcz33.GlWHpqzfLdSYT4Fz9J4qKqLPx\/v.X2y",
-        "name": "Test Org Alpha",
-        "bio": "",
-        "location": null,
-        "skills": [],
-        "experience": [],
-        "createdAt": "2026-08-11T11:45:43+02:00"
-    },
-    {
         "id": 8,
-        "type": "volunteer",
         "email": "test123-8@open-volunteering.local",
         "passwordHash": "$2y$10$EKZOwb1SUSBpljXseBxLRe5Ju.xKxEJ2.l7ZR7RlIeZhQXUUUtTbS",
         "name": "test123",
@@ -130,7 +66,6 @@
     },
     {
         "id": 9,
-        "type": "volunteer",
         "email": "volunteer1-9@open-volunteering.local",
         "passwordHash": "$2y$10$E9zRxVlC7CI3bxoUwtGgiusjq4A4HsSizqAC0SLzlGMPA2PBblGpK",
         "name": "volunteer1",
@@ -140,17 +75,5 @@
         "experience": [],
         "createdAt": "2026-08-12T08:40:32+02:00",
         "avatarFileId": 2
-    },
-    {
-        "id": 10,
-        "type": "organization",
-        "email": "ngo1-10@open-volunteering.local",
-        "passwordHash": "$2y$10$UuQrmOSxPtDO0XXZfrsNde.p3yvTWT8Ki2TiVVYoTPWYDtRe02NAu",
-        "name": "ngo1",
-        "bio": "",
-        "location": null,
-        "skills": [],
-        "experience": [],
-        "createdAt": "2026-08-23T07:54:26+02:00"
     }
 ]

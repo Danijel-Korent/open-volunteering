@@ -4,26 +4,27 @@ require_once __DIR__ . '/config.php';
 /**
  * Build unified feed items from posts, positions, and events.
  *
- * @param int|null $authorId When set, only include items by this author
+ * @param string|null $authorType When set with authorId, filter by author
+ * @param int|null $authorId
  * @return array<int, array<string, mixed>>
  */
-function buildFeedItems(?int $authorId = null): array {
-    $users = readJson('users.json');
-    $userMap = [];
-    foreach ($users as $u) {
-        $userMap[(int) $u['id']] = $u;
-    }
-
+function buildFeedItems(?string $authorType = null, ?int $authorId = null): array {
+    $maps = buildAuthorMaps();
     $items = [];
 
     foreach (readJson('posts.json') as $p) {
-        if ($authorId !== null && (int) $p['authorId'] !== $authorId) continue;
-        $author = $userMap[(int) $p['authorId']] ?? null;
+        $itemAuthorType = $p['authorType'] ?? 'volunteer';
+        $itemAuthorId = (int) $p['authorId'];
+        if ($authorType !== null && ($itemAuthorType !== $authorType || $itemAuthorId !== $authorId)) {
+            continue;
+        }
+        $author = resolveAuthor($maps, $itemAuthorType, $itemAuthorId);
         $item = [
             'feedType' => $p['postType'],
             'id' => (int) $p['id'],
-            'authorId' => (int) $p['authorId'],
-            'author' => $author ? publicUser($author) : null,
+            'authorType' => $itemAuthorType,
+            'authorId' => $itemAuthorId,
+            'author' => $author ? publicAccount($itemAuthorType, $author) : null,
             'content' => $p['content'],
             'likeCount' => $p['likeCount'] ?? 0,
             'shareCount' => $p['shareCount'] ?? 0,
@@ -39,13 +40,18 @@ function buildFeedItems(?int $authorId = null): array {
     }
 
     foreach (readJson('positions.json') as $p) {
-        if ($authorId !== null && (int) $p['authorId'] !== $authorId) continue;
-        $author = $userMap[(int) $p['authorId']] ?? null;
+        $itemAuthorType = $p['authorType'] ?? 'organization';
+        $itemAuthorId = (int) $p['authorId'];
+        if ($authorType !== null && ($itemAuthorType !== $authorType || $itemAuthorId !== $authorId)) {
+            continue;
+        }
+        $author = resolveAuthor($maps, $itemAuthorType, $itemAuthorId);
         $items[] = [
             'feedType' => 'position',
             'id' => (int) $p['id'],
-            'authorId' => (int) $p['authorId'],
-            'author' => $author ? publicUser($author) : null,
+            'authorType' => $itemAuthorType,
+            'authorId' => $itemAuthorId,
+            'author' => $author ? publicAccount($itemAuthorType, $author) : null,
             'title' => $p['title'],
             'content' => $p['description'],
             'category' => $p['category'] ?? 'general',
@@ -57,13 +63,18 @@ function buildFeedItems(?int $authorId = null): array {
     }
 
     foreach (readJson('events.json') as $e) {
-        if ($authorId !== null && (int) $e['authorId'] !== $authorId) continue;
-        $author = $userMap[(int) $e['authorId']] ?? null;
+        $itemAuthorType = $e['authorType'] ?? 'volunteer';
+        $itemAuthorId = (int) $e['authorId'];
+        if ($authorType !== null && ($itemAuthorType !== $authorType || $itemAuthorId !== $authorId)) {
+            continue;
+        }
+        $author = resolveAuthor($maps, $itemAuthorType, $itemAuthorId);
         $items[] = [
             'feedType' => 'event',
             'id' => (int) $e['id'],
-            'authorId' => (int) $e['authorId'],
-            'author' => $author ? publicUser($author) : null,
+            'authorType' => $itemAuthorType,
+            'authorId' => $itemAuthorId,
+            'author' => $author ? publicAccount($itemAuthorType, $author) : null,
             'title' => $e['title'],
             'content' => $e['description'],
             'startDate' => $e['startDate'],
@@ -79,8 +90,17 @@ function buildFeedItems(?int $authorId = null): array {
 }
 
 $segments = getPathSegments();
-$profileFeed = ($segments[0] ?? '') === 'users' && ($segments[2] ?? '') === 'feed';
-$authorId = $profileFeed && isset($segments[1]) ? (int) $segments[1] : null;
+$profileFeedVolunteer = ($segments[0] ?? '') === 'users' && ($segments[2] ?? '') === 'feed';
+$profileFeedOrg = ($segments[0] ?? '') === 'organizations' && ($segments[2] ?? '') === 'feed';
+$authorType = null;
+$authorId = null;
+if ($profileFeedVolunteer && isset($segments[1])) {
+    $authorType = 'volunteer';
+    $authorId = (int) $segments[1];
+} elseif ($profileFeedOrg && isset($segments[1])) {
+    $authorType = 'organization';
+    $authorId = (int) $segments[1];
+}
 
 $algorithm = $_GET['algorithm'] ?? 'newest';
 $typesParam = $_GET['types'] ?? '';
@@ -91,7 +111,7 @@ $lat = isset($_GET['lat']) ? (float) $_GET['lat'] : null;
 $lng = isset($_GET['lng']) ? (float) $_GET['lng'] : null;
 $positionsOnly = ($_GET['positionsOnly'] ?? '') === '1';
 
-$items = buildFeedItems($authorId);
+$items = buildFeedItems($authorType, $authorId);
 
 if ($positionsOnly) {
     $items = array_values(array_filter($items, fn($i) => $i['feedType'] === 'position'));
@@ -100,16 +120,19 @@ if ($positionsOnly) {
 }
 
 if ($algorithm === 'following') {
-    $userId = currentUserId();
-    if ($userId !== null) {
+    $account = getCurrentAccount();
+    if ($account !== null) {
         $follows = readJson('follows.json');
-        $followingIds = [];
+        $followingKeys = [];
         foreach ($follows as $f) {
-            if ((int) $f['followerId'] === $userId) {
-                $followingIds[] = (int) $f['followingId'];
+            if ($f['followerType'] === $account['type'] && (int) $f['followerId'] === $account['id']) {
+                $followingKeys[] = $f['followingType'] . ':' . $f['followingId'];
             }
         }
-        $items = array_values(array_filter($items, fn($i) => in_array($i['authorId'], $followingIds, true)));
+        $items = array_values(array_filter($items, function ($i) use ($followingKeys) {
+            $key = ($i['authorType'] ?? 'volunteer') . ':' . $i['authorId'];
+            return in_array($key, $followingKeys, true);
+        }));
     }
 }
 
@@ -129,13 +152,12 @@ if ($algorithm === 'most_liked') {
     $refLat = $lat;
     $refLng = $lng;
     if ($refLat === null || $refLng === null) {
-        $userId = currentUserId();
-        if ($userId !== null) {
-            $users = readJson('users.json');
-            $user = findUser($users, $userId);
-            if ($user && !empty($user['location']['lat']) && !empty($user['location']['lng'])) {
-                $refLat = (float) $user['location']['lat'];
-                $refLng = (float) $user['location']['lng'];
+        $account = getCurrentAccount();
+        if ($account !== null) {
+            $record = $account['record'];
+            if (!empty($record['location']['lat']) && !empty($record['location']['lng'])) {
+                $refLat = (float) $record['location']['lat'];
+                $refLng = (float) $record['location']['lng'];
             }
         }
     }
@@ -163,25 +185,22 @@ $page = min($page, $totalPages);
 $offset = ($page - 1) * $perPage;
 $paged = array_slice($items, $offset, $perPage);
 
-$userId = currentUserId();
-if ($userId !== null) {
-    $users = readJson('users.json');
-    $user = findUser($users, $userId);
-    if ($user && $user['type'] === 'volunteer') {
-        $applications = readJson('applications.json');
-        $appliedIds = [];
-        foreach ($applications as $a) {
-            if ((int) $a['volunteerId'] === $userId) {
-                $appliedIds[] = (int) $a['positionId'];
-            }
+$account = getCurrentAccount();
+if ($account !== null && $account['type'] === 'volunteer') {
+    $volunteerId = $account['id'];
+    $applications = readJson('applications.json');
+    $appliedIds = [];
+    foreach ($applications as $a) {
+        if ((int) $a['volunteerId'] === $volunteerId) {
+            $appliedIds[] = (int) $a['positionId'];
         }
-        foreach ($paged as &$item) {
-            if ($item['feedType'] === 'position') {
-                $item['hasApplied'] = in_array((int) $item['id'], $appliedIds, true);
-            }
-        }
-        unset($item);
     }
+    foreach ($paged as &$item) {
+        if ($item['feedType'] === 'position') {
+            $item['hasApplied'] = in_array((int) $item['id'], $appliedIds, true);
+        }
+    }
+    unset($item);
 }
 
 jsonResponse([

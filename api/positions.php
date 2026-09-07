@@ -13,10 +13,8 @@ if ($id === null && method() === 'GET') {
 }
 
 if ($id === null && method() === 'POST') {
-    $userId = requireAuth();
-    $users = readJson('users.json');
-    $user = findUser($users, $userId);
-    if (!$user || $user['type'] !== 'organization') {
+    $auth = requireAuth();
+    if ($auth['type'] !== 'organization') {
         jsonResponse(['error' => 'Only organizations can create positions'], 403);
         exit;
     }
@@ -30,7 +28,8 @@ if ($id === null && method() === 'POST') {
     $positions = readJson('positions.json');
     $position = [
         'id' => nextId($positions),
-        'authorId' => $userId,
+        'authorType' => 'organization',
+        'authorId' => $auth['id'],
         'title' => $title,
         'description' => $description,
         'category' => $input['category'] ?? 'general',
@@ -46,8 +45,7 @@ if ($id === null && method() === 'POST') {
 }
 
 if ($id !== null && $sub === 'applications' && method() === 'GET') {
-    // List applications for a position (organization owner only).
-    $userId = requireAuth();
+    $auth = requireAuth();
     $positions = readJson('positions.json');
     $position = null;
     foreach ($positions as $p) {
@@ -60,13 +58,15 @@ if ($id !== null && $sub === 'applications' && method() === 'GET') {
         jsonResponse(['error' => 'Position not found'], 404);
         exit;
     }
-    if ((int) $position['authorId'] !== $userId) {
+    if (($position['authorType'] ?? 'organization') !== 'organization'
+        || (int) $position['authorId'] !== $auth['id']
+        || $auth['type'] !== 'organization') {
         jsonResponse(['error' => 'Forbidden'], 403);
         exit;
     }
 
     $applications = readJson('applications.json');
-    $users = readJson('users.json');
+    $users = readVolunteers();
     $filtered = array_values(array_filter(
         $applications,
         fn($a) => (int) $a['positionId'] === $id
@@ -75,10 +75,10 @@ if ($id !== null && $sub === 'applications' && method() === 'GET') {
 
     $result = [];
     foreach ($filtered as $app) {
-        $volunteer = findUser($users, (int) $app['volunteerId']);
+        $volunteer = findVolunteer($users, (int) $app['volunteerId']);
         $result[] = [
             ...$app,
-            'volunteer' => $volunteer ? publicUser($volunteer) : null,
+            'volunteer' => $volunteer ? publicVolunteer($volunteer) : null,
         ];
     }
     jsonResponse($result);
@@ -86,10 +86,8 @@ if ($id !== null && $sub === 'applications' && method() === 'GET') {
 }
 
 if ($id !== null && $sub === 'apply' && method() === 'POST') {
-    $userId = requireAuth();
-    $users = readJson('users.json');
-    $user = findUser($users, $userId);
-    if (!$user || $user['type'] !== 'volunteer') {
+    $auth = requireAuth();
+    if ($auth['type'] !== 'volunteer') {
         jsonResponse(['error' => 'Only volunteers can apply'], 403);
         exit;
     }
@@ -107,7 +105,7 @@ if ($id !== null && $sub === 'apply' && method() === 'POST') {
     }
     $applications = readJson('applications.json');
     foreach ($applications as $a) {
-        if ((int) $a['positionId'] === $id && (int) $a['volunteerId'] === $userId) {
+        if ((int) $a['positionId'] === $id && (int) $a['volunteerId'] === $auth['id']) {
             jsonResponse(['error' => 'Already applied'], 409);
             exit;
         }
@@ -115,7 +113,7 @@ if ($id !== null && $sub === 'apply' && method() === 'POST') {
     $app = [
         'id' => nextId($applications),
         'positionId' => $id,
-        'volunteerId' => $userId,
+        'volunteerId' => $auth['id'],
         'status' => 'pending',
         'createdAt' => date('c'),
     ];
