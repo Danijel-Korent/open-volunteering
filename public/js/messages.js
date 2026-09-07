@@ -140,7 +140,7 @@ async function renderInbox(container, current) {
       }
       list.innerHTML = data.items.map((item) => {
         const peer = otherParticipant(item, current);
-        const avatarUser = peer || { id: 0, name: '?', type: 'volunteer', email: '' };
+        const avatarUser = peer || { id: 0, name: '?', type: 'user', email: '' };
         const unread = item.unreadCount > 0;
         return `
           <a href="#/messages/${item.id}" class="conversation-row ${unread ? 'conversation-row--unread' : ''}"
@@ -281,7 +281,7 @@ async function showNewConversationModal(current) {
     <div class="modal message-picker-modal">
       <h3>New conversation</h3>
       <div class="message-picker-tabs" role="tablist">
-        <button type="button" class="message-picker-tab active" data-tab="volunteer" role="tab" aria-selected="true">Volunteers</button>
+        <button type="button" class="message-picker-tab active" data-tab="user" role="tab" aria-selected="true">Users</button>
         <button type="button" class="message-picker-tab" data-tab="organization" role="tab" aria-selected="false">Organizations</button>
       </div>
       <div class="form-group">
@@ -308,9 +308,9 @@ async function showNewConversationModal(current) {
   /** @type {Set<string>} */
   const selected = new Set();
   /** @type {AccountType} */
-  let activeTab = 'volunteer';
+  let activeTab = 'user';
   /** @type {User[]} */
-  let volunteers = [];
+  let users = [];
   /** @type {Organization[]} */
   let organizations = [];
 
@@ -323,7 +323,7 @@ async function showNewConversationModal(current) {
   const renderList = () => {
     if (!listEl) return;
     const q = searchInput.value.trim().toLowerCase();
-    const list = activeTab === 'volunteer' ? volunteers : organizations;
+    const list = activeTab === 'user' ? users : organizations;
     const filtered = list.filter((u) =>
       !isSameAccount(u, current) && u.name.toLowerCase().includes(q)
     );
@@ -360,7 +360,7 @@ async function showNewConversationModal(current) {
 
   overlay.querySelectorAll('.message-picker-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
-      const tabType = /** @type {AccountType} */ (/** @type {HTMLElement} */ (tab).dataset.tab || 'volunteer');
+      const tabType = /** @type {AccountType} */ (/** @type {HTMLElement} */ (tab).dataset.tab || 'user');
       activeTab = tabType;
       overlay.querySelectorAll('.message-picker-tab').forEach((t) => {
         const isActive = /** @type {HTMLElement} */ (t).dataset.tab === tabType;
@@ -372,7 +372,7 @@ async function showNewConversationModal(current) {
   });
 
   try {
-    [volunteers, organizations] = await Promise.all([
+    [users, organizations] = await Promise.all([
       api.getUsers(),
       api.getOrganizations(),
     ]);

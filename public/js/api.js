@@ -19,16 +19,25 @@ async function request(path, options = {}) {
   return data;
 }
 
-/** Get the currently authenticated account. @returns {Promise<Account>} */
+/** Get the currently authenticated session context. @returns {Promise<MeResponse>} */
 export async function getMe() {
-  return /** @type {Promise<Account>} */ (request('auth/me'));
+  return /** @type {Promise<MeResponse>} */ (request('auth/me'));
 }
 
 /**
- * Register a new account and start a session.
- * Server generates a simple password; returned once as `generatedPassword`.
+ * Switch active account context (user profile or organization admin).
  *
- * @param {{ name: string, type: string }} data
+ * @param {{ activeAccountType: AccountType, activeAccountId?: number }} data
+ * @returns {Promise<MeResponse>}
+ */
+export async function switchAccount(data) {
+  return /** @type {Promise<MeResponse>} */ (request('auth/switch', { method: 'POST', body: JSON.stringify(data) }));
+}
+
+/**
+ * Register a new user account and start a session.
+ *
+ * @param {{ name: string }} data
  * @returns {Promise<RegisterResponse>}
  */
 export async function register(data) {
@@ -39,10 +48,10 @@ export async function register(data) {
  * Log in and start a session.
  *
  * @param {{ name: string, password: string }} data
- * @returns {Promise<Account>}
+ * @returns {Promise<MeResponse>}
  */
 export async function login(data) {
-  return /** @type {Promise<Account>} */ (request('auth/login', { method: 'POST', body: JSON.stringify(data) }));
+  return /** @type {Promise<MeResponse>} */ (request('auth/login', { method: 'POST', body: JSON.stringify(data) }));
 }
 
 /** End the current session. @returns {Promise<unknown>} */
@@ -50,7 +59,7 @@ export async function logout() {
   return request('auth/logout', { method: 'POST' });
 }
 
-/** List all volunteers. @returns {Promise<User[]>} */
+/** List all users. @returns {Promise<User[]>} */
 export async function getUsers() {
   return /** @type {Promise<User[]>} */ (request('users'));
 }
@@ -60,7 +69,7 @@ export async function getOrganizations() {
   return /** @type {Promise<Organization[]>} */ (request('organizations'));
 }
 
-/** Get a single volunteer by ID. @param {number} id @returns {Promise<User>} */
+/** Get a single user by ID. @param {number} id @returns {Promise<User>} */
 export async function getUser(id) {
   return /** @type {Promise<User>} */ (request(`users/${id}`));
 }
@@ -70,14 +79,55 @@ export async function getOrganization(id) {
   return /** @type {Promise<Organization>} */ (request(`organizations/${id}`));
 }
 
-/** Update the authenticated volunteer's own profile. @param {number} id @param {Partial<User>} data @returns {Promise<User>} */
+/** Update the authenticated user's own profile. @param {number} id @param {Partial<User>} data @returns {Promise<User>} */
 export async function updateUser(id, data) {
   return /** @type {Promise<User>} */ (request(`users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }));
 }
 
-/** Update the authenticated organization's own profile. @param {number} id @param {Partial<Organization>} data @returns {Promise<Organization>} */
+/** Update the authenticated organization's profile (admin context). @param {number} id @param {Partial<Organization>} data @returns {Promise<Organization>} */
 export async function updateOrganization(id, data) {
   return /** @type {Promise<Organization>} */ (request(`organizations/${id}`, { method: 'PATCH', body: JSON.stringify(data) }));
+}
+
+/** Create a new organization; caller becomes admin. @param {{ name: string, bio?: string, location?: GeoLocation | null }} data @returns {Promise<Organization>} */
+export async function createOrganization(data) {
+  return /** @type {Promise<Organization>} */ (request('organizations', { method: 'POST', body: JSON.stringify(data) }));
+}
+
+/** List org memberships for the logged-in user. @returns {Promise<Membership[]>} */
+export async function getMyMemberships() {
+  return /** @type {Promise<Membership[]>} */ (request('users/me/memberships'));
+}
+
+/**
+ * Add a member or admin to an organization.
+ *
+ * @param {number} orgId
+ * @param {{ userId: number, role: 'admin' | 'member' }} data
+ */
+export async function addOrganizationMember(orgId, data) {
+  return request(`organizations/${orgId}/members`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+/**
+ * Change a member's role.
+ *
+ * @param {number} orgId
+ * @param {number} userId
+ * @param {{ role: 'admin' | 'member' }} data
+ */
+export async function updateOrganizationMember(orgId, userId, data) {
+  return request(`organizations/${orgId}/members/${userId}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+/**
+ * Remove a member or leave an organization.
+ *
+ * @param {number} orgId
+ * @param {number} userId
+ */
+export async function removeOrganizationMember(orgId, userId) {
+  return request(`organizations/${orgId}/members/${userId}`, { method: 'DELETE' });
 }
 
 /** Follow a volunteer. @param {number} id @returns {Promise<unknown>} */

@@ -21,6 +21,7 @@ if ($id === null && method() === 'POST') {
         jsonResponse(['error' => 'Only organizations can create projects'], 403);
         exit;
     }
+    requireOrgAdminSession($auth['id']);
     $input = getJsonInput();
     $title = trim($input['title'] ?? '');
     $description = trim($input['description'] ?? '');
@@ -76,10 +77,7 @@ if ($id !== null && $sub === 'posts' && method() === 'POST') {
         jsonResponse(['error' => 'Project not found'], 404);
         exit;
     }
-    if ((int) $project['orgId'] !== $auth['id'] || $auth['type'] !== 'organization') {
-        jsonResponse(['error' => 'Forbidden'], 403);
-        exit;
-    }
+    requireOrgAdminSession((int) $project['orgId']);
     $input = getJsonInput();
     $content = trim($input['content'] ?? '');
     if (!$content) {

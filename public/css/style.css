@@ -817,7 +817,8 @@ main#app {
   margin-top: 0.25rem;
 }
 
-.profile-badge--volunteer {
+.profile-badge--volunteer,
+.profile-badge--user {
   background: rgba(59, 130, 246, 0.15);
   color: #1d4ed8;
 }
@@ -853,6 +854,100 @@ main#app {
 .message-picker-item .profile-badge {
   margin-left: auto;
   margin-top: 0;
+}
+
+.account-switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.account-switcher-toggle {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-switcher-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 200;
+  min-width: 200px;
+  max-width: min(280px, 90vw);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 0.35rem;
+}
+
+.account-switcher-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.account-switcher-item:hover,
+.account-switcher-item.active {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.account-switcher-create {
+  color: var(--primary);
+  font-weight: 600;
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+  border-radius: 0 0 8px 8px;
+}
+
+.org-members-list,
+.org-memberships-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.org-member-row,
+.org-members-list li,
+.org-memberships-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.role-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+
+.role-chip--admin {
+  background: rgba(234, 179, 8, 0.2);
+  color: #a16207;
+}
+
+.role-chip--member {
+  background: rgba(148, 163, 184, 0.25);
+  color: var(--text-muted);
+}
+
+.profile-volunteering-prefs .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
 }
 
 .profile-bio {

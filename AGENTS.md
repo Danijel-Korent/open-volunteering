@@ -26,17 +26,16 @@
 
 Seeded accounts log in with **name + password** (not email). All seeded accounts use password: **password123**
 
-Volunteers live in `data/users.json`; organizations live in `data/organizations.json` (separate ID namespaces).
+Only **users** can log in (`data/users.json`). Organizations (`data/organizations.json`) have no passwords — access is via memberships in `data/organization_members.json`.
 
-| Name | Type | Org ID | Login password |
-|------|------|--------|----------------|
-| Maria Santos | volunteer | — | password123 |
-| James Chen | volunteer | — | password123 |
-| Green City Initiative | organization | 1 | password123 |
-| Community Shelter | organization | 2 | password123 |
-| Youth Mentors Network | organization | 3 | password123 |
+| Name | Login | Org admin of |
+|------|-------|----------------|
+| Maria Santos | password123 | Green City Initiative (1), Community Shelter (2), Youth Mentors Network (3) |
+| James Chen | password123 | Test Org Alpha (4), ngo1 (5) |
 
-Organization profiles: `#/organization/{id}`. Volunteer profiles: `#/profile/{id}`.
+Organization profiles: `#/organization/{id}`. User profiles: `#/profile/{id}`.
+
+Switch org context via header **account switcher** (admins only). Create org from switcher or user profile.
 
 ### Test selectors
 
@@ -44,7 +43,10 @@ Prefer `data-testid` attributes:
 
 - `nav-feed`, `nav-positions`, `nav-calendar`, `nav-map`, `nav-profile`
 - `btn-login`, `btn-register`, `btn-logout`
-- `login-name`, `login-password`, `register-name`, `register-type`, `register-success`, `register-success-password`, `register-copy-credentials`, `register-continue`
+- `account-switcher`, `account-switcher-toggle`, `account-switcher-create`, `account-switch-org-{id}`, `account-switch-user`
+- `login-name`, `login-password`, `register-name`, `register-success`, `register-success-password`, `register-copy-credentials`, `register-continue`
+- `profile-seeking-volunteering`, `profile-weekly-volunteering-hours`, `btn-create-organization`, `create-org-modal`, `create-org-name`
+- `user-memberships-section`, `membership-{orgId}`, `org-members-section`, `org-member-{userId}`, `org-member-search`
 - `feed-algorithm`, `feed-filter-user-post`, `feed-filter-org-post`, `feed-filter-position`, `feed-filter-event`
 - `post-card-{type}-{id}`, `pagination-next`, `map-container`
 - `calendar-event-{id}`, `create-post-form`, `create-post-dropzone`, `create-post-file-input`, `create-post-image-preview`, `profile-save`

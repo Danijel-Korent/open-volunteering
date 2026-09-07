@@ -100,29 +100,44 @@ sequenceDiagram
 
 ## 4. Authentication and sessions
 
-Authentication uses **PHP server-side sessions** with cookie-based identity.
+Authentication uses **PHP server-side sessions** with cookie-based identity. Only **users** (people accounts in `users.json`) can log in. Organizations are not login accounts; they are managed through **memberships** in `organization_members.json`.
+
+### Users vs volunteers
+
+A **user** is anyone with a personal account. Not every user is seeking volunteer work — org staff may use the platform without volunteering. Optional profile fields `seekingVolunteering` and `weeklyVolunteeringHours` express volunteering availability.
 
 ### Server
 
-- [`api/config.php`](api/config.php) starts the session and exposes `currentUserId()`, `requireAuth()`, and `publicUser()`.
-- On register or login, [`api/auth.php`](api/auth.php) sets `$_SESSION['userId']`.
-- `requireAuth()` returns HTTP 401 with `{ "error": "Authentication required" }` when no session exists.
-- `publicUser()` strips `passwordHash` before any user record is sent to the client.
-- Passwords are stored as bcrypt hashes (`password_hash` / `password_verify`).
+- [`api/config.php`](api/config.php) starts the session and exposes `getSessionUserId()`, `getActiveAccount()`, `requireAuth()`, `requireOrgAdminSession()`, and `publicUser()`.
+- On register or login, [`api/auth.php`](api/auth.php) sets `$_SESSION['userId']` and active context (`activeAccountType` / `activeAccountId`).
+- `POST /api/auth/switch` lets an org **admin** switch active context to an organization they administer.
+- `requireAuth()` returns HTTP 401 when no session exists.
+- `publicUser()` strips `passwordHash` and adds `type: "user"`.
+
+### Session fields
+
+| Field | Meaning |
+|-------|---------|
+| `userId` | Logged-in user (always set after login) |
+| `activeAccountType` | Acting context: `user` or `organization` |
+| `activeAccountId` | ID in the active context |
+
+Stored JSON records (conversation participants, RSVPs, etc.) use `accountType` / `accountId` as permanent references — not the session “active” prefix.
 
 ### Client
 
-- [`public/js/api.js`](public/js/api.js) sends `credentials: 'include'` on every request so session cookies are attached.
-- [`public/js/auth.js`](public/js/auth.js) caches the current user via `GET /api/auth/me` and dispatches a custom `authchanged` event on login/logout; `app.js` re-renders in response.
+- [`public/js/api.js`](public/js/api.js) sends `credentials: 'include'` on every request.
+- [`public/js/auth.js`](public/js/auth.js) caches `GET /api/auth/me` as `MeResponse` (includes `userId`, `memberships`, `activeAccountType`, `activeAccountId`) and renders a header **account switcher** for admins.
 
 ### Auth endpoints
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/auth/register` | No | Register; sets session. Body: `name`, `type` (`volunteer` \| `organization`). Server generates a word-number password and returns it once as `generatedPassword`. |
-| POST | `/api/auth/login` | No | Login; sets session. Body: `name`, `password` |
+| POST | `/api/auth/register` | No | Register user. Body: `name`. Server generates password once as `generatedPassword`. |
+| POST | `/api/auth/login` | No | Login. Body: `name`, `password` |
 | POST | `/api/auth/logout` | No | Destroy session |
-| GET | `/api/auth/me` | Yes | Current user (401 if not logged in) |
+| GET | `/api/auth/me` | Yes | Session context + active account profile |
+| POST | `/api/auth/switch` | Yes | Body: `activeAccountType`, `activeAccountId?` |
 
 ### Prototype gaps
 
@@ -132,7 +147,11 @@ Not yet implemented (see README "Non-prototype todo"): CSRF tokens, rate limitin
 
 ### Entity relationships
 
-All entities relate via integer IDs. **Volunteers** and **organizations** use separate ID namespaces in `users.json` and `organizations.json`. Cross-references that could point to either kind use polymorphic `accountType` + `accountId` (or `authorType` + `authorId` on content).
+All entities relate via integer IDs. **Users** and **organizations** use separate ID namespaces in `users.json` and `organizations.json`. Organization **memberships** (`organization_members.json`) link users to orgs with role `admin` or `member`. Cross-references use polymorphic `accountType` + `accountId` (or `authorType` + `authorId` on content).
+
+- **Posts, positions, events** use `authorType` (`user` \| `organization`) + `authorId`.
+- **Session** stores `userId` plus active context `activeAccountType` / `activeAccountId`.
+- **Applications** use `userId` (user must have `seekingVolunteering: true` to apply).
 
 ```mermaid
 erDiagram
@@ -169,8 +188,9 @@ erDiagram
 
 | Entity | File | API handler |
 |--------|------|-------------|
-| Volunteers | `users.json` | `auth.php`, `users.php` |
-| Organizations | `organizations.json` | `auth.php`, `organizations.php` |
+| Users | `users.json` | `auth.php`, `users.php` |
+| Organization members | `organization_members.json` | `organizations.php` |
+| Organizations | `organizations.json` | `organizations.php` |
 | Posts | `posts.json` | `posts.php` |
 | Positions | `positions.json` | `positions.php` |
 | Events | `events.json` | `events.php` |
@@ -196,11 +216,14 @@ Map markers are computed at request time in `map.php` (not stored separately).
 Canonical field definitions live in [`public/js/types.d.ts`](public/js/types.d.ts). Example shapes:
 
 ```typescript
-// Volunteer (users.json)
-{ id, email, name, bio?, location?, skills?, experience?, avatarFileId?, createdAt? }
+// User (users.json)
+{ id, email, name, bio?, location?, skills?, experience?, seekingVolunteering?, weeklyVolunteeringHours?, avatarFileId?, createdAt? }
 
-// Organization (organizations.json)
-{ id, email, name, bio?, location?, avatarFileId?, createdAt? }
+// Organization (organizations.json) — no login credentials
+{ id, name, bio?, location?, createdByUserId?, avatarFileId?, createdAt? }
+
+// Organization member
+{ id, organizationId, userId, role: "admin"|"member", joinedAt }
 
 // Post
 { id, authorType, authorId, postType, content, likeCount, shareCount, imageFileId?, createdAt }
@@ -217,7 +240,7 @@ Records not yet fully defined in `types.d.ts`:
 | Entity | Fields |
 |--------|--------|
 | Follow | `followerType`, `followerId`, `followingType`, `followingId`, `createdAt` |
-| Application | `id`, `positionId`, `volunteerId`, `status`, `createdAt` |
+| Application | `id`, `positionId`, `userId`, `status`, `createdAt` |
 | Event RSVP | `eventId`, `accountType`, `accountId`, `status` (`going` \| `maybe`) |
 | Project post | `id`, `projectId`, `content`, `createdAt` |
 | Conversation participant | `conversationId`, `accountType`, `accountId`, `joinedAt`, `role`, `lastReadAt?` |
@@ -242,7 +265,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 
 - GET list/detail endpoints are **public** (no login required).
 - POST, PATCH, DELETE mutations require a **valid session**.
-- **Role checks:** organizations create positions and projects; volunteers apply to positions and set availability; users can only PATCH their own profile.
+- **Role checks:** org admins (in active org context) create positions/projects and manage members; users with `seekingVolunteering` apply to positions; users PATCH only their own profile.
 
 **CORS:** `OPTIONS` returns 204; `Access-Control-Allow-Origin: *` on all responses (prototype setting).
 
@@ -250,29 +273,35 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| POST | `/api/auth/register` | No | Body: `name`, `type`. Response includes one-time `generatedPassword`. |
+| POST | `/api/auth/register` | No | Body: `name`. Response includes one-time `generatedPassword`. |
 | POST | `/api/auth/login` | No | Body: `name`, `password` |
 | POST | `/api/auth/logout` | No | Clears session |
-| GET | `/api/auth/me` | Yes | Current user |
+| GET | `/api/auth/me` | Yes | Session + active account |
+| POST | `/api/auth/switch` | Yes | Switch user/org context |
 
 ### users — `/api/users[/{id}[/{sub}]]`
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| GET | `/api/users` | No | List all volunteers |
-| GET | `/api/users/{id}` | No | Single volunteer |
-| PATCH | `/api/users/{id}` | Yes (own profile) | Body: `name`, `bio`, `location`, `skills`, `experience`, `avatarFileId` |
-| POST | `/api/users/{id}/follow` | Yes | Follow volunteer |
-| DELETE | `/api/users/{id}/follow` | Yes | Unfollow volunteer |
-| GET | `/api/users/{id}/feed` | No | Volunteer profile feed (delegates to `feed.php`) |
+| GET | `/api/users` | No | List all users |
+| GET | `/api/users/me/memberships` | Yes | Org memberships for logged-in user |
+| GET | `/api/users/{id}` | No | Single user |
+| PATCH | `/api/users/{id}` | Yes (own profile) | Includes `seekingVolunteering`, `weeklyVolunteeringHours` |
+| POST | `/api/users/{id}/follow` | Yes | Follow user |
+| DELETE | `/api/users/{id}/follow` | Yes | Unfollow user |
+| GET | `/api/users/{id}/feed` | No | User profile feed (delegates to `feed.php`) |
 
 ### organizations — `/api/organizations[/{id}[/{sub}]]`
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
+| POST | `/api/organizations` | Yes (user) | Create org; caller becomes admin |
 | GET | `/api/organizations` | No | List all organizations |
-| GET | `/api/organizations/{id}` | No | Single organization |
-| PATCH | `/api/organizations/{id}` | Yes (own org) | Body: `name`, `bio`, `location`, `avatarFileId` |
+| GET | `/api/organizations/{id}` | No | Single organization with `members[]` |
+| PATCH | `/api/organizations/{id}` | Yes (org admin context) | Body: `name`, `bio`, `location`, `avatarFileId` |
+| POST | `/api/organizations/{id}/members` | Yes (org admin) | Body: `userId`, `role` |
+| PATCH | `/api/organizations/{id}/members/{userId}` | Yes (org admin) | Change role |
+| DELETE | `/api/organizations/{id}/members/{userId}` | Yes (admin or self) | Remove / leave |
 | POST | `/api/organizations/{id}/follow` | Yes | Follow organization |
 | DELETE | `/api/organizations/{id}/follow` | Yes | Unfollow organization |
 | GET | `/api/organizations/{id}/feed` | No | Organization profile feed (delegates to `feed.php`) |

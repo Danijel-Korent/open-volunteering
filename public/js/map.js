@@ -7,7 +7,7 @@ let mapInstance = null;
 /** Marker dot colours by entity type. @type {Record<string, string>} */
 const MARKER_COLORS = {
   organization: '#22c55e',
-  volunteer: '#3b82f6',
+  user: '#3b82f6',
   position: '#f59e0b',
   event: '#8b5cf6',
 };
@@ -22,7 +22,7 @@ export async function renderMap(container) {
     <h1 class="page-title">Map</h1>
     <div class="map-legend">
       <span class="map-legend-item"><span class="map-legend-dot" style="background:#22c55e"></span> Organizations</span>
-      <span class="map-legend-item"><span class="map-legend-dot" style="background:#3b82f6"></span> Volunteers</span>
+      <span class="map-legend-item"><span class="map-legend-dot" style="background:#3b82f6"></span> Users</span>
       <span class="map-legend-item"><span class="map-legend-dot" style="background:#f59e0b"></span> Positions</span>
       <span class="map-legend-item"><span class="map-legend-dot" style="background:#8b5cf6"></span> Events</span>
     </div>
@@ -58,7 +58,8 @@ export async function renderMap(container) {
     const bounds = [];
 
     markers.forEach((m) => {
-      const color = MARKER_COLORS[m.type] || '#666';
+      const markerType = /** @type {string} */ (m.type) === 'volunteer' ? 'user' : m.type;
+      const color = MARKER_COLORS[markerType] || '#666';
       const icon = L.divIcon({
         className: 'custom-marker',
         html: `<div style="background:${color};width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>`,
@@ -67,8 +68,10 @@ export async function renderMap(container) {
       });
 
       let link = '#/feed';
-      if (m.type === 'organization' || m.type === 'volunteer') {
+      if (m.type === 'organization' || m.type === 'user') {
         link = profileLink({ type: m.type, id: m.id });
+      } else if (/** @type {string} */ (m.type) === 'volunteer') {
+        link = profileLink({ type: 'user', id: m.id });
       } else if (m.type === 'position') link = '#/positions';
       else if (m.type === 'event') link = '#/calendar';
 

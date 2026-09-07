@@ -27,37 +27,59 @@ function placeholderEmail(string $name, int $id): string {
 }
 
 /**
- * Find account by name and verify password.
+ * Find user by name and verify password.
  *
  * @param string $name
  * @param string $password
- * @return array{type: string, record: array<string, mixed>}|null
+ * @return array<string, mixed>|null
  */
-function findAccountByCredentials(string $name, string $password): ?array {
-    foreach (readVolunteers() as $user) {
+function findUserByCredentials(string $name, string $password): ?array {
+    foreach (readUsers() as $user) {
         if (strcasecmp($user['name'], $name) === 0 && password_verify($password, $user['passwordHash'])) {
-            return ['type' => 'volunteer', 'record' => $user];
-        }
-    }
-    foreach (readOrganizations() as $org) {
-        if (strcasecmp($org['name'], $name) === 0 && password_verify($password, $org['passwordHash'])) {
-            return ['type' => 'organization', 'record' => $org];
+            return $user;
         }
     }
     return null;
 }
 
+/**
+ * Build /auth/me response with session context.
+ *
+ * @return array<string, mixed>
+ */
+function buildMeResponse(): array {
+    $userId = requireUserSession();
+    $active = getActiveAccount();
+    if ($active === null) {
+        jsonResponse(['error' => 'Not authenticated'], 401);
+        exit;
+    }
+
+    $response = publicAccount($active['type'], $active['record']);
+    $response['userId'] = $userId;
+    $response['activeAccountType'] = $active['type'];
+    $response['activeAccountId'] = $active['id'];
+    $response['memberships'] = listUserMemberships($userId);
+
+    $userRecord = findUser(readUsers(), $userId);
+    if ($userRecord !== null) {
+        $response['userProfile'] = publicUser($userRecord);
+    }
+
+    if ($active['type'] === 'organization') {
+        $membership = getUserMembership($userId, $active['id']);
+        $response['organizationRole'] = $membership['role'] ?? null;
+    }
+
+    return $response;
+}
+
 if ($action === 'register' && method() === 'POST') {
     $input = getJsonInput();
     $name = trim($input['name'] ?? '');
-    $type = $input['type'] ?? 'volunteer';
 
     if (!$name) {
         jsonResponse(['error' => 'Name is required'], 400);
-        exit;
-    }
-    if (!in_array($type, ['volunteer', 'organization'], true)) {
-        jsonResponse(['error' => 'Type must be volunteer or organization'], 400);
         exit;
     }
     if (isNameTaken($name)) {
@@ -66,43 +88,25 @@ if ($action === 'register' && method() === 'POST') {
     }
 
     $password = generateSimplePassword();
-
-    if ($type === 'organization') {
-        $orgs = readOrganizations();
-        $id = nextId($orgs);
-        $org = [
-            'id' => $id,
-            'email' => placeholderEmail($name, $id),
-            'passwordHash' => password_hash($password, PASSWORD_DEFAULT),
-            'name' => $name,
-            'bio' => '',
-            'location' => null,
-            'createdAt' => date('c'),
-        ];
-        $orgs[] = $org;
-        writeJson(ORGANIZATIONS_JSON, $orgs);
-        setCurrentAccount('organization', $id);
-        $response = publicOrganization($org);
-    } else {
-        $users = readVolunteers();
-        $id = nextId($users);
-        $user = [
-            'id' => $id,
-            'email' => placeholderEmail($name, $id),
-            'passwordHash' => password_hash($password, PASSWORD_DEFAULT),
-            'name' => $name,
-            'bio' => '',
-            'location' => null,
-            'skills' => [],
-            'experience' => [],
-            'createdAt' => date('c'),
-        ];
-        $users[] = $user;
-        writeJson(VOLUNTEERS_JSON, $users);
-        setCurrentAccount('volunteer', $id);
-        $response = publicVolunteer($user);
-    }
-
+    $users = readUsers();
+    $id = nextId($users);
+    $user = [
+        'id' => $id,
+        'email' => placeholderEmail($name, $id),
+        'passwordHash' => password_hash($password, PASSWORD_DEFAULT),
+        'name' => $name,
+        'bio' => '',
+        'location' => null,
+        'skills' => [],
+        'experience' => [],
+        'seekingVolunteering' => false,
+        'weeklyVolunteeringHours' => 0,
+        'createdAt' => date('c'),
+    ];
+    $users[] = $user;
+    writeJson(USERS_JSON, $users);
+    loginUserSession($id);
+    $response = publicUser($user);
     $response['generatedPassword'] = $password;
     jsonResponse($response, 201);
     exit;
@@ -118,15 +122,14 @@ if ($action === 'login' && method() === 'POST') {
         exit;
     }
 
-    $found = findAccountByCredentials($name, $password);
-    if ($found === null) {
+    $user = findUserByCredentials($name, $password);
+    if ($user === null) {
         jsonResponse(['error' => 'Invalid name or password'], 401);
         exit;
     }
 
-    $id = (int) $found['record']['id'];
-    setCurrentAccount($found['type'], $id);
-    jsonResponse(publicAccount($found['type'], $found['record']));
+    loginUserSession((int) $user['id']);
+    jsonResponse(buildMeResponse());
     exit;
 }
 
@@ -137,12 +140,50 @@ if ($action === 'logout' && method() === 'POST') {
 }
 
 if ($action === 'me' && method() === 'GET') {
-    $account = getCurrentAccount();
-    if ($account === null) {
+    if (getSessionUserId() === null) {
         jsonResponse(['error' => 'Not authenticated'], 401);
         exit;
     }
-    jsonResponse(publicAccount($account['type'], $account['record']));
+    jsonResponse(buildMeResponse());
+    exit;
+}
+
+if ($action === 'switch' && method() === 'POST') {
+    $userId = requireUserSession();
+    $input = getJsonInput();
+    $type = $input['activeAccountType'] ?? $input['accountType'] ?? '';
+    $targetId = isset($input['activeAccountId']) ? (int) $input['activeAccountId']
+        : (isset($input['accountId']) ? (int) $input['accountId'] : null);
+
+    if ($type === 'volunteer') {
+        $type = 'user';
+    }
+
+    if ($type === 'user') {
+        setActiveAccount('user', $userId);
+        jsonResponse(buildMeResponse());
+        exit;
+    }
+
+    if ($type === 'organization') {
+        if ($targetId === null) {
+            jsonResponse(['error' => 'activeAccountId is required for organization context'], 400);
+            exit;
+        }
+        if (!findOrganization(readOrganizations(), $targetId)) {
+            jsonResponse(['error' => 'Organization not found'], 404);
+            exit;
+        }
+        if (!isOrgAdmin($userId, $targetId)) {
+            jsonResponse(['error' => 'Only organization admins can switch to this organization'], 403);
+            exit;
+        }
+        setActiveAccount('organization', $targetId);
+        jsonResponse(buildMeResponse());
+        exit;
+    }
+
+    jsonResponse(['error' => 'activeAccountType must be user or organization'], 400);
     exit;
 }
 

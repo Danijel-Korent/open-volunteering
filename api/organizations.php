@@ -4,11 +4,52 @@ require_once __DIR__ . '/config.php';
 $segments = getPathSegments();
 $id = isset($segments[1]) ? (int) $segments[1] : null;
 $sub = $segments[2] ?? '';
+$memberUserId = isset($segments[3]) ? (int) $segments[3] : null;
 
 $orgs = readOrganizations();
 
 if ($id === null && method() === 'GET') {
-    jsonResponse(array_map('publicOrganization', $orgs));
+    jsonResponse(array_map(fn($o) => enrichOrganizationWithMembers(publicOrganization($o)), $orgs));
+    exit;
+}
+
+if ($id === null && method() === 'POST') {
+    $userId = requireUserSession();
+    $input = getJsonInput();
+    $name = trim($input['name'] ?? '');
+    if (!$name) {
+        jsonResponse(['error' => 'Name is required'], 400);
+        exit;
+    }
+    if (isNameTaken($name)) {
+        jsonResponse(['error' => 'Name already taken'], 409);
+        exit;
+    }
+
+    $id = nextId($orgs);
+    $org = [
+        'id' => $id,
+        'name' => $name,
+        'bio' => trim($input['bio'] ?? ''),
+        'location' => $input['location'] ?? null,
+        'createdByUserId' => $userId,
+        'createdAt' => date('c'),
+    ];
+    $orgs[] = $org;
+    writeJson(ORGANIZATIONS_JSON, $orgs);
+
+    $members = readOrganizationMembers();
+    $members[] = [
+        'id' => nextId($members),
+        'organizationId' => $id,
+        'userId' => $userId,
+        'role' => 'admin',
+        'joinedAt' => date('c'),
+    ];
+    writeOrganizationMembers($members);
+
+    setActiveAccount('organization', $id);
+    jsonResponse(enrichOrganizationWithMembers(publicOrganization($org)), 201);
     exit;
 }
 
@@ -18,16 +59,12 @@ if ($id !== null && $sub === '' && method() === 'GET') {
         jsonResponse(['error' => 'Organization not found'], 404);
         exit;
     }
-    jsonResponse(publicOrganization($org));
+    jsonResponse(enrichOrganizationWithMembers(publicOrganization($org)));
     exit;
 }
 
 if ($id !== null && $sub === '' && method() === 'PATCH') {
-    $auth = requireAuth();
-    if ($auth['type'] !== 'organization' || $auth['id'] !== $id) {
-        jsonResponse(['error' => 'Forbidden'], 403);
-        exit;
-    }
+    requireOrgAdminSession($id);
     $input = getJsonInput();
     $idx = null;
     foreach ($orgs as $i => $o) {
@@ -68,7 +105,108 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
         $orgs[$idx][$field] = $input[$field];
     }
     writeJson(ORGANIZATIONS_JSON, $orgs);
-    jsonResponse(publicOrganization($orgs[$idx]));
+    jsonResponse(enrichOrganizationWithMembers(publicOrganization($orgs[$idx])));
+    exit;
+}
+
+if ($id !== null && $sub === 'members' && $memberUserId === null && method() === 'POST') {
+    requireOrgAdminSession($id);
+    $input = getJsonInput();
+    $targetUserId = (int) ($input['userId'] ?? 0);
+    $role = $input['role'] ?? 'member';
+    if (!$targetUserId || !findUser(readUsers(), $targetUserId)) {
+        jsonResponse(['error' => 'User not found'], 404);
+        exit;
+    }
+    if (!in_array($role, ['admin', 'member'], true)) {
+        jsonResponse(['error' => 'Role must be admin or member'], 400);
+        exit;
+    }
+    if (getUserMembership($targetUserId, $id) !== null) {
+        jsonResponse(['error' => 'User is already a member'], 409);
+        exit;
+    }
+    $members = readOrganizationMembers();
+    $members[] = [
+        'id' => nextId($members),
+        'organizationId' => $id,
+        'userId' => $targetUserId,
+        'role' => $role,
+        'joinedAt' => date('c'),
+    ];
+    writeOrganizationMembers($members);
+    jsonResponse(['ok' => true], 201);
+    exit;
+}
+
+if ($id !== null && $sub === 'members' && $memberUserId !== null && method() === 'PATCH') {
+    requireOrgAdminSession($id);
+    $input = getJsonInput();
+    $role = $input['role'] ?? '';
+    if (!in_array($role, ['admin', 'member'], true)) {
+        jsonResponse(['error' => 'Role must be admin or member'], 400);
+        exit;
+    }
+    $members = readOrganizationMembers();
+    $idx = null;
+    foreach ($members as $i => $m) {
+        if ((int) $m['organizationId'] === $id && (int) $m['userId'] === $memberUserId) {
+            $idx = $i;
+            break;
+        }
+    }
+    if ($idx === null) {
+        jsonResponse(['error' => 'Member not found'], 404);
+        exit;
+    }
+    if (($members[$idx]['role'] ?? '') === 'admin' && $role === 'member' && countOrgAdmins($id) <= 1) {
+        jsonResponse(['error' => 'Cannot demote the last admin'], 400);
+        exit;
+    }
+    $members[$idx]['role'] = $role;
+    writeOrganizationMembers($members);
+    jsonResponse(['ok' => true]);
+    exit;
+}
+
+if ($id !== null && $sub === 'members' && $memberUserId !== null && method() === 'DELETE') {
+    $sessionUserId = requireUserSession();
+    $members = readOrganizationMembers();
+    $idx = null;
+    foreach ($members as $i => $m) {
+        if ((int) $m['organizationId'] === $id && (int) $m['userId'] === $memberUserId) {
+            $idx = $i;
+            break;
+        }
+    }
+    if ($idx === null) {
+        jsonResponse(['error' => 'Member not found'], 404);
+        exit;
+    }
+
+    $isSelf = $sessionUserId === $memberUserId;
+    $isAdmin = isOrgAdmin($sessionUserId, $id);
+    if (!$isSelf && !$isAdmin) {
+        jsonResponse(['error' => 'Forbidden'], 403);
+        exit;
+    }
+    if (!$isSelf) {
+        requireOrgAdminSession($id);
+    }
+    if (($members[$idx]['role'] ?? '') === 'admin' && countOrgAdmins($id) <= 1) {
+        jsonResponse(['error' => 'Cannot remove the last admin'], 400);
+        exit;
+    }
+
+    array_splice($members, $idx, 1);
+    writeOrganizationMembers($members);
+
+    $active = getActiveAccount();
+    if ($active && $active['type'] === 'organization' && $active['id'] === $id && $isSelf) {
+        setActiveAccount('user', $sessionUserId);
+    }
+
+    jsonResponse(['ok' => true]);
     exit;
 }
 

@@ -1,5 +1,5 @@
 import * as api from './api.js';
-import { getCurrentUser, loadCurrentUser } from './auth.js';
+import { getCurrentUser, loadCurrentUser, getSessionUserId, showCreateOrganizationModal, switchToAccount } from './auth.js';
 import { isSameAccount, profileLink, renderProfileBadge } from './account-utils.js';
 import { renderAvatarHtml, setupImageDropzone } from './components/image-dropzone.js';
 import { renderPostCard } from './components/post-card.js';
@@ -31,8 +31,9 @@ export async function renderProfile(container, userId, projectId) {
     return;
   }
 
-  const isOwn = !userId || (current?.type === 'volunteer' && current.id === userId);
-  const targetId = userId || (current?.type === 'volunteer' ? current.id : undefined);
+  const sessionUserId = getSessionUserId();
+  const isOwn = !userId || (sessionUserId !== null && sessionUserId === userId);
+  const targetId = userId || sessionUserId || undefined;
 
   if (!targetId) {
     container.innerHTML = `
@@ -67,8 +68,8 @@ export async function renderProfile(container, userId, projectId) {
  */
 export async function renderOrganization(container, orgId, projectId) {
   const current = getCurrentUser();
-  if (!orgId && current?.type === 'volunteer') {
-    window.location.hash = `#/profile/${current.id}`;
+  if (!orgId && current?.activeAccountType === 'user') {
+    window.location.hash = `#/profile/${current.userId}`;
     return;
   }
 
@@ -77,8 +78,11 @@ export async function renderOrganization(container, orgId, projectId) {
     return;
   }
 
-  const isOwn = !orgId || (current?.type === 'organization' && current.id === orgId);
-  const targetId = orgId || (current?.type === 'organization' ? current.id : undefined);
+  const targetId = orgId || (current?.activeAccountType === 'organization' ? current.activeAccountId : undefined);
+  const isOwnAdmin = current?.activeAccountType === 'organization'
+    && targetId !== undefined
+    && current.activeAccountId === targetId
+    && current.organizationRole === 'admin';
 
   if (!targetId) {
     container.innerHTML = `
@@ -94,7 +98,7 @@ export async function renderOrganization(container, orgId, projectId) {
 
   try {
     const org = await api.getOrganization(targetId);
-    if (isOwn && current) {
+    if (isOwnAdmin && current) {
       await renderOwnOrganizationProfile(container, org);
     } else {
       await renderPublicOrganizationProfile(container, org);
@@ -148,7 +152,22 @@ async function renderOwnVolunteerProfile(container, user) {
         <label>Experience (one per line)</label>
         <textarea id="profile-experience" data-testid="profile-experience">${escapeHtml((user.experience || []).join('\n'))}</textarea>
       </div>
+      <div class="form-group profile-volunteering-prefs">
+        <label class="checkbox-label">
+          <input type="checkbox" id="profile-seeking-volunteering" data-testid="profile-seeking-volunteering" ${user.seekingVolunteering ? 'checked' : ''}>
+          Looking for volunteering positions
+        </label>
+      </div>
+      <div class="form-group" id="profile-hours-wrap">
+        <label>Hours per week available</label>
+        <input type="number" min="0" step="1" id="profile-weekly-volunteering-hours" data-testid="profile-weekly-volunteering-hours" value="${user.weeklyVolunteeringHours ?? 0}">
+      </div>
       <button class="btn btn-primary" data-testid="profile-save">Save profile</button>
+    </div>
+    <div class="profile-section" data-testid="user-memberships-section">
+      <h3>Your organizations</h3>
+      <div id="user-memberships-list"></div>
+      <button type="button" class="btn btn-primary" data-testid="btn-create-organization" style="margin-top:0.75rem">Create organization</button>
     </div>
     ${renderVolunteerActions()}
     ${renderSubscriptionsSection()}
@@ -197,13 +216,19 @@ async function renderOwnVolunteerProfile(container, user) {
       .split(',').map((s) => s.trim()).filter(Boolean);
     data.experience = /** @type {HTMLTextAreaElement} */ (document.getElementById('profile-experience')).value
       .split('\n').map((s) => s.trim()).filter(Boolean);
+    data.seekingVolunteering = /** @type {HTMLInputElement} */ (document.getElementById('profile-seeking-volunteering')).checked;
+    data.weeklyVolunteeringHours = parseInt(/** @type {HTMLInputElement} */ (document.getElementById('profile-weekly-volunteering-hours')).value, 10) || 0;
     await api.updateUser(user.id, data);
     api.showToast('Profile saved!');
   });
 
   setupVolunteerEventForm(container);
   setupSubscriptions(container);
-  await loadProfileFeed('volunteer', user.id);
+  await setupUserMembershipsSection(container, user.id);
+  container.querySelector('[data-testid="btn-create-organization"]')?.addEventListener('click', () => {
+    void showCreateOrganizationModal();
+  });
+  await loadProfileFeed('user', user.id);
 }
 
 /**
@@ -245,6 +270,15 @@ async function renderOwnOrganizationProfile(container, org) {
       <button class="btn btn-primary" data-testid="profile-save">Save profile</button>
     </div>
     ${renderOrgActions()}
+    <div class="profile-section" data-testid="org-members-admin-section">
+      <h3>Members</h3>
+      <div id="org-members-admin-list"></div>
+      <div class="form-group" style="margin-top:0.75rem">
+        <label>Add member (search by name)</label>
+        <input type="text" id="org-member-search" data-testid="org-member-search" placeholder="Type a name…">
+        <div id="org-member-search-results" class="message-picker-list"></div>
+      </div>
+    </div>
     <div class="profile-section" data-testid="org-applicants-section">
       <h3>Position applicants</h3>
       <div id="org-applicants-list"><p class="empty-state">Loading…</p></div>
@@ -297,6 +331,7 @@ async function renderOwnOrganizationProfile(container, org) {
   });
 
   setupOrgForms(container, org.id);
+  await setupOrgMemberManagement(container, org);
   await loadOrgMessagingSections(container, org.id);
   await loadProfileFeed('organization', org.id);
 }
@@ -559,11 +594,12 @@ async function renderPublicVolunteerProfile(container, user) {
         ${renderAvatarHtml(user, 'profile-avatar')}
         <div>
           <h1 class="profile-name">${escapeHtml(user.name)}</h1>
-          ${renderProfileBadge('volunteer')}
+          ${renderProfileBadge('user')}
         </div>
       </div>
       <p class="profile-bio">${escapeHtml(user.bio || '')}</p>
       ${user.location?.label ? `<p class="post-meta">📍 ${escapeHtml(user.location.label)}</p>` : ''}
+      ${user.seekingVolunteering ? `<p class="post-meta">🕐 Available ${user.weeklyVolunteeringHours ?? 0}h/week for volunteering</p>` : ''}
       ${user.skills?.length ? `
         <div class="profile-section"><h3>Skills</h3>
           <div class="tag-list">${user.skills.map((s) => `<span class="tag">${escapeHtml(s)}</span>`).join('')}</div>
@@ -590,13 +626,180 @@ async function renderPublicVolunteerProfile(container, user) {
 
   container.querySelector(`[data-testid="btn-message-user-${user.id}"]`)?.addEventListener('click', async () => {
     try {
-      await startDirectMessage('volunteer', user.id);
+      await startDirectMessage('user', user.id);
     } catch (err) {
       api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
     }
   });
 
-  await loadProfileFeed('volunteer', user.id);
+  await loadProfileFeed('user', user.id);
+}
+
+/**
+ * Render HTML for organization members list (public).
+ *
+ * @param {Organization} org
+ * @returns {string}
+ */
+function renderOrgMembersHtml(org) {
+  const members = org.members ?? [];
+  if (members.length === 0) return '';
+  const rows = members.map((m) => {
+    const name = m.user?.name ?? `User ${m.userId}`;
+    const roleLabel = m.role === 'admin' ? 'Admin' : 'Member';
+    return `<li class="org-member-row" data-testid="org-member-${m.userId}">
+      <a href="#/profile/${m.userId}">${escapeHtml(name)}</a>
+      <span class="role-chip role-chip--${m.role}">${roleLabel}</span>
+    </li>`;
+  }).join('');
+  return `
+    <div class="profile-section" data-testid="org-members-section">
+      <h3>Members</h3>
+      <ul class="org-members-list">${rows}</ul>
+    </div>
+  `;
+}
+
+/**
+ * Wire up memberships list on the user's own profile.
+ *
+ * @param {HTMLElement} container
+ * @param {number} userId
+ */
+async function setupUserMembershipsSection(container, userId) {
+  const listEl = container.querySelector('#user-memberships-list');
+  if (!listEl) return;
+  const memberships = await api.getMyMemberships();
+  if (memberships.length === 0) {
+    listEl.innerHTML = '<p class="post-meta">You are not a member of any organization yet.</p>';
+    return;
+  }
+  listEl.innerHTML = `<ul class="org-memberships-list">${memberships.map((m) => {
+    const isAdmin = m.role === 'admin';
+    return `<li data-testid="membership-${m.organizationId}">
+      <a href="#/organization/${m.organizationId}">${escapeHtml(m.organizationName)}</a>
+      <span class="role-chip role-chip--${m.role}">${isAdmin ? 'Admin' : 'Member'}</span>
+      ${isAdmin ? `<button type="button" class="btn btn-sm" data-switch-org="${m.organizationId}">Switch</button>` : ''}
+      ${!isAdmin ? `<button type="button" class="btn btn-sm" data-leave-org="${m.organizationId}">Leave</button>` : ''}
+    </li>`;
+  }).join('')}</ul>`;
+
+  listEl.querySelectorAll('[data-switch-org]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const orgId = parseInt(btn.getAttribute('data-switch-org') || '0', 10);
+      try {
+        await switchToAccount('organization', orgId);
+      } catch (err) {
+        api.showToast(err instanceof Error ? err.message : 'Switch failed');
+      }
+    });
+  });
+
+  listEl.querySelectorAll('[data-leave-org]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const orgId = parseInt(btn.getAttribute('data-leave-org') || '0', 10);
+      try {
+        await api.removeOrganizationMember(orgId, userId);
+        api.showToast('Left organization');
+        await setupUserMembershipsSection(container, userId);
+        await loadCurrentUser();
+      } catch (err) {
+        api.showToast(err instanceof Error ? err.message : 'Failed to leave');
+      }
+    });
+  });
+}
+
+/**
+ * Admin UI for managing organization members.
+ *
+ * @param {HTMLElement} container
+ * @param {Organization} org
+ */
+async function setupOrgMemberManagement(container, org) {
+  const listEl = container.querySelector('#org-members-admin-list');
+  const searchInput = /** @type {HTMLInputElement | null} */ (container.querySelector('#org-member-search'));
+  const resultsEl = container.querySelector('#org-member-search-results');
+  if (!listEl) return;
+
+  const refreshMembers = async () => {
+    const fresh = await api.getOrganization(org.id);
+    const members = fresh.members ?? [];
+    listEl.innerHTML = members.length === 0
+      ? '<p class="post-meta">No members yet.</p>'
+      : `<ul class="org-members-list">${members.map((m) => {
+        const name = m.user?.name ?? `User ${m.userId}`;
+        return `<li data-testid="org-admin-member-${m.userId}">
+          <a href="#/profile/${m.userId}">${escapeHtml(name)}</a>
+          <span class="role-chip role-chip--${m.role}">${m.role === 'admin' ? 'Admin' : 'Member'}</span>
+          <select data-member-role="${m.userId}" data-testid="org-member-role-${m.userId}">
+            <option value="member" ${m.role === 'member' ? 'selected' : ''}>Member</option>
+            <option value="admin" ${m.role === 'admin' ? 'selected' : ''}>Admin</option>
+          </select>
+          <button type="button" class="btn btn-sm" data-remove-member="${m.userId}">Remove</button>
+        </li>`;
+      }).join('')}</ul>`;
+
+    listEl.querySelectorAll('[data-member-role]').forEach((sel) => {
+      sel.addEventListener('change', async () => {
+        const uid = parseInt(sel.getAttribute('data-member-role') || '0', 10);
+        const role = /** @type {HTMLSelectElement} */ (sel).value;
+        try {
+          await api.updateOrganizationMember(org.id, uid, { role: /** @type {'admin' | 'member'} */ (role) });
+          await refreshMembers();
+        } catch (err) {
+          api.showToast(err instanceof Error ? err.message : 'Failed to update role');
+        }
+      });
+    });
+
+    listEl.querySelectorAll('[data-remove-member]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const uid = parseInt(btn.getAttribute('data-remove-member') || '0', 10);
+        try {
+          await api.removeOrganizationMember(org.id, uid);
+          await refreshMembers();
+        } catch (err) {
+          api.showToast(err instanceof Error ? err.message : 'Failed to remove member');
+        }
+      });
+    });
+  };
+
+  if (searchInput && resultsEl) {
+    let allUsers = [];
+    searchInput.addEventListener('focus', async () => {
+      allUsers = await api.getUsers();
+    });
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      const memberIds = new Set((org.members ?? []).map((m) => m.userId));
+      const matches = allUsers.filter((u) =>
+        !memberIds.has(u.id) && u.name.toLowerCase().includes(q)
+      ).slice(0, 8);
+      resultsEl.innerHTML = matches.map((u) => `
+        <button type="button" class="message-picker-item" data-add-user="${u.id}">
+          ${escapeHtml(u.name)}
+        </button>
+      `).join('') || '<p class="post-meta">No users found</p>';
+
+      resultsEl.querySelectorAll('[data-add-user]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const uid = parseInt(btn.getAttribute('data-add-user') || '0', 10);
+          try {
+            await api.addOrganizationMember(org.id, { userId: uid, role: 'member' });
+            searchInput.value = '';
+            resultsEl.innerHTML = '';
+            await refreshMembers();
+          } catch (err) {
+            api.showToast(err instanceof Error ? err.message : 'Failed to add member');
+          }
+        });
+      });
+    });
+  }
+
+  await refreshMembers();
 }
 
 /**
@@ -618,6 +821,7 @@ async function renderPublicOrganizationProfile(container, org) {
       </div>
       <p class="profile-bio">${escapeHtml(org.bio || '')}</p>
       ${org.location?.label ? `<p class="post-meta">📍 ${escapeHtml(org.location.label)}</p>` : ''}
+      ${renderOrgMembersHtml(org)}
       ${current && !isSameAccount(current, org) ? `
         <div class="profile-actions">
           <button class="btn btn-primary" data-testid="btn-follow">Follow</button>
@@ -676,14 +880,14 @@ async function loadOrgMessagingSections(container, orgId) {
               <h4>${escapeHtml(position.title)}</h4>
               <ul class="org-messaging-list">
                 ${apps.map((app) => {
-                  const vol = app.volunteer;
-                  if (!vol) return '';
+                  const applicant = app.user;
+                  if (!applicant) return '';
                   return `
                     <li>
-                      <span>${escapeHtml(vol.name)}</span>
+                      <span>${escapeHtml(applicant.name)}</span>
                       <button type="button" class="btn btn-sm btn-primary"
-                        data-testid="btn-message-applicant-${vol.id}"
-                        data-volunteer-id="${vol.id}">Message</button>
+                        data-testid="btn-message-applicant-${applicant.id}"
+                        data-user-id="${applicant.id}">Message</button>
                     </li>
                   `;
                 }).join('')}
@@ -709,19 +913,19 @@ async function loadOrgMessagingSections(container, orgId) {
         availabilityEl.innerHTML = `
           <ul class="org-messaging-list">
             ${offers.map((offer) => {
-              const vol = offer.volunteer;
-              if (!vol) return '';
+              const offerUser = offer.user;
+              if (!offerUser) return '';
               const skills = (offer.skillsOffered || []).join(', ');
               const target = `${offer.targetType} #${offer.targetId}`;
               return `
                 <li>
                   <div>
-                    <strong>${escapeHtml(vol.name)}</strong>
+                    <strong>${escapeHtml(offerUser.name)}</strong>
                     <div class="post-meta">${escapeHtml(skills)} · ${escapeHtml(target)}</div>
                   </div>
                   <button type="button" class="btn btn-sm btn-primary"
-                    data-testid="btn-message-volunteer-${vol.id}"
-                    data-volunteer-id="${vol.id}">Message</button>
+                    data-testid="btn-message-volunteer-${offerUser.id}"
+                    data-user-id="${offerUser.id}">Message</button>
                 </li>
               `;
             }).join('')}
@@ -733,12 +937,12 @@ async function loadOrgMessagingSections(container, orgId) {
     }
   }
 
-  container.querySelectorAll('[data-volunteer-id]').forEach((btn) => {
+  container.querySelectorAll('[data-user-id]').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      const volunteerId = parseInt(btn.getAttribute('data-volunteer-id') || '0', 10);
-      if (!volunteerId) return;
+      const uid = parseInt(btn.getAttribute('data-user-id') || '0', 10);
+      if (!uid) return;
       try {
-        await startDirectMessage('volunteer', volunteerId);
+        await startDirectMessage('user', uid);
       } catch (err) {
         api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
       }

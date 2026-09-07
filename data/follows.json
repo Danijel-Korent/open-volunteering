@@ -1,6 +1,6 @@
 [
-    { "followerType": "volunteer", "followerId": 1, "followingType": "organization", "followingId": 1, "createdAt": "2026-05-20T10:00:00+02:00" },
-    { "followerType": "volunteer", "followerId": 1, "followingType": "organization", "followingId": 2, "createdAt": "2026-05-22T11:00:00+02:00" },
-    { "followerType": "volunteer", "followerId": 2, "followingType": "organization", "followingId": 3, "createdAt": "2026-05-25T09:00:00+02:00" },
-    { "followerType": "volunteer", "followerId": 2, "followingType": "volunteer", "followingId": 1, "createdAt": "2026-06-01T08:00:00+02:00" }
+    { "followerType": "user", "followerId": 1, "followingType": "organization", "followingId": 1, "createdAt": "2026-05-20T10:00:00+02:00" },
+    { "followerType": "user", "followerId": 1, "followingType": "organization", "followingId": 2, "createdAt": "2026-05-22T11:00:00+02:00" },
+    { "followerType": "user", "followerId": 2, "followingType": "organization", "followingId": 3, "createdAt": "2026-05-25T09:00:00+02:00" },
+    { "followerType": "user", "followerId": 2, "followingType": "user", "followingId": 1, "createdAt": "2026-06-01T08:00:00+02:00" }
 ]

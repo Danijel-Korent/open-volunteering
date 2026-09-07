@@ -2,29 +2,37 @@
 require_once __DIR__ . '/config.php';
 
 $segments = getPathSegments();
-$id = isset($segments[1]) ? (int) $segments[1] : null;
-$sub = $segments[2] ?? '';
+$sub = $segments[1] ?? '';
+$id = isset($segments[1]) && $segments[1] !== 'me' ? (int) $segments[1] : null;
+$subAction = $segments[2] ?? '';
 
-$users = readVolunteers();
+$users = readUsers();
 
-if ($id === null && method() === 'GET') {
-    jsonResponse(array_map('publicVolunteer', $users));
+if ($sub === 'me' && $subAction === 'memberships' && method() === 'GET') {
+    $userId = requireUserSession();
+    jsonResponse(listUserMemberships($userId));
     exit;
 }
 
-if ($id !== null && $sub === '' && method() === 'GET') {
-    $user = findVolunteer($users, $id);
+if ($id === null && method() === 'GET') {
+    jsonResponse(array_map('publicUser', $users));
+    exit;
+}
+
+if ($id !== null && $subAction === '' && method() === 'GET') {
+    $user = findUser($users, $id);
     if (!$user) {
         jsonResponse(['error' => 'User not found'], 404);
         exit;
     }
-    jsonResponse(publicVolunteer($user));
+    jsonResponse(publicUser($user));
     exit;
 }
 
-if ($id !== null && $sub === '' && method() === 'PATCH') {
+if ($id !== null && $subAction === '' && method() === 'PATCH') {
     $auth = requireAuth();
-    if ($auth['type'] !== 'volunteer' || $auth['id'] !== $id) {
+    $userId = requireUserSession();
+    if ($auth['type'] !== 'user' || $auth['id'] !== $userId || $userId !== $id) {
         jsonResponse(['error' => 'Forbidden'], 403);
         exit;
     }
@@ -41,7 +49,7 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
         exit;
     }
 
-    $allowed = ['name', 'bio', 'location', 'skills', 'experience', 'avatarFileId'];
+    $allowed = ['name', 'bio', 'location', 'skills', 'experience', 'avatarFileId', 'seekingVolunteering', 'weeklyVolunteeringHours'];
     foreach ($allowed as $field) {
         if (!array_key_exists($field, $input)) {
             continue;
@@ -55,7 +63,7 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
                 }
                 unset($users[$idx]['avatarFileId']);
             } else {
-                requireAttachableFile($avatarFileId, 'volunteer', $id);
+                requireAttachableFile($avatarFileId, 'user', $id);
                 $oldAvatarId = isset($users[$idx]['avatarFileId']) ? (int) $users[$idx]['avatarFileId'] : null;
                 if ($oldAvatarId && $oldAvatarId !== $avatarFileId) {
                     deleteStoredFile($oldAvatarId);
@@ -67,25 +75,25 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
         }
         $users[$idx][$field] = $input[$field];
     }
-    writeJson(VOLUNTEERS_JSON, $users);
-    jsonResponse(publicVolunteer($users[$idx]));
+    writeJson(USERS_JSON, $users);
+    jsonResponse(publicUser($users[$idx]));
     exit;
 }
 
-if ($id !== null && $sub === 'follow' && method() === 'POST') {
+if ($id !== null && $subAction === 'follow' && method() === 'POST') {
     $auth = requireAuth();
-    if ($auth['type'] === 'volunteer' && $auth['id'] === $id) {
+    if ($auth['type'] === 'user' && $auth['id'] === $id) {
         jsonResponse(['error' => 'Cannot follow yourself'], 400);
         exit;
     }
-    if (!findVolunteer($users, $id)) {
+    if (!findUser($users, $id)) {
         jsonResponse(['error' => 'User not found'], 404);
         exit;
     }
     $follows = readJson('follows.json');
     foreach ($follows as $f) {
         if ($f['followerType'] === $auth['type'] && (int) $f['followerId'] === $auth['id']
-            && $f['followingType'] === 'volunteer' && (int) $f['followingId'] === $id) {
+            && $f['followingType'] === 'user' && (int) $f['followingId'] === $id) {
             jsonResponse(['ok' => true, 'following' => true]);
             exit;
         }
@@ -93,7 +101,7 @@ if ($id !== null && $sub === 'follow' && method() === 'POST') {
     $follows[] = [
         'followerType' => $auth['type'],
         'followerId' => $auth['id'],
-        'followingType' => 'volunteer',
+        'followingType' => 'user',
         'followingId' => $id,
         'createdAt' => date('c'),
     ];
@@ -102,19 +110,19 @@ if ($id !== null && $sub === 'follow' && method() === 'POST') {
     exit;
 }
 
-if ($id !== null && $sub === 'follow' && method() === 'DELETE') {
+if ($id !== null && $subAction === 'follow' && method() === 'DELETE') {
     $auth = requireAuth();
     $follows = readJson('follows.json');
     $follows = array_values(array_filter($follows, fn($f) =>
         !($f['followerType'] === $auth['type'] && (int) $f['followerId'] === $auth['id']
-            && $f['followingType'] === 'volunteer' && (int) $f['followingId'] === $id)
+            && $f['followingType'] === 'user' && (int) $f['followingId'] === $id)
     ));
     writeJson('follows.json', $follows);
     jsonResponse(['ok' => true, 'following' => false]);
     exit;
 }
 
-if ($id !== null && $sub === 'feed' && method() === 'GET') {
+if ($id !== null && $subAction === 'feed' && method() === 'GET') {
     require __DIR__ . '/feed.php';
     exit;
 }

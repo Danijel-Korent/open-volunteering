@@ -1,21 +1,39 @@
 import * as api from './api.js';
 
-/** @type {Account | null} */
+/** @type {MeResponse | null} */
 let currentUser = null;
 
 /**
- * Get cached current account (volunteer or organization).
+ * Get cached active account (user or organization context).
  *
- * @returns {Account | null}
+ * @returns {MeResponse | null}
  */
 export function getCurrentUser() {
   return currentUser;
 }
 
 /**
- * Load current account from API.
+ * Get logged-in user id (stable across context switches).
  *
- * @returns {Promise<Account | null>}
+ * @returns {number | null}
+ */
+export function getSessionUserId() {
+  return currentUser?.userId ?? null;
+}
+
+/**
+ * Get org memberships for the logged-in user.
+ *
+ * @returns {Membership[]}
+ */
+export function getMemberships() {
+  return currentUser?.memberships ?? [];
+}
+
+/**
+ * Load current session from API.
+ *
+ * @returns {Promise<MeResponse | null>}
  */
 export async function loadCurrentUser() {
   try {
@@ -34,6 +52,163 @@ function emitAuthChanged() {
 }
 
 /**
+ * Escape HTML special characters in a string.
+ *
+ * @param {string} s
+ * @returns {string}
+ */
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/**
+ * Switch active account context and refresh session.
+ *
+ * @param {AccountType} activeAccountType
+ * @param {number} [activeAccountId]
+ * @returns {Promise<void>}
+ */
+export async function switchToAccount(activeAccountType, activeAccountId) {
+  currentUser = await api.switchAccount({
+    activeAccountType,
+    activeAccountId,
+  });
+  emitAuthChanged();
+  if (activeAccountType === 'organization' && activeAccountId) {
+    window.location.hash = `#/organization/${activeAccountId}`;
+  } else {
+    window.location.hash = '#/profile';
+  }
+}
+
+/**
+ * Show modal to create a new organization.
+ *
+ * @returns {Promise<void>}
+ */
+export async function showCreateOrganizationModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.dataset.testid = 'create-org-modal';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Create organization</h3>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="create-org-name" data-testid="create-org-name" required>
+      </div>
+      <div class="form-group">
+        <label>Bio (optional)</label>
+        <textarea id="create-org-bio" data-testid="create-org-bio"></textarea>
+      </div>
+      <div style="display:flex;gap:0.5rem;margin-top:1rem">
+        <button type="button" class="btn btn-primary" data-testid="create-org-submit">Create</button>
+        <button type="button" class="btn" data-testid="create-org-cancel">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.querySelector('[data-testid="create-org-cancel"]')?.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  overlay.querySelector('[data-testid="create-org-submit"]')?.addEventListener('click', async () => {
+    const name = /** @type {HTMLInputElement} */ (overlay.querySelector('#create-org-name')).value.trim();
+    const bio = /** @type {HTMLTextAreaElement} */ (overlay.querySelector('#create-org-bio')).value.trim();
+    if (!name) {
+      api.showToast('Name is required');
+      return;
+    }
+    try {
+      const org = await api.createOrganization({ name, bio });
+      await loadCurrentUser();
+      emitAuthChanged();
+      close();
+      window.location.hash = `#/organization/${org.id}`;
+    } catch (err) {
+      api.showToast(err instanceof Error ? err.message : 'Failed to create organization');
+    }
+  });
+}
+
+/**
+ * Render account switcher dropdown HTML.
+ *
+ * @param {MeResponse} me
+ * @returns {string}
+ */
+function renderAccountSwitcher(me) {
+  const adminOrgs = (me.memberships ?? []).filter((m) => m.role === 'admin');
+  const isUserContext = me.activeAccountType === 'user';
+  const userName = me.userProfile?.name ?? (me.type === 'user' ? /** @type {User} */ (me).name : 'My profile');
+
+  const orgOptions = adminOrgs.map((m) => {
+    const active = !isUserContext && me.activeAccountId === m.organizationId;
+    return `<button type="button" class="account-switcher-item${active ? ' active' : ''}" data-switch-type="organization" data-switch-id="${m.organizationId}" data-testid="account-switch-org-${m.organizationId}">
+      ${escapeHtml(m.organizationName)}
+    </button>`;
+  }).join('');
+
+  return `
+    <div class="account-switcher" data-testid="account-switcher">
+      <button type="button" class="account-switcher-toggle btn btn-sm" data-testid="account-switcher-toggle" aria-haspopup="listbox">
+        ${escapeHtml(/** @type {MeResponse} */ (me).name)} ▾
+      </button>
+      <div class="account-switcher-menu" hidden>
+        <button type="button" class="account-switcher-item${isUserContext ? ' active' : ''}" data-switch-type="user" data-testid="account-switch-user">
+          ${escapeHtml(userName)}
+        </button>
+        ${orgOptions}
+        <button type="button" class="account-switcher-item account-switcher-create" data-testid="account-switcher-create">
+          + Create organization
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Bind account switcher interactions.
+ */
+function bindAccountSwitcher() {
+  const switcher = document.querySelector('.account-switcher');
+  if (!switcher) return;
+
+  const toggle = switcher.querySelector('.account-switcher-toggle');
+  const menu = /** @type {HTMLElement | null} */ (switcher.querySelector('.account-switcher-menu'));
+
+  toggle?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (menu) menu.hidden = !menu.hidden;
+  });
+
+  document.addEventListener('click', () => {
+    if (menu) menu.hidden = true;
+  });
+
+  switcher.querySelectorAll('[data-switch-type]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const type = /** @type {AccountType} */ (btn.getAttribute('data-switch-type'));
+      const idAttr = btn.getAttribute('data-switch-id');
+      const id = idAttr ? parseInt(idAttr, 10) : undefined;
+      try {
+        await switchToAccount(type, id);
+      } catch (err) {
+        api.showToast(err instanceof Error ? err.message : 'Switch failed');
+      }
+    });
+  });
+
+  switcher.querySelector('[data-testid="account-switcher-create"]')?.addEventListener('click', () => {
+    if (menu) menu.hidden = true;
+    void showCreateOrganizationModal();
+  });
+}
+
+/**
  * Update auth status in header.
  */
 export function renderAuthStatus() {
@@ -44,9 +219,10 @@ export function renderAuthStatus() {
     el.innerHTML = `
       <a href="#/messages" class="header-messages-link" data-testid="header-messages">Messages</a>
       <span class="unread-badge" data-testid="header-messages-unread" hidden></span>
-      <span class="user-name" data-testid="current-user-name">${escapeHtml(currentUser.name)}</span>
+      ${renderAccountSwitcher(currentUser)}
       <button class="btn btn-sm" data-testid="btn-logout" id="btn-logout">Logout</button>
     `;
+    bindAccountSwitcher();
     document.getElementById('btn-logout')?.addEventListener('click', async () => {
       await api.logout();
       currentUser = null;
@@ -85,18 +261,6 @@ export async function refreshMessagesUnreadBadge() {
 }
 
 /**
- * Escape HTML special characters in a string.
- *
- * @param {string} s
- * @returns {string}
- */
-function escapeHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-/**
  * Render login form (name + password).
  *
  * @param {HTMLElement} container
@@ -125,7 +289,7 @@ export function renderLogin(container) {
     const name = /** @type {HTMLInputElement} */ (document.getElementById('login-name')).value;
     const password = /** @type {HTMLInputElement} */ (document.getElementById('login-password')).value;
     try {
-      currentUser = /** @type {User} */ (await api.login({ name, password }));
+      currentUser = await api.login({ name, password });
       emitAuthChanged();
       window.location.hash = '#/feed';
     } catch (err) {
@@ -189,7 +353,7 @@ function renderRegisterSuccess(container, name, password) {
 }
 
 /**
- * Render register form (name + account type only; password is generated server-side).
+ * Render register form (name only; password is generated server-side).
  *
  * @param {HTMLElement} container
  */
@@ -197,18 +361,11 @@ export function renderRegister(container) {
   container.innerHTML = `
     <form class="auth-form" data-testid="register-form">
       <h2>Register</h2>
-      <p class="auth-form-hint">Enter a display name and account type. A simple password will be generated for you.</p>
+      <p class="auth-form-hint">Enter a display name. A simple password will be generated for you.</p>
       <div class="form-error" id="register-error" hidden></div>
       <div class="form-group">
         <label for="reg-name">Name</label>
         <input type="text" id="reg-name" data-testid="register-name" required autocomplete="name">
-      </div>
-      <div class="form-group">
-        <label for="reg-type">Account type</label>
-        <select id="reg-type" data-testid="register-type">
-          <option value="volunteer">Person / Volunteer</option>
-          <option value="organization">Organization</option>
-        </select>
       </div>
       <button type="submit" class="btn btn-primary" style="width:100%" data-testid="register-submit">Create account</button>
       <p class="form-switch">Already have an account? <a href="#/login">Login</a></p>
@@ -219,10 +376,9 @@ export function renderRegister(container) {
     e.preventDefault();
     const errorEl = document.getElementById('register-error');
     const name = /** @type {HTMLInputElement} */ (document.getElementById('reg-name')).value.trim();
-    const type = /** @type {HTMLSelectElement} */ (document.getElementById('reg-type')).value;
     try {
-      const result = /** @type {RegisterResponse} */ (await api.register({ name, type }));
-      currentUser = result;
+      const result = /** @type {RegisterResponse} */ (await api.register({ name }));
+      await loadCurrentUser();
       emitAuthChanged();
       renderRegisterSuccess(container, name, result.generatedPassword);
     } catch (err) {
@@ -234,11 +390,6 @@ export function renderRegister(container) {
   });
 }
 
-/**
- * Keep the header unread badge in sync after inbox/thread activity.
- * Listens for `messageschanged` from messages.js to avoid a circular import
- * (messages.js cannot import refreshMessagesUnreadBadge from auth.js).
- */
 window.addEventListener('messageschanged', () => {
   void refreshMessagesUnreadBadge();
 });

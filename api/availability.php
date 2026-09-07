@@ -4,17 +4,14 @@ require_once __DIR__ . '/config.php';
 $segments = getPathSegments();
 
 if (method() === 'GET') {
-    $account = getCurrentAccount();
+    $account = getActiveAccount();
     $targetType = $_GET['targetType'] ?? null;
     $targetId = isset($_GET['targetId']) ? (int) $_GET['targetId'] : null;
     $forOrgId = isset($_GET['forOrgId']) ? (int) $_GET['forOrgId'] : null;
     $avail = readJson('availability.json');
 
     if ($forOrgId !== null) {
-        if ($account === null || $account['type'] !== 'organization' || $account['id'] !== $forOrgId) {
-            jsonResponse(['error' => 'Forbidden'], 403);
-            exit;
-        }
+        requireOrgAdminSession($forOrgId);
         if (findOrganization(readOrganizations(), $forOrgId) === null) {
             jsonResponse(['error' => 'Organization not found'], 404);
             exit;
@@ -66,17 +63,20 @@ if (method() === 'GET') {
         ));
     } elseif ($account !== null) {
         $mine = $_GET['mine'] ?? '';
-        if ($mine === '1' && $account['type'] === 'volunteer') {
-            $avail = array_values(array_filter($avail, fn($a) => (int) $a['volunteerId'] === $account['id']));
+        if ($mine === '1' && $account['type'] === 'user') {
+            $avail = array_values(array_filter($avail, fn($a) =>
+                (int) ($a['userId'] ?? $a['volunteerId'] ?? 0) === $account['id']
+            ));
         }
     }
-    $users = readVolunteers();
+    $users = readUsers();
     $result = [];
     foreach ($avail as $a) {
-        $vol = findVolunteer($users, (int) $a['volunteerId']);
+        $uid = (int) ($a['userId'] ?? $a['volunteerId'] ?? 0);
+        $user = findUser($users, $uid);
         $result[] = [
             ...$a,
-            'volunteer' => $vol ? publicVolunteer($vol) : null,
+            'user' => $user ? publicUser($user) : null,
         ];
     }
     jsonResponse($result);
@@ -85,8 +85,8 @@ if (method() === 'GET') {
 
 if (method() === 'POST') {
     $auth = requireAuth();
-    if ($auth['type'] !== 'volunteer') {
-        jsonResponse(['error' => 'Only volunteers can set availability'], 403);
+    if ($auth['type'] !== 'user') {
+        jsonResponse(['error' => 'Only users can set availability'], 403);
         exit;
     }
     $input = getJsonInput();
@@ -99,7 +99,8 @@ if (method() === 'POST') {
     }
     $avail = readJson('availability.json');
     foreach ($avail as $i => $a) {
-        if ((int) $a['volunteerId'] === $auth['id'] && $a['targetType'] === $targetType && (int) $a['targetId'] === $targetId) {
+        if ((int) ($a['userId'] ?? $a['volunteerId'] ?? 0) === $auth['id']
+            && $a['targetType'] === $targetType && (int) $a['targetId'] === $targetId) {
             $avail[$i]['skillsOffered'] = $skillsOffered;
             writeJson('availability.json', $avail);
             jsonResponse($avail[$i]);
@@ -108,7 +109,7 @@ if (method() === 'POST') {
     }
     $entry = [
         'id' => nextId($avail),
-        'volunteerId' => $auth['id'],
+        'userId' => $auth['id'],
         'targetType' => $targetType,
         'targetId' => $targetId,
         'skillsOffered' => $skillsOffered,

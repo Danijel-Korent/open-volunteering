@@ -85,7 +85,7 @@ if ($id !== null && $sub === '' && method() === 'DELETE') {
         jsonResponse(['error' => 'File not found'], 404);
         exit;
     }
-    $ownerType = $found['record']['ownerType'] ?? 'volunteer';
+    $ownerType = $found['record']['ownerType'] ?? 'user';
     if ($ownerType !== $auth['type'] || (int) $found['record']['ownerId'] !== $auth['id']) {
         jsonResponse(['error' => 'Forbidden'], 403);
         exit;

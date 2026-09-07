@@ -19,6 +19,8 @@
             "Food bank volunteer 2020-2024",
             "Park cleanup organizer 2022"
         ],
+        "seekingVolunteering": true,
+        "weeklyVolunteeringHours": 10,
         "createdAt": "2024-01-15T10:00:00+01:00"
     },
     {
@@ -40,6 +42,8 @@
         "experience": [
             "Coding workshops for youth 2023"
         ],
+        "seekingVolunteering": true,
+        "weeklyVolunteeringHours": 5,
         "createdAt": "2024-03-20T14:00:00+01:00"
     },
     {
@@ -51,6 +55,8 @@
         "location": null,
         "skills": [],
         "experience": [],
+        "seekingVolunteering": false,
+        "weeklyVolunteeringHours": 0,
         "createdAt": "2026-06-15T09:48:07+02:00"
     },
     {
@@ -62,6 +68,8 @@
         "location": null,
         "skills": [],
         "experience": [],
+        "seekingVolunteering": false,
+        "weeklyVolunteeringHours": 0,
         "createdAt": "2026-08-11T13:19:16+02:00"
     },
     {
@@ -73,6 +81,8 @@
         "location": null,
         "skills": [],
         "experience": [],
+        "seekingVolunteering": false,
+        "weeklyVolunteeringHours": 0,
         "createdAt": "2026-08-12T08:40:32+02:00",
         "avatarFileId": 2
     }

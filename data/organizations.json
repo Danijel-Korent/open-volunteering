@@ -1,8 +1,6 @@
 [
     {
         "id": 1,
-        "email": "green@example.com",
-        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
         "name": "Green City Initiative",
         "bio": "Local environmental organization. We plant trees, clean parks, and promote sustainable living.",
         "location": {
@@ -10,12 +8,11 @@
             "lat": 45.817,
             "lng": 15.985
         },
+        "createdByUserId": 1,
         "createdAt": "2023-06-01T09:00:00+01:00"
     },
     {
         "id": 2,
-        "email": "shelter@example.com",
-        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
         "name": "Community Shelter",
         "bio": "Providing shelter and support for those in need since 2015.",
         "location": {
@@ -23,12 +20,11 @@
             "lat": 45.808,
             "lng": 15.972
         },
+        "createdByUserId": 1,
         "createdAt": "2023-01-10T08:00:00+01:00"
     },
     {
         "id": 3,
-        "email": "youth@example.com",
-        "passwordHash": "$2y$10$4J7c3FUmlffwX0.1YSo1FutfUj9fPhX4MlGn2HROdAXiczfCBPmZi",
         "name": "Youth Mentors Network",
         "bio": "Connecting young people with mentors and learning opportunities.",
         "location": {
@@ -36,24 +32,23 @@
             "lat": 45.82,
             "lng": 15.99
         },
+        "createdByUserId": 1,
         "createdAt": "2023-09-15T11:00:00+01:00"
     },
     {
         "id": 4,
-        "email": "test-org-alpha-7@open-volunteering.local",
-        "passwordHash": "$2y$10$CK9g4AEjXW8J.IbXQcz33.GlWHpqzfLdSYT4Fz9J4qKqLPx/v.X2y",
         "name": "Test Org Alpha",
         "bio": "",
         "location": null,
+        "createdByUserId": 2,
         "createdAt": "2026-08-11T11:45:43+02:00"
     },
     {
         "id": 5,
-        "email": "ngo1-10@open-volunteering.local",
-        "passwordHash": "$2y$10$UuQrmOSxPtDO0XXZfrsNde.p3yvTWT8Ki2TiVVYoTPWYDtRe02NAu",
         "name": "ngo1",
         "bio": "",
         "location": null,
+        "createdByUserId": 2,
         "createdAt": "2026-08-23T07:54:26+02:00"
     }
 ]

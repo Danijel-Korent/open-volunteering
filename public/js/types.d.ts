@@ -1,6 +1,6 @@
 /** Shared domain types for checkJs. */
 
-type AccountType = 'volunteer' | 'organization';
+type AccountType = 'user' | 'organization';
 
 interface GeoLocation {
   label: string;
@@ -8,16 +8,18 @@ interface GeoLocation {
   lng: number;
 }
 
-/** Volunteer profile (stored in users.json). */
+/** User profile (stored in users.json). */
 interface User {
   id: number;
-  type: 'volunteer';
+  type: 'user';
   email: string;
   name: string;
   bio?: string;
   location?: GeoLocation | null;
   skills?: string[];
   experience?: string[];
+  seekingVolunteering?: boolean;
+  weeklyVolunteeringHours?: number;
   avatarFileId?: number;
   createdAt?: string;
 }
@@ -26,16 +28,41 @@ interface User {
 interface Organization {
   id: number;
   type: 'organization';
-  email: string;
   name: string;
   bio?: string;
   location?: GeoLocation | null;
   avatarFileId?: number;
+  createdByUserId?: number;
   createdAt?: string;
+  members?: OrganizationMemberRow[];
 }
 
-/** Authenticated session account (volunteer or organization). */
+interface OrganizationMemberRow {
+  userId: number;
+  role: 'admin' | 'member';
+  joinedAt?: string;
+  user?: { id: number; name: string; type: 'user' };
+}
+
+interface Membership {
+  organizationId: number;
+  organizationName: string;
+  role: 'admin' | 'member';
+  joinedAt?: string | null;
+}
+
+/** Authenticated session account (user or organization). */
 type Account = User | Organization;
+
+/** Extended /auth/me response with session context. */
+type MeResponse = Account & {
+  userId: number;
+  activeAccountType: AccountType;
+  activeAccountId: number;
+  memberships: Membership[];
+  organizationRole?: 'admin' | 'member';
+  userProfile?: User;
+};
 
 interface StoredFile {
   id: number;
@@ -52,7 +79,7 @@ interface StoredFile {
 }
 
 /** Register response includes the one-time generated password. */
-type RegisterResponse = Account & { generatedPassword: string };
+type RegisterResponse = User & { generatedPassword: string };
 
 interface Post {
   id: number;
@@ -143,7 +170,7 @@ interface Project {
 }
 
 interface MapMarker {
-  type: 'organization' | 'volunteer' | 'position' | 'event';
+  type: 'organization' | 'user' | 'position' | 'event';
   id: number;
   name: string;
   lat: number;
@@ -161,12 +188,12 @@ interface Subscription {
 
 interface Availability {
   id: number;
-  volunteerId: number;
+  userId: number;
   targetType: string;
   targetId: number;
   skillsOffered: string[];
   createdAt: string;
-  volunteer?: User | null;
+  user?: User | null;
 }
 
 interface ProjectDetailResponse {
@@ -177,10 +204,10 @@ interface ProjectDetailResponse {
 interface Application {
   id: number;
   positionId: number;
-  volunteerId: number;
+  userId: number;
   status: 'pending' | string;
   createdAt: string;
-  volunteer?: User | null;
+  user?: User | null;
 }
 
 interface AccountRef {

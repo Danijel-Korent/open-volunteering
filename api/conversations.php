@@ -68,7 +68,7 @@ function participantsForConversation(array $participants, int $conversationId): 
 function findParticipant(array $participants, int $conversationId, string $accountType, int $accountId): ?array {
     foreach ($participants as $p) {
         if ((int) $p['conversationId'] === $conversationId
-            && ($p['accountType'] ?? 'volunteer') === $accountType
+            && ($p['accountType'] ?? 'user') === $accountType
             && (int) $p['accountId'] === $accountId) {
             return $p;
         }
@@ -103,7 +103,7 @@ function requireParticipant(array $participants, int $conversationId, string $ac
 function publicParticipants(array $rows): array {
     $result = [];
     foreach ($rows as $row) {
-        $type = $row['accountType'] ?? 'volunteer';
+        $type = $row['accountType'] ?? 'user';
         $accountId = (int) $row['accountId'];
         $record = resolveAccount($type, $accountId);
         if ($record === null) {
@@ -162,7 +162,7 @@ function conversationDisplayName(
         }
         $names = [];
         foreach ($participantRows as $row) {
-            $type = $row['accountType'] ?? 'volunteer';
+            $type = $row['accountType'] ?? 'user';
             $accountId = (int) $row['accountId'];
             if ($type === $currentType && $accountId === $currentId) {
                 continue;
@@ -179,7 +179,7 @@ function conversationDisplayName(
     }
 
     foreach ($participantRows as $row) {
-        $type = $row['accountType'] ?? 'volunteer';
+        $type = $row['accountType'] ?? 'user';
         $accountId = (int) $row['accountId'];
         if ($type !== $currentType || $accountId !== $currentId) {
             $record = resolveAccount($type, $accountId);
@@ -219,7 +219,7 @@ function findDirectConversation(
             continue;
         }
         $keys = array_map(
-            fn($r) => accountKey($r['accountType'] ?? 'volunteer', (int) $r['accountId']),
+            fn($r) => accountKey($r['accountType'] ?? 'user', (int) $r['accountId']),
             $rows
         );
         sort($keys);
@@ -263,7 +263,7 @@ function parseParticipantInput(array $input): array {
         }
         $type = $p['accountType'] ?? '';
         $accountId = (int) ($p['accountId'] ?? 0);
-        if (!in_array($type, ['volunteer', 'organization'], true) || $accountId <= 0) {
+        if (!in_array($type, ['user', 'organization'], true) || $accountId <= 0) {
             continue;
         }
         $key = accountKey($type, $accountId);
@@ -279,7 +279,7 @@ function parseParticipantInput(array $input): array {
  * @return array{id: int, name: string, type: string}|null
  */
 function publicMessageAuthor(array $message): ?array {
-    $authorType = $message['authorType'] ?? 'volunteer';
+    $authorType = $message['authorType'] ?? 'user';
     $authorId = (int) $message['authorId'];
     $author = resolveAccount($authorType, $authorId);
     if ($author === null) {
@@ -303,7 +303,7 @@ if ($id === null && method() === 'GET') {
 
     $mine = array_values(array_filter(
         $participants,
-        fn($p) => ($p['accountType'] ?? 'volunteer') === $auth['type']
+        fn($p) => ($p['accountType'] ?? 'user') === $auth['type']
             && (int) $p['accountId'] === $auth['id']
     ));
     $conversationIds = array_map(fn($p) => (int) $p['conversationId'], $mine);
@@ -616,7 +616,7 @@ if ($id !== null && $sub === 'read' && method() === 'POST') {
     $now = date('c');
     foreach ($participants as $i => $participant) {
         if ((int) $participant['conversationId'] === $id
-            && ($participant['accountType'] ?? 'volunteer') === $auth['type']
+            && ($participant['accountType'] ?? 'user') === $auth['type']
             && (int) $participant['accountId'] === $auth['id']) {
             $participants[$i]['lastReadAt'] = $now;
             break;

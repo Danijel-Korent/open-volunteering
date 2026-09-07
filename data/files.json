@@ -1,7 +1,7 @@
 [
     {
         "id": 1,
-        "ownerType": "volunteer",
+        "ownerType": "user",
         "ownerId": 1,
         "originalName": "test-image.png",
         "storedName": "1.png",
@@ -14,7 +14,7 @@
     },
     {
         "id": 2,
-        "ownerType": "volunteer",
+        "ownerType": "user",
         "ownerId": 9,
         "originalName": "bird-1382034603Euc.jpg",
         "storedName": "2.jpg",

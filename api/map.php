@@ -6,10 +6,10 @@ $segments = getPathSegments();
 if (($segments[1] ?? '') === 'markers' && method() === 'GET') {
     $markers = [];
 
-    foreach (readVolunteers() as $u) {
+    foreach (readUsers() as $u) {
         if (!empty($u['location']['lat']) && !empty($u['location']['lng'])) {
             $markers[] = [
-                'type' => 'volunteer',
+                'type' => 'user',
                 'id' => (int) $u['id'],
                 'name' => $u['name'],
                 'lat' => (float) $u['location']['lat'],

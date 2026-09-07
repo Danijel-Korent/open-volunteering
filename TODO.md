@@ -52,7 +52,7 @@ Draw on ASCII-friednly overview of XYZ
 
 ### Milestone #x - More flexible org profile manageemnt
 
-  - Instead of single username/password for organizations, let user create org, add and remove members/moderators/admins
+  - [x] Instead of single username/password for organizations, let user create organizations, and add or remove members/admins. Then users switch between their profile and his/hers organizations
   - I decided that this is better to do as early as possible then to "move around" the whole code with already implemented features
 
 #### TODO
@@ -64,6 +64,34 @@ Draw on ASCII-friednly overview of XYZ
   - [] Write a prompt with defined data layer and API layer
   - [] Do it
   - [] Test it
+
+
+  - [] Re-organize JSON files into the following folders:
+
+  data/
+|-- users.json                      <-- central actor (volunteer | organization)
+|-- files.json                      <-- upload metadata catalog
+|-- uploads/                        <-- binary image storage
+|
+|-- CONTENT (authored by users)
+|   |-- posts.json                  authorId -> users
+|   |-- positions.json              authorId -> users
+|   |-- events.json                 authorId -> users
+|   |-- projects.json               orgId    -> users (organization)
+|   |-- project_posts.json          projectId -> projects
+|   |-- comments.json               polymorphic target (see below)
+|
+|-- SOCIAL / ENGAGEMENT (junction tables)
+|   |-- follows.json                followerId, followingId -> users
+|   |-- applications.json           positionId -> positions, volunteerId -> users
+|   |-- event_rsvps.json            eventId -> events, userId -> users
+|   |-- subscriptions.json          userId -> users (filter prefs)
+|   |-- availability.json           volunteerId -> users, polymorphic target
+|
+|-- MESSAGING
+|   |-- conversations.json          createdBy -> users
+|   |-- conversation_participants.json   conversationId, userId
+|   |-- messages.json               conversationId, authorId -> users
 
 #### Milestone #x - feature table  ✓
 
@@ -286,7 +314,7 @@ Draw on ASCII-friednly overview of XYZ
 
 ## PHASE #7 - "OV" instances disovery server
 
-  - One or more servers where Open-volunteering instances can register them self so they can be discovered by others instances
+  - One or more servers where Open-volunteering instances can register themself so they can be discovered by others instances
 
 - [] Add feature table
 

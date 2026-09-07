@@ -47,7 +47,7 @@ export function renderFeedControls(container, opts, onChange) {
       ${showTypes ? `
       <div class="filter-checkboxes" data-testid="feed-type-filters">
         <label><input type="checkbox" data-type="user_post" data-testid="feed-filter-user-post" ${prefs.types.includes('user_post') ? 'checked' : ''}> User posts</label>
-        <label><input type="checkbox" data-type="org_post" data-testid="feed-filter-org-post" ${prefs.types.includes('org_post') ? 'checked' : ''}> NGO posts</label>
+        <label><input type="checkbox" data-type="org_post" data-testid="feed-filter-org-post" ${prefs.types.includes('org_post') ? 'checked' : ''}> Org posts</label>
         <label><input type="checkbox" data-type="position" data-testid="feed-filter-position" ${prefs.types.includes('position') ? 'checked' : ''}> Positions</label>
         <label><input type="checkbox" data-type="event" data-testid="feed-filter-event" ${prefs.types.includes('event') ? 'checked' : ''}> Events</label>
       </div>` : ''}

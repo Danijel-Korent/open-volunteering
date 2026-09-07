@@ -13,7 +13,10 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
     $items = [];
 
     foreach (readJson('posts.json') as $p) {
-        $itemAuthorType = $p['authorType'] ?? 'volunteer';
+        $itemAuthorType = $p['authorType'] ?? 'user';
+        if ($itemAuthorType === 'volunteer') {
+            $itemAuthorType = 'user';
+        }
         $itemAuthorId = (int) $p['authorId'];
         if ($authorType !== null && ($itemAuthorType !== $authorType || $itemAuthorId !== $authorId)) {
             continue;
@@ -29,7 +32,7 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
             'likeCount' => $p['likeCount'] ?? 0,
             'shareCount' => $p['shareCount'] ?? 0,
             'createdAt' => $p['createdAt'],
-            'location' => $author['location'] ?? null,
+            'location' => $author !== null ? ($author['location'] ?? null) : null,
         ];
         if (!empty($p['imageFileId'])) {
             $imageFileId = (int) $p['imageFileId'];
@@ -63,7 +66,10 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
     }
 
     foreach (readJson('events.json') as $e) {
-        $itemAuthorType = $e['authorType'] ?? 'volunteer';
+        $itemAuthorType = $e['authorType'] ?? 'user';
+        if ($itemAuthorType === 'volunteer') {
+            $itemAuthorType = 'user';
+        }
         $itemAuthorId = (int) $e['authorId'];
         if ($authorType !== null && ($itemAuthorType !== $authorType || $itemAuthorId !== $authorId)) {
             continue;
@@ -95,7 +101,7 @@ $profileFeedOrg = ($segments[0] ?? '') === 'organizations' && ($segments[2] ?? '
 $authorType = null;
 $authorId = null;
 if ($profileFeedVolunteer && isset($segments[1])) {
-    $authorType = 'volunteer';
+    $authorType = 'user';
     $authorId = (int) $segments[1];
 } elseif ($profileFeedOrg && isset($segments[1])) {
     $authorType = 'organization';
@@ -120,7 +126,7 @@ if ($positionsOnly) {
 }
 
 if ($algorithm === 'following') {
-    $account = getCurrentAccount();
+    $account = getActiveAccount();
     if ($account !== null) {
         $follows = readJson('follows.json');
         $followingKeys = [];
@@ -130,7 +136,10 @@ if ($algorithm === 'following') {
             }
         }
         $items = array_values(array_filter($items, function ($i) use ($followingKeys) {
-            $key = ($i['authorType'] ?? 'volunteer') . ':' . $i['authorId'];
+            $key = ($i['authorType'] ?? 'user') . ':' . $i['authorId'];
+            if (str_starts_with($key, 'volunteer:')) {
+                $key = 'user:' . substr($key, strlen('volunteer:'));
+            }
             return in_array($key, $followingKeys, true);
         }));
     }
@@ -152,7 +161,7 @@ if ($algorithm === 'most_liked') {
     $refLat = $lat;
     $refLng = $lng;
     if ($refLat === null || $refLng === null) {
-        $account = getCurrentAccount();
+        $account = getActiveAccount();
         if ($account !== null) {
             $record = $account['record'];
             if (!empty($record['location']['lat']) && !empty($record['location']['lng'])) {
@@ -186,12 +195,12 @@ $offset = ($page - 1) * $perPage;
 $paged = array_slice($items, $offset, $perPage);
 
 $account = getCurrentAccount();
-if ($account !== null && $account['type'] === 'volunteer') {
-    $volunteerId = $account['id'];
+if ($account !== null && $account['type'] === 'user') {
+    $userId = $account['id'];
     $applications = readJson('applications.json');
     $appliedIds = [];
     foreach ($applications as $a) {
-        if ((int) $a['volunteerId'] === $volunteerId) {
+        if ((int) ($a['userId'] ?? $a['volunteerId'] ?? 0) === $userId) {
             $appliedIds[] = (int) $a['positionId'];
         }
     }

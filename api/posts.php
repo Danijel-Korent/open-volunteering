@@ -12,7 +12,10 @@ if ($id === null && method() === 'GET') {
 
 if ($id === null && method() === 'POST') {
     $auth = requireAuth();
-    $account = getCurrentAccount();
+    if ($auth['type'] === 'organization') {
+        requireOrgAdminSession($auth['id']);
+    }
+    $account = getActiveAccount();
     if ($account === null) {
         jsonResponse(['error' => 'Authentication required'], 401);
         exit;

@@ -1,7 +1,7 @@
 [
     {
         "id": 1,
-        "volunteerId": 1,
+        "userId": 1,
         "targetType": "organization",
         "targetId": 1,
         "skillsOffered": ["Event planning", "First aid"],
@@ -9,7 +9,7 @@
     },
     {
         "id": 2,
-        "volunteerId": 2,
+        "userId": 2,
         "targetType": "event",
         "targetId": 6,
         "skillsOffered": ["Web development", "Teaching"],
@@ -17,7 +17,7 @@
     },
     {
         "id": 3,
-        "volunteerId": 1,
+        "userId": 1,
         "targetType": "post",
         "targetId": 9,
         "skillsOffered": ["Skill1", "Skill2"],
@@ -25,7 +25,7 @@
     },
     {
         "id": 4,
-        "volunteerId": 9,
+        "userId": 9,
         "targetType": "organization",
         "targetId": 1,
         "skillsOffered": ["skil1", "skil2"],
@@ -33,7 +33,7 @@
     },
     {
         "id": 5,
-        "volunteerId": 9,
+        "userId": 9,
         "targetType": "post",
         "targetId": 10,
         "skillsOffered": ["skil1", "skil2"],
@@ -41,7 +41,7 @@
     },
     {
         "id": 6,
-        "volunteerId": 9,
+        "userId": 9,
         "targetType": "post",
         "targetId": 13,
         "skillsOffered": ["test"],

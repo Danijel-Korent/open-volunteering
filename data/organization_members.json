@@ -1,0 +1,7 @@
+[
+    { "id": 1, "organizationId": 1, "userId": 1, "role": "admin", "joinedAt": "2023-06-01T09:00:00+01:00" },
+    { "id": 2, "organizationId": 2, "userId": 1, "role": "admin", "joinedAt": "2023-01-10T08:00:00+01:00" },
+    { "id": 3, "organizationId": 3, "userId": 1, "role": "admin", "joinedAt": "2023-09-15T11:00:00+01:00" },
+    { "id": 4, "organizationId": 4, "userId": 2, "role": "admin", "joinedAt": "2026-08-11T11:45:43+02:00" },
+    { "id": 5, "organizationId": 5, "userId": 2, "role": "admin", "joinedAt": "2026-08-23T07:54:26+02:00" }
+]

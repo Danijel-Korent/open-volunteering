@@ -10,7 +10,10 @@ $segments = getPathSegments();
  * @return array{id: int, name: string, type: string}|null
  */
 function publicCommentAuthor(array $comment): ?array {
-    $authorType = $comment['authorType'] ?? 'volunteer';
+    $authorType = $comment['authorType'] ?? 'user';
+    if ($authorType === 'volunteer') {
+        $authorType = 'user';
+    }
     $authorId = (int) $comment['authorId'];
     $author = resolveAccount($authorType, $authorId);
     if ($author === null) {

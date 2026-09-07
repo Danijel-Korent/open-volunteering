@@ -127,10 +127,13 @@ function setApplyTooltip(wrap, applyBtn, text) {
  */
 function getApplyState(user, item) {
   if (!user) {
-    return { enabled: false, title: 'Log in as a volunteer to apply' };
+    return { enabled: false, title: 'Log in to apply' };
   }
-  if (user.type !== 'volunteer') {
-    return { enabled: false, title: 'Only volunteers can apply to positions' };
+  if (user.type !== 'user') {
+    return { enabled: false, title: 'Switch to your profile to apply to positions' };
+  }
+  if (!user.seekingVolunteering) {
+    return { enabled: false, title: 'Enable volunteering on your profile to apply' };
   }
   if (item.hasApplied) {
     return { enabled: false, title: 'You have already applied to this position' };
@@ -224,7 +227,7 @@ export function renderPostCard(item, opts = {}) {
     actions.appendChild(shareBtn);
   }
 
-  if (!user || user.type === 'volunteer') {
+  if (!user || user.type === 'user') {
     const availBtn = document.createElement('button');
     availBtn.type = 'button';
     availBtn.className = 'post-action-btn';
@@ -232,7 +235,7 @@ export function renderPostCard(item, opts = {}) {
     availBtn.innerHTML = `${ICONS.skills}<span>Offer skills</span>`;
     availBtn.addEventListener('click', () => {
       if (!user) {
-        api.showToast('Log in as a volunteer to offer skills');
+        api.showToast('Log in to offer skills');
         window.location.hash = '#/login';
         return;
       }

@@ -14,6 +14,9 @@ if ($id === null && method() === 'GET') {
 
 if ($id === null && method() === 'POST') {
     $auth = requireAuth();
+    if ($auth['type'] === 'organization') {
+        requireOrgAdminSession($auth['id']);
+    }
     $input = getJsonInput();
     $title = trim($input['title'] ?? '');
     $description = trim($input['description'] ?? '');
@@ -66,7 +69,7 @@ if ($id !== null && $sub === 'rsvp' && method() === 'POST') {
     $updated = false;
     foreach ($rsvps as $i => $r) {
         if ((int) $r['eventId'] === $id
-            && ($r['accountType'] ?? 'volunteer') === $auth['type']
+            && ($r['accountType'] ?? 'user') === $auth['type']
             && (int) $r['accountId'] === $auth['id']) {
             $rsvps[$i]['status'] = $status;
             $updated = true;

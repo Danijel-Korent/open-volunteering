@@ -6,8 +6,8 @@ $id = isset($segments[1]) ? (int) $segments[1] : null;
 
 if ($id === null && method() === 'GET') {
     $auth = requireAuth();
-    if ($auth['type'] !== 'volunteer') {
-        jsonResponse(['error' => 'Only volunteers can manage subscriptions'], 403);
+    if ($auth['type'] !== 'user') {
+        jsonResponse(['error' => 'Only users can manage subscriptions'], 403);
         exit;
     }
     $subs = readJson('subscriptions.json');
@@ -18,8 +18,8 @@ if ($id === null && method() === 'GET') {
 
 if ($id === null && method() === 'POST') {
     $auth = requireAuth();
-    if ($auth['type'] !== 'volunteer') {
-        jsonResponse(['error' => 'Only volunteers can manage subscriptions'], 403);
+    if ($auth['type'] !== 'user') {
+        jsonResponse(['error' => 'Only users can manage subscriptions'], 403);
         exit;
     }
     $input = getJsonInput();
@@ -45,8 +45,8 @@ if ($id === null && method() === 'POST') {
 
 if ($id !== null && method() === 'DELETE') {
     $auth = requireAuth();
-    if ($auth['type'] !== 'volunteer') {
-        jsonResponse(['error' => 'Only volunteers can manage subscriptions'], 403);
+    if ($auth['type'] !== 'user') {
+        jsonResponse(['error' => 'Only users can manage subscriptions'], 403);
         exit;
     }
     $subs = readJson('subscriptions.json');

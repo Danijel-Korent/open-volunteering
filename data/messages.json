@@ -1,8 +1,8 @@
 [
-    { "id": 1, "conversationId": 1, "authorType": "volunteer", "authorId": 1, "content": "Hello from Maria - browser test", "createdAt": "2026-09-05T17:40:34+02:00" },
+    { "id": 1, "conversationId": 1, "authorType": "user", "authorId": 1, "content": "Hello from Maria - browser test", "createdAt": "2026-09-05T17:40:34+02:00" },
     { "id": 2, "conversationId": 1, "authorType": "organization", "authorId": 1, "content": "Thanks Maria, we got your message!", "createdAt": "2026-09-05T17:41:13+02:00" },
-    { "id": 3, "conversationId": 2, "authorType": "volunteer", "authorId": 1, "content": "Welcome to the group chat!", "createdAt": "2026-09-05T17:41:13+02:00" },
-    { "id": 4, "conversationId": 1, "authorType": "volunteer", "authorId": 1, "content": "Hi Green City - UI test message", "createdAt": "2026-09-05T17:44:31+02:00" },
-    { "id": 5, "conversationId": 3, "authorType": "volunteer", "authorId": 9, "content": "Test", "createdAt": "2026-09-05T18:18:31+02:00" },
-    { "id": 6, "conversationId": 4, "authorType": "volunteer", "authorId": 9, "content": "test", "createdAt": "2026-09-06T08:31:57+02:00" }
+    { "id": 3, "conversationId": 2, "authorType": "user", "authorId": 1, "content": "Welcome to the group chat!", "createdAt": "2026-09-05T17:41:13+02:00" },
+    { "id": 4, "conversationId": 1, "authorType": "user", "authorId": 1, "content": "Hi Green City - UI test message", "createdAt": "2026-09-05T17:44:31+02:00" },
+    { "id": 5, "conversationId": 3, "authorType": "user", "authorId": 9, "content": "Test", "createdAt": "2026-09-05T18:18:31+02:00" },
+    { "id": 6, "conversationId": 4, "authorType": "user", "authorId": 9, "content": "test", "createdAt": "2026-09-06T08:31:57+02:00" }
 ]
