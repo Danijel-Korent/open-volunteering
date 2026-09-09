@@ -80,23 +80,15 @@ Draw on ASCII-friednly overview of XYZ
 
 ### Milestone #1 - Direct and group messages ✓
 ### Milestone #2 - More flexible org profile management ✓
-
 ### Milestone #3 - Support for notifications ✓
 
-  - I have decided that we do not need "accept" button and notification. Just "message" button is enough for now
-  - In-app notifications: bell dropdown + `#/notifications` page; org events in admin personal inbox with org label
-
-#### Milestone #x - feature table  ✓
-
-| User profile: Notification for post comment       |  ✅︎  |      |       |   ✓   |                                                   |
-| Org profile: Notification for post comment        |  ✅︎  |      |       |   ✓   |                                                   |
-| Org profile: Notification for applied possition   |  ✅︎  |      |       |   ✓   |                                                   |
-| Org profile: Notification for offered skill       |  ✅︎  |      |       |   ✓   |                                                   |
-
-
-
 ### Milestone #x - Follow post feature
+
+  - [] Get notification when someone comments a post you are following 
+
 ### Milestone #x - Follow organization feature
+
+  - [] Get notification when organization you are following creates a post, event or position
 
 ### Milestone #x - Deleting posts/events/positions
 ### Milestone #x - Editing posts/events/positions

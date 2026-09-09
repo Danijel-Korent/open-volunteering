@@ -498,14 +498,16 @@ if ($id !== null && $sub === '' && method() === 'GET') {
         exit;
     }
 
-    requireParticipant($participants, $id, $auth['type'], $auth['id']);
+    $participant = requireParticipant($participants, $id, $auth['type'], $auth['id']);
     $rows = participantsForConversation($participants, $id);
     $conversation = $found['record'];
+    $messages = readJson(MESSAGES_JSON);
 
     jsonResponse([
         ...$conversation,
         'displayName' => conversationDisplayName($conversation, $rows, $auth['type'], $auth['id']),
         'participants' => publicParticipants($rows),
+        'unreadCount' => unreadCount($messages, $id, $participant),
     ]);
     exit;
 }
@@ -606,18 +608,24 @@ if ($id !== null && $sub === 'read' && method() === 'POST') {
     $auth = requireAuth();
     $conversations = readJson(CONVERSATIONS_JSON);
     $participants = readJson(CONVERSATION_PARTICIPANTS_JSON);
+    $messages = readJson(MESSAGES_JSON);
 
     if (findConversation($conversations, $id) === null) {
         jsonResponse(['error' => 'Conversation not found'], 404);
         exit;
     }
-    requireParticipant($participants, $id, $auth['type'], $auth['id']);
+    $participant = requireParticipant($participants, $id, $auth['type'], $auth['id']);
+
+    if (unreadCount($messages, $id, $participant) === 0) {
+        jsonResponse(['lastReadAt' => $participant['lastReadAt'] ?? null]);
+        exit;
+    }
 
     $now = date('c');
-    foreach ($participants as $i => $participant) {
-        if ((int) $participant['conversationId'] === $id
-            && ($participant['accountType'] ?? 'user') === $auth['type']
-            && (int) $participant['accountId'] === $auth['id']) {
+    foreach ($participants as $i => $participantRow) {
+        if ((int) $participantRow['conversationId'] === $id
+            && ($participantRow['accountType'] ?? 'user') === $auth['type']
+            && (int) $participantRow['accountId'] === $auth['id']) {
             $participants[$i]['lastReadAt'] = $now;
             break;
         }

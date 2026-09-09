@@ -226,6 +226,7 @@ interface Conversation {
   lastMessagePreview?: string;
   displayName?: string;
   participants?: Account[];
+  unreadCount?: number;
 }
 
 interface ConversationInboxItem {

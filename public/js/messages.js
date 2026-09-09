@@ -233,8 +233,14 @@ async function renderThread(container, conversationId, current) {
 
   const refresh = async () => {
     try {
+      await loadConversation();
       await loadMessages();
-      await api.markConversationRead(conversationId);
+      if ((conversation?.unreadCount ?? 0) > 0) {
+        await api.markConversationRead(conversationId);
+        if (conversation) {
+          conversation.unreadCount = 0;
+        }
+      }
       notifyMessagesChanged();
     } catch (err) {
       if (listEl) {

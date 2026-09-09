@@ -467,9 +467,9 @@ export async function sendMessage(conversationId, content) {
   }));
 }
 
-/** Mark a conversation as read. @param {number} conversationId @returns {Promise<{ lastReadAt: string }>} */
+/** Mark a conversation as read. @param {number} conversationId @returns {Promise<{ lastReadAt: string | null }>} */
 export async function markConversationRead(conversationId) {
-  return /** @type {Promise<{ lastReadAt: string }>} */ (request(`conversations/${conversationId}/read`, {
+  return /** @type {Promise<{ lastReadAt: string | null }>} */ (request(`conversations/${conversationId}/read`, {
     method: 'POST',
     body: JSON.stringify({}),
   }));
