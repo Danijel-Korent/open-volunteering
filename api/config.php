@@ -48,6 +48,10 @@ function readJson(string $file): array {
  */
 function writeJson(string $file, mixed $data): void {
     $path = DATA_DIR . $file;
+    $dir = dirname($path);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
     file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 }
 
@@ -80,6 +84,23 @@ function nextId(array $items): int {
 define('USERS_JSON', 'users.json');
 define('ORGANIZATIONS_JSON', 'organizations.json');
 define('ORGANIZATION_MEMBERS_JSON', 'organization_members.json');
+
+define('POSTS_JSON', 'content/posts.json');
+define('POSITIONS_JSON', 'content/positions.json');
+define('EVENTS_JSON', 'content/events.json');
+define('PROJECTS_JSON', 'content/projects.json');
+define('PROJECT_POSTS_JSON', 'content/project_posts.json');
+define('COMMENTS_JSON', 'content/comments.json');
+
+define('FOLLOWS_JSON', 'social/follows.json');
+define('APPLICATIONS_JSON', 'social/applications.json');
+define('EVENT_RSVPS_JSON', 'social/event_rsvps.json');
+define('SUBSCRIPTIONS_JSON', 'social/subscriptions.json');
+define('AVAILABILITY_JSON', 'social/availability.json');
+
+define('CONVERSATIONS_JSON', 'messaging/conversations.json');
+define('CONVERSATION_PARTICIPANTS_JSON', 'messaging/conversation_participants.json');
+define('MESSAGES_JSON', 'messaging/messages.json');
 
 /** @deprecated Use USERS_JSON */
 define('VOLUNTEERS_JSON', USERS_JSON);

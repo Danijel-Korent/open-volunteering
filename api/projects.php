@@ -7,7 +7,7 @@ $sub = $segments[2] ?? '';
 
 if ($id === null && method() === 'GET') {
     $orgId = isset($_GET['orgId']) ? (int) $_GET['orgId'] : null;
-    $projects = readJson('projects.json');
+    $projects = readJson(PROJECTS_JSON);
     if ($orgId !== null) {
         $projects = array_values(array_filter($projects, fn($p) => (int) $p['orgId'] === $orgId));
     }
@@ -29,7 +29,7 @@ if ($id === null && method() === 'POST') {
         jsonResponse(['error' => 'Title is required'], 400);
         exit;
     }
-    $projects = readJson('projects.json');
+    $projects = readJson(PROJECTS_JSON);
     $project = [
         'id' => nextId($projects),
         'orgId' => $auth['id'],
@@ -38,13 +38,13 @@ if ($id === null && method() === 'POST') {
         'createdAt' => date('c'),
     ];
     $projects[] = $project;
-    writeJson('projects.json', $projects);
+    writeJson(PROJECTS_JSON, $projects);
     jsonResponse($project, 201);
     exit;
 }
 
 if ($id !== null && $sub === '' && method() === 'GET') {
-    $projects = readJson('projects.json');
+    $projects = readJson(PROJECTS_JSON);
     $project = null;
     foreach ($projects as $p) {
         if ((int) $p['id'] === $id) {
@@ -56,7 +56,7 @@ if ($id !== null && $sub === '' && method() === 'GET') {
         jsonResponse(['error' => 'Project not found'], 404);
         exit;
     }
-    $posts = readJson('project_posts.json');
+    $posts = readJson(PROJECT_POSTS_JSON);
     $projectPosts = array_values(array_filter($posts, fn($pp) => (int) $pp['projectId'] === $id));
     usort($projectPosts, fn($a, $b) => strcmp($b['createdAt'], $a['createdAt']));
     jsonResponse(['project' => $project, 'posts' => $projectPosts]);
@@ -65,7 +65,7 @@ if ($id !== null && $sub === '' && method() === 'GET') {
 
 if ($id !== null && $sub === 'posts' && method() === 'POST') {
     $auth = requireAuth();
-    $projects = readJson('projects.json');
+    $projects = readJson(PROJECTS_JSON);
     $project = null;
     foreach ($projects as $p) {
         if ((int) $p['id'] === $id) {
@@ -84,7 +84,7 @@ if ($id !== null && $sub === 'posts' && method() === 'POST') {
         jsonResponse(['error' => 'Content is required'], 400);
         exit;
     }
-    $posts = readJson('project_posts.json');
+    $posts = readJson(PROJECT_POSTS_JSON);
     $post = [
         'id' => nextId($posts),
         'projectId' => $id,
@@ -92,7 +92,7 @@ if ($id !== null && $sub === 'posts' && method() === 'POST') {
         'createdAt' => date('c'),
     ];
     $posts[] = $post;
-    writeJson('project_posts.json', $posts);
+    writeJson(PROJECT_POSTS_JSON, $posts);
     jsonResponse($post, 201);
     exit;
 }

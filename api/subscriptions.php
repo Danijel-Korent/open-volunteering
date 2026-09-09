@@ -10,7 +10,7 @@ if ($id === null && method() === 'GET') {
         jsonResponse(['error' => 'Only users can manage subscriptions'], 403);
         exit;
     }
-    $subs = readJson('subscriptions.json');
+    $subs = readJson(SUBSCRIPTIONS_JSON);
     $mine = array_values(array_filter($subs, fn($s) => (int) $s['userId'] === $auth['id']));
     jsonResponse($mine);
     exit;
@@ -29,7 +29,7 @@ if ($id === null && method() === 'POST') {
         jsonResponse(['error' => 'filterType and value required'], 400);
         exit;
     }
-    $subs = readJson('subscriptions.json');
+    $subs = readJson(SUBSCRIPTIONS_JSON);
     $sub = [
         'id' => nextId($subs),
         'userId' => $auth['id'],
@@ -38,7 +38,7 @@ if ($id === null && method() === 'POST') {
         'createdAt' => date('c'),
     ];
     $subs[] = $sub;
-    writeJson('subscriptions.json', $subs);
+    writeJson(SUBSCRIPTIONS_JSON, $subs);
     jsonResponse($sub, 201);
     exit;
 }
@@ -49,11 +49,11 @@ if ($id !== null && method() === 'DELETE') {
         jsonResponse(['error' => 'Only users can manage subscriptions'], 403);
         exit;
     }
-    $subs = readJson('subscriptions.json');
+    $subs = readJson(SUBSCRIPTIONS_JSON);
     $subs = array_values(array_filter($subs, fn($s) =>
         !((int) $s['id'] === $id && (int) $s['userId'] === $auth['id'])
     ));
-    writeJson('subscriptions.json', $subs);
+    writeJson(SUBSCRIPTIONS_JSON, $subs);
     jsonResponse(['ok' => true]);
     exit;
 }

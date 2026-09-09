@@ -59,21 +59,14 @@ Draw on ASCII-friednly overview of XYZ
 
   - [x] Move "type: organization" profiles out of user.json into organizations.json
 
-  - [] FIRST define how everything will be stored on disk
-  - [] Define API calls between BE and FE
-  - [] Write a prompt with defined data layer and API layer
-  - [] Do it
-  - [] Test it
+  - [x] Re-organize JSON files into the following folders:
 
-
-  - [] Re-organize JSON files into the following folders:
-
-  data/
+ data/
 |-- users.json                      <-- central actor (volunteer | organization)
 |-- files.json                      <-- upload metadata catalog
 |-- uploads/                        <-- binary image storage
 |
-|-- CONTENT (authored by users)
+|-- content
 |   |-- posts.json                  authorId -> users
 |   |-- positions.json              authorId -> users
 |   |-- events.json                 authorId -> users
@@ -81,14 +74,14 @@ Draw on ASCII-friednly overview of XYZ
 |   |-- project_posts.json          projectId -> projects
 |   |-- comments.json               polymorphic target (see below)
 |
-|-- SOCIAL / ENGAGEMENT (junction tables)
+|-- social
 |   |-- follows.json                followerId, followingId -> users
 |   |-- applications.json           positionId -> positions, volunteerId -> users
 |   |-- event_rsvps.json            eventId -> events, userId -> users
 |   |-- subscriptions.json          userId -> users (filter prefs)
 |   |-- availability.json           volunteerId -> users, polymorphic target
 |
-|-- MESSAGING
+|-- messaging
 |   |-- conversations.json          createdBy -> users
 |   |-- conversation_participants.json   conversationId, userId
 |   |-- messages.json               conversationId, authorId -> users

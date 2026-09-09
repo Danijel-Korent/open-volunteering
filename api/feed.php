@@ -12,7 +12,7 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
     $maps = buildAuthorMaps();
     $items = [];
 
-    foreach (readJson('posts.json') as $p) {
+    foreach (readJson(POSTS_JSON) as $p) {
         $itemAuthorType = $p['authorType'] ?? 'user';
         if ($itemAuthorType === 'volunteer') {
             $itemAuthorType = 'user';
@@ -42,7 +42,7 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
         $items[] = $item;
     }
 
-    foreach (readJson('positions.json') as $p) {
+    foreach (readJson(POSITIONS_JSON) as $p) {
         $itemAuthorType = $p['authorType'] ?? 'organization';
         $itemAuthorId = (int) $p['authorId'];
         if ($authorType !== null && ($itemAuthorType !== $authorType || $itemAuthorId !== $authorId)) {
@@ -65,7 +65,7 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
         ];
     }
 
-    foreach (readJson('events.json') as $e) {
+    foreach (readJson(EVENTS_JSON) as $e) {
         $itemAuthorType = $e['authorType'] ?? 'user';
         if ($itemAuthorType === 'volunteer') {
             $itemAuthorType = 'user';
@@ -128,7 +128,7 @@ if ($positionsOnly) {
 if ($algorithm === 'following') {
     $account = getActiveAccount();
     if ($account !== null) {
-        $follows = readJson('follows.json');
+        $follows = readJson(FOLLOWS_JSON);
         $followingKeys = [];
         foreach ($follows as $f) {
             if ($f['followerType'] === $account['type'] && (int) $f['followerId'] === $account['id']) {
@@ -197,7 +197,7 @@ $paged = array_slice($items, $offset, $perPage);
 $account = getCurrentAccount();
 if ($account !== null && $account['type'] === 'user') {
     $userId = $account['id'];
-    $applications = readJson('applications.json');
+    $applications = readJson(APPLICATIONS_JSON);
     $appliedIds = [];
     foreach ($applications as $a) {
         if ((int) ($a['userId'] ?? $a['volunteerId'] ?? 0) === $userId) {

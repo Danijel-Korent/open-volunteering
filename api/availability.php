@@ -8,7 +8,7 @@ if (method() === 'GET') {
     $targetType = $_GET['targetType'] ?? null;
     $targetId = isset($_GET['targetId']) ? (int) $_GET['targetId'] : null;
     $forOrgId = isset($_GET['forOrgId']) ? (int) $_GET['forOrgId'] : null;
-    $avail = readJson('availability.json');
+    $avail = readJson(AVAILABILITY_JSON);
 
     if ($forOrgId !== null) {
         requireOrgAdminSession($forOrgId);
@@ -17,9 +17,9 @@ if (method() === 'GET') {
             exit;
         }
 
-        $posts = readJson('posts.json');
-        $positions = readJson('positions.json');
-        $events = readJson('events.json');
+        $posts = readJson(POSTS_JSON);
+        $positions = readJson(POSITIONS_JSON);
+        $events = readJson(EVENTS_JSON);
 
         $orgPostIds = [];
         foreach ($posts as $post) {
@@ -97,12 +97,12 @@ if (method() === 'POST') {
         jsonResponse(['error' => 'targetType and targetId required'], 400);
         exit;
     }
-    $avail = readJson('availability.json');
+    $avail = readJson(AVAILABILITY_JSON);
     foreach ($avail as $i => $a) {
         if ((int) ($a['userId'] ?? $a['volunteerId'] ?? 0) === $auth['id']
             && $a['targetType'] === $targetType && (int) $a['targetId'] === $targetId) {
             $avail[$i]['skillsOffered'] = $skillsOffered;
-            writeJson('availability.json', $avail);
+            writeJson(AVAILABILITY_JSON, $avail);
             jsonResponse($avail[$i]);
             exit;
         }
@@ -116,7 +116,7 @@ if (method() === 'POST') {
         'createdAt' => date('c'),
     ];
     $avail[] = $entry;
-    writeJson('availability.json', $avail);
+    writeJson(AVAILABILITY_JSON, $avail);
     jsonResponse($entry, 201);
     exit;
 }

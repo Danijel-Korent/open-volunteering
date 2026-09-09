@@ -297,9 +297,9 @@ if ($id === null && method() === 'GET') {
     $page = max(1, (int) ($_GET['page'] ?? 1));
     $perPage = min(50, max(1, (int) ($_GET['perPage'] ?? 20)));
 
-    $conversations = readJson('conversations.json');
-    $participants = readJson('conversation_participants.json');
-    $messages = readJson('messages.json');
+    $conversations = readJson(CONVERSATIONS_JSON);
+    $participants = readJson(CONVERSATION_PARTICIPANTS_JSON);
+    $messages = readJson(MESSAGES_JSON);
 
     $mine = array_values(array_filter(
         $participants,
@@ -370,8 +370,8 @@ if ($id === null && method() === 'POST') {
         }
     }
 
-    $conversations = readJson('conversations.json');
-    $participants = readJson('conversation_participants.json');
+    $conversations = readJson(CONVERSATIONS_JSON);
+    $participants = readJson(CONVERSATION_PARTICIPANTS_JSON);
     $now = date('c');
 
     if ($type === 'direct') {
@@ -408,7 +408,7 @@ if ($id === null && method() === 'POST') {
             'lastMessagePreview' => '',
         ];
         $conversations[] = $conversation;
-        writeJson('conversations.json', $conversations);
+        writeJson(CONVERSATIONS_JSON, $conversations);
 
         $members = [
             ['accountType' => $auth['type'], 'accountId' => $auth['id']],
@@ -423,7 +423,7 @@ if ($id === null && method() === 'POST') {
                 'role' => 'member',
             ];
         }
-        writeJson('conversation_participants.json', $participants);
+        writeJson(CONVERSATION_PARTICIPANTS_JSON, $participants);
 
         $rows = participantsForConversation($participants, (int) $conversation['id']);
         jsonResponse([
@@ -464,7 +464,7 @@ if ($id === null && method() === 'POST') {
         'lastMessagePreview' => '',
     ];
     $conversations[] = $conversation;
-    writeJson('conversations.json', $conversations);
+    writeJson(CONVERSATIONS_JSON, $conversations);
 
     foreach ($allMembers as $member) {
         $isCreator = $member['accountType'] === $auth['type'] && $member['accountId'] === $auth['id'];
@@ -476,7 +476,7 @@ if ($id === null && method() === 'POST') {
             'role' => $isCreator ? 'admin' : 'member',
         ];
     }
-    writeJson('conversation_participants.json', $participants);
+    writeJson(CONVERSATION_PARTICIPANTS_JSON, $participants);
 
     $rows = participantsForConversation($participants, (int) $conversation['id']);
     jsonResponse([
@@ -489,8 +489,8 @@ if ($id === null && method() === 'POST') {
 
 if ($id !== null && $sub === '' && method() === 'GET') {
     $auth = requireAuth();
-    $conversations = readJson('conversations.json');
-    $participants = readJson('conversation_participants.json');
+    $conversations = readJson(CONVERSATIONS_JSON);
+    $participants = readJson(CONVERSATION_PARTICIPANTS_JSON);
 
     $found = findConversation($conversations, $id);
     if ($found === null) {
@@ -512,9 +512,9 @@ if ($id !== null && $sub === '' && method() === 'GET') {
 
 if ($id !== null && $sub === 'messages' && method() === 'GET') {
     $auth = requireAuth();
-    $conversations = readJson('conversations.json');
-    $participants = readJson('conversation_participants.json');
-    $messages = readJson('messages.json');
+    $conversations = readJson(CONVERSATIONS_JSON);
+    $participants = readJson(CONVERSATION_PARTICIPANTS_JSON);
+    $messages = readJson(MESSAGES_JSON);
 
     if (findConversation($conversations, $id) === null) {
         jsonResponse(['error' => 'Conversation not found'], 404);
@@ -568,9 +568,9 @@ if ($id !== null && $sub === 'messages' && method() === 'POST') {
         exit;
     }
 
-    $conversations = readJson('conversations.json');
-    $participants = readJson('conversation_participants.json');
-    $messages = readJson('messages.json');
+    $conversations = readJson(CONVERSATIONS_JSON);
+    $participants = readJson(CONVERSATION_PARTICIPANTS_JSON);
+    $messages = readJson(MESSAGES_JSON);
 
     $found = findConversation($conversations, $id);
     if ($found === null) {
@@ -589,11 +589,11 @@ if ($id !== null && $sub === 'messages' && method() === 'POST') {
         'createdAt' => $now,
     ];
     $messages[] = $message;
-    writeJson('messages.json', $messages);
+    writeJson(MESSAGES_JSON, $messages);
 
     $conversations[$found['idx']]['updatedAt'] = $now;
     $conversations[$found['idx']]['lastMessagePreview'] = messagePreview($content);
-    writeJson('conversations.json', $conversations);
+    writeJson(CONVERSATIONS_JSON, $conversations);
 
     jsonResponse([
         ...$message,
@@ -604,8 +604,8 @@ if ($id !== null && $sub === 'messages' && method() === 'POST') {
 
 if ($id !== null && $sub === 'read' && method() === 'POST') {
     $auth = requireAuth();
-    $conversations = readJson('conversations.json');
-    $participants = readJson('conversation_participants.json');
+    $conversations = readJson(CONVERSATIONS_JSON);
+    $participants = readJson(CONVERSATION_PARTICIPANTS_JSON);
 
     if (findConversation($conversations, $id) === null) {
         jsonResponse(['error' => 'Conversation not found'], 404);
@@ -622,7 +622,7 @@ if ($id !== null && $sub === 'read' && method() === 'POST') {
             break;
         }
     }
-    writeJson('conversation_participants.json', $participants);
+    writeJson(CONVERSATION_PARTICIPANTS_JSON, $participants);
     jsonResponse(['lastReadAt' => $now]);
     exit;
 }

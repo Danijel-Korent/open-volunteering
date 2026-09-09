@@ -6,7 +6,7 @@ $id = isset($segments[1]) ? (int) $segments[1] : null;
 $sub = $segments[2] ?? '';
 
 if ($id === null && method() === 'GET') {
-    $positions = readJson('positions.json');
+    $positions = readJson(POSITIONS_JSON);
     usort($positions, fn($a, $b) => strcmp($b['createdAt'], $a['createdAt']));
     jsonResponse($positions);
     exit;
@@ -26,7 +26,7 @@ if ($id === null && method() === 'POST') {
         jsonResponse(['error' => 'Title and description are required'], 400);
         exit;
     }
-    $positions = readJson('positions.json');
+    $positions = readJson(POSITIONS_JSON);
     $position = [
         'id' => nextId($positions),
         'authorType' => 'organization',
@@ -40,14 +40,14 @@ if ($id === null && method() === 'POST') {
         'createdAt' => date('c'),
     ];
     $positions[] = $position;
-    writeJson('positions.json', $positions);
+    writeJson(POSITIONS_JSON, $positions);
     jsonResponse($position, 201);
     exit;
 }
 
 if ($id !== null && $sub === 'applications' && method() === 'GET') {
     $auth = requireAuth();
-    $positions = readJson('positions.json');
+    $positions = readJson(POSITIONS_JSON);
     $position = null;
     foreach ($positions as $p) {
         if ((int) $p['id'] === $id) {
@@ -68,7 +68,7 @@ if ($id !== null && $sub === 'applications' && method() === 'GET') {
 
     requireOrgAdminSession((int) $position['authorId']);
 
-    $applications = readJson('applications.json');
+    $applications = readJson(APPLICATIONS_JSON);
     $users = readUsers();
     $filtered = array_values(array_filter(
         $applications,
@@ -101,7 +101,7 @@ if ($id !== null && $sub === 'apply' && method() === 'POST') {
         jsonResponse(['error' => 'Enable volunteering preferences on your profile to apply'], 403);
         exit;
     }
-    $positions = readJson('positions.json');
+    $positions = readJson(POSITIONS_JSON);
     $found = false;
     foreach ($positions as $p) {
         if ((int) $p['id'] === $id) {
@@ -113,7 +113,7 @@ if ($id !== null && $sub === 'apply' && method() === 'POST') {
         jsonResponse(['error' => 'Position not found'], 404);
         exit;
     }
-    $applications = readJson('applications.json');
+    $applications = readJson(APPLICATIONS_JSON);
     foreach ($applications as $a) {
         if ((int) $a['positionId'] === $id && (int) ($a['userId'] ?? $a['volunteerId'] ?? 0) === $userId) {
             jsonResponse(['error' => 'Already applied'], 409);
@@ -128,14 +128,14 @@ if ($id !== null && $sub === 'apply' && method() === 'POST') {
         'createdAt' => date('c'),
     ];
     $applications[] = $app;
-    writeJson('applications.json', $applications);
+    writeJson(APPLICATIONS_JSON, $applications);
     jsonResponse($app, 201);
     exit;
 }
 
 if ($id !== null && $sub === 'like' && method() === 'POST') {
     requireAuth();
-    $positions = readJson('positions.json');
+    $positions = readJson(POSITIONS_JSON);
     $idx = null;
     foreach ($positions as $i => $p) {
         if ((int) $p['id'] === $id) {
@@ -148,7 +148,7 @@ if ($id !== null && $sub === 'like' && method() === 'POST') {
         exit;
     }
     $positions[$idx]['likeCount'] = ($positions[$idx]['likeCount'] ?? 0) + 1;
-    writeJson('positions.json', $positions);
+    writeJson(POSITIONS_JSON, $positions);
     jsonResponse($positions[$idx]);
     exit;
 }

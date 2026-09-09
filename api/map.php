@@ -32,7 +32,7 @@ if (($segments[1] ?? '') === 'markers' && method() === 'GET') {
         }
     }
 
-    foreach (readJson('positions.json') as $p) {
+    foreach (readJson(POSITIONS_JSON) as $p) {
         $loc = $p['location'] ?? null;
         if ($loc && isset($loc['lat'], $loc['lng'])) {
             $markers[] = [
@@ -46,7 +46,7 @@ if (($segments[1] ?? '') === 'markers' && method() === 'GET') {
         }
     }
 
-    foreach (readJson('events.json') as $e) {
+    foreach (readJson(EVENTS_JSON) as $e) {
         $loc = $e['location'] ?? null;
         if ($loc && isset($loc['lat'], $loc['lng']) && ($e['locationType'] ?? '') === 'physical') {
             $markers[] = [

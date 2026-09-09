@@ -6,7 +6,7 @@ $id = isset($segments[1]) ? (int) $segments[1] : null;
 $sub = $segments[2] ?? '';
 
 if ($id === null && method() === 'GET') {
-    jsonResponse(readJson('posts.json'));
+    jsonResponse(readJson(POSTS_JSON));
     exit;
 }
 
@@ -27,7 +27,7 @@ if ($id === null && method() === 'POST') {
         exit;
     }
     $postType = $auth['type'] === 'organization' ? 'org_post' : 'user_post';
-    $posts = readJson('posts.json');
+    $posts = readJson(POSTS_JSON);
     $imageFileId = isset($input['imageFileId']) ? (int) $input['imageFileId'] : null;
     if ($imageFileId) {
         requireAttachableFile($imageFileId, $auth['type'], $auth['id']);
@@ -46,7 +46,7 @@ if ($id === null && method() === 'POST') {
         $post['imageFileId'] = $imageFileId;
     }
     $posts[] = $post;
-    writeJson('posts.json', $posts);
+    writeJson(POSTS_JSON, $posts);
     if ($imageFileId) {
         attachFileTo($imageFileId, 'post', (int) $post['id']);
     }
@@ -56,7 +56,7 @@ if ($id === null && method() === 'POST') {
 
 if ($id !== null && $sub === 'like' && method() === 'POST') {
     requireAuth();
-    $posts = readJson('posts.json');
+    $posts = readJson(POSTS_JSON);
     $idx = null;
     foreach ($posts as $i => $p) {
         if ((int) $p['id'] === $id) {
@@ -69,14 +69,14 @@ if ($id !== null && $sub === 'like' && method() === 'POST') {
         exit;
     }
     $posts[$idx]['likeCount'] = ($posts[$idx]['likeCount'] ?? 0) + 1;
-    writeJson('posts.json', $posts);
+    writeJson(POSTS_JSON, $posts);
     jsonResponse($posts[$idx]);
     exit;
 }
 
 if ($id !== null && $sub === 'share' && method() === 'POST') {
     requireAuth();
-    $posts = readJson('posts.json');
+    $posts = readJson(POSTS_JSON);
     $idx = null;
     foreach ($posts as $i => $p) {
         if ((int) $p['id'] === $id) {
@@ -89,7 +89,7 @@ if ($id !== null && $sub === 'share' && method() === 'POST') {
         exit;
     }
     $posts[$idx]['shareCount'] = ($posts[$idx]['shareCount'] ?? 0) + 1;
-    writeJson('posts.json', $posts);
+    writeJson(POSTS_JSON, $posts);
     jsonResponse($posts[$idx]);
     exit;
 }

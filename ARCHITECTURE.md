@@ -191,20 +191,20 @@ erDiagram
 | Users | `users.json` | `auth.php`, `users.php` |
 | Organization members | `organization_members.json` | `organizations.php` |
 | Organizations | `organizations.json` | `organizations.php` |
-| Posts | `posts.json` | `posts.php` |
-| Positions | `positions.json` | `positions.php` |
-| Events | `events.json` | `events.php` |
-| Comments | `comments.json` | `comments.php` |
-| Projects | `projects.json` | `projects.php` |
-| Project posts | `project_posts.json` | `projects.php` |
-| Follows | `follows.json` | `users.php`, `organizations.php` |
-| Applications | `applications.json` | `positions.php` |
-| Event RSVPs | `event_rsvps.json` | `events.php` |
-| Subscriptions | `subscriptions.json` | `subscriptions.php` |
-| Availability | `availability.json` | `availability.php` |
-| Conversations | `conversations.json` | `conversations.php` |
-| Conversation participants | `conversation_participants.json` | `conversations.php` |
-| Messages | `messages.json` | `conversations.php` |
+| Posts | `content/posts.json` | `posts.php` |
+| Positions | `content/positions.json` | `positions.php` |
+| Events | `content/events.json` | `events.php` |
+| Comments | `content/comments.json` | `comments.php` |
+| Projects | `content/projects.json` | `projects.php` |
+| Project posts | `content/project_posts.json` | `projects.php` |
+| Follows | `social/follows.json` | `users.php`, `organizations.php` |
+| Applications | `social/applications.json` | `positions.php` |
+| Event RSVPs | `social/event_rsvps.json` | `events.php` |
+| Subscriptions | `social/subscriptions.json` | `subscriptions.php` |
+| Availability | `social/availability.json` | `availability.php` |
+| Conversations | `messaging/conversations.json` | `conversations.php` |
+| Conversation participants | `messaging/conversation_participants.json` | `conversations.php` |
+| Messages | `messaging/messages.json` | `conversations.php` |
 | Stored files | `files.json` + `data/uploads/*` | `files.php` |
 
 Map markers are computed at request time in `map.php` (not stored separately).

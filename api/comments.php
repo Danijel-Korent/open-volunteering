@@ -33,7 +33,7 @@ if (method() === 'GET') {
         jsonResponse(['error' => 'targetType and targetId required'], 400);
         exit;
     }
-    $comments = readJson('comments.json');
+    $comments = readJson(COMMENTS_JSON);
     $filtered = array_values(array_filter($comments, fn($c) =>
         $c['targetType'] === $targetType && (int) $c['targetId'] === $targetId
     ));
@@ -63,7 +63,7 @@ if (method() === 'POST') {
         jsonResponse(['error' => 'Invalid targetType'], 400);
         exit;
     }
-    $comments = readJson('comments.json');
+    $comments = readJson(COMMENTS_JSON);
     $comment = [
         'id' => nextId($comments),
         'targetType' => $targetType,
@@ -74,7 +74,7 @@ if (method() === 'POST') {
         'createdAt' => date('c'),
     ];
     $comments[] = $comment;
-    writeJson('comments.json', $comments);
+    writeJson(COMMENTS_JSON, $comments);
     jsonResponse([
         ...$comment,
         'author' => publicCommentAuthor($comment),

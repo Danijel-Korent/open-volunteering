@@ -6,7 +6,7 @@ $id = isset($segments[1]) ? (int) $segments[1] : null;
 $sub = $segments[2] ?? '';
 
 if ($id === null && method() === 'GET') {
-    $events = readJson('events.json');
+    $events = readJson(EVENTS_JSON);
     usort($events, fn($a, $b) => strcmp($a['startDate'], $b['startDate']));
     jsonResponse($events);
     exit;
@@ -25,7 +25,7 @@ if ($id === null && method() === 'POST') {
         jsonResponse(['error' => 'Title, description, and startDate are required'], 400);
         exit;
     }
-    $events = readJson('events.json');
+    $events = readJson(EVENTS_JSON);
     $event = [
         'id' => nextId($events),
         'authorType' => $auth['type'],
@@ -40,7 +40,7 @@ if ($id === null && method() === 'POST') {
         'createdAt' => date('c'),
     ];
     $events[] = $event;
-    writeJson('events.json', $events);
+    writeJson(EVENTS_JSON, $events);
     jsonResponse($event, 201);
     exit;
 }
@@ -53,7 +53,7 @@ if ($id !== null && $sub === 'rsvp' && method() === 'POST') {
         jsonResponse(['error' => 'Status must be going or maybe'], 400);
         exit;
     }
-    $events = readJson('events.json');
+    $events = readJson(EVENTS_JSON);
     $found = false;
     foreach ($events as $e) {
         if ((int) $e['id'] === $id) {
@@ -65,7 +65,7 @@ if ($id !== null && $sub === 'rsvp' && method() === 'POST') {
         jsonResponse(['error' => 'Event not found'], 404);
         exit;
     }
-    $rsvps = readJson('event_rsvps.json');
+    $rsvps = readJson(EVENT_RSVPS_JSON);
     $updated = false;
     foreach ($rsvps as $i => $r) {
         if ((int) $r['eventId'] === $id
@@ -84,7 +84,7 @@ if ($id !== null && $sub === 'rsvp' && method() === 'POST') {
             'status' => $status,
         ];
     }
-    writeJson('event_rsvps.json', $rsvps);
+    writeJson(EVENT_RSVPS_JSON, $rsvps);
     jsonResponse([
         'eventId' => $id,
         'accountType' => $auth['type'],
@@ -96,7 +96,7 @@ if ($id !== null && $sub === 'rsvp' && method() === 'POST') {
 
 if ($id !== null && $sub === 'like' && method() === 'POST') {
     requireAuth();
-    $events = readJson('events.json');
+    $events = readJson(EVENTS_JSON);
     $idx = null;
     foreach ($events as $i => $e) {
         if ((int) $e['id'] === $id) {
@@ -109,7 +109,7 @@ if ($id !== null && $sub === 'like' && method() === 'POST') {
         exit;
     }
     $events[$idx]['likeCount'] = ($events[$idx]['likeCount'] ?? 0) + 1;
-    writeJson('events.json', $events);
+    writeJson(EVENTS_JSON, $events);
     jsonResponse($events[$idx]);
     exit;
 }
