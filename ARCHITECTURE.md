@@ -76,6 +76,7 @@ Three routing layers connect the browser to persisted data.
 | `map` | `map.php` |
 | `files` | `files.php` |
 | `conversations` | `conversations.php` |
+| `notifications` | `notifications.php` |
 
 Each handler reads further path segments via `getPathSegments()` and dispatches on HTTP method.
 
@@ -202,6 +203,7 @@ erDiagram
 | Event RSVPs | `social/event_rsvps.json` | `events.php` |
 | Subscriptions | `social/subscriptions.json` | `subscriptions.php` |
 | Availability | `social/availability.json` | `availability.php` |
+| Notifications | `social/notifications.json` | `notifications.php` |
 | Conversations | `messaging/conversations.json` | `conversations.php` |
 | Conversation participants | `messaging/conversation_participants.json` | `conversations.php` |
 | Messages | `messaging/messages.json` | `conversations.php` |
@@ -419,6 +421,19 @@ The most complex handler. Aggregates posts, positions, and events into a unified
 | GET | `/api/availability` | No* | Query: `targetType` + `targetId`, `mine=1`, or `forOrgId` (org owner only) |
 | POST | `/api/availability` | Yes (volunteer) | Body: `targetType`, `targetId`, `skillsOffered` (upsert) |
 
+### notifications — `/api/notifications[/{id}[/{sub}]]`
+
+In-app notifications for the logged-in user. Org-related events are delivered to each org admin's personal inbox with an `organizationName` label.
+
+| Method | Path | Auth | Notes |
+|--------|------|------|-------|
+| GET | `/api/notifications` | Yes (user session) | List notifications (`limit` query, default 50) with `totalUnread` |
+| GET | `/api/notifications/unread-count` | Yes (user session) | `{ totalUnread }` for header badge polling |
+| POST | `/api/notifications/{id}/read` | Yes (user session) | Mark one notification read |
+| POST | `/api/notifications/read-all` | Yes (user session) | Mark all unread notifications read |
+
+**Creation hooks** (not separate endpoints): `comments.php` (post comments), `positions.php` (new applications), `availability.php` (new skill offers only).
+
 ### conversations — `/api/conversations[/{id}[/{sub}]]`
 
 Private messaging. Only conversation participants may read or write.
@@ -457,10 +472,11 @@ Hash-based SPA routing in [`public/js/app.js`](public/js/app.js):
 | `#/profile/{userId}/project/{projectId}` | `profile.js` (project detail) |
 | `#/messages` | `messages.js` (inbox) |
 | `#/messages/{conversationId}` | `messages.js` (thread) |
+| `#/notifications` | `notifications.js` |
 | `#/login` | `auth.js` |
 | `#/register` | `auth.js` |
 
-Navigation links in [`index.html`](index.html) use `data-route` attributes matching the first path segment. Messages is accessed via a header link in [`auth.js`](public/js/auth.js), not the main nav.
+Navigation links in [`index.html`](index.html) use `data-route` attributes matching the first path segment. Messages and notifications are accessed via header controls in [`auth.js`](public/js/auth.js), not the main nav.
 
 ### Module conventions
 

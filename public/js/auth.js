@@ -3,6 +3,9 @@ import * as api from './api.js';
 /** @type {MeResponse | null} */
 let currentUser = null;
 
+/** @type {number | null} */
+let notificationsPollTimer = null;
+
 /**
  * Get cached active account (user or organization context).
  *
@@ -209,6 +212,116 @@ function bindAccountSwitcher() {
 }
 
 /**
+ * Stop polling for notification unread counts.
+ *
+ * @returns {void}
+ */
+function stopNotificationsPolling() {
+  if (notificationsPollTimer !== null) {
+    clearInterval(notificationsPollTimer);
+    notificationsPollTimer = null;
+  }
+}
+
+/**
+ * Start polling for notification unread counts.
+ *
+ * @returns {void}
+ */
+function startNotificationsPolling() {
+  stopNotificationsPolling();
+  notificationsPollTimer = window.setInterval(() => {
+    void refreshNotificationsUnreadBadge();
+  }, 30000);
+}
+
+/**
+ * Refresh the notifications dropdown preview list.
+ *
+ * @returns {Promise<void>}
+ */
+async function refreshNotificationsDropdown() {
+  const dropdown = /** @type {HTMLElement | null} */ (
+    document.querySelector('[data-testid="notifications-dropdown"]')
+  );
+  if (!dropdown || dropdown.hidden || !currentUser) {
+    return;
+  }
+  try {
+    const data = await api.getNotifications({ limit: 5 });
+    const items = data.items ?? [];
+    if (items.length === 0) {
+      dropdown.innerHTML = '<p class="notifications-dropdown-empty">No notifications yet.</p>';
+      return;
+    }
+    dropdown.innerHTML = `
+      <div class="notifications-dropdown-list">
+        ${items.map((n) => {
+          const unread = !n.readAt;
+          return `
+            <button type="button"
+              class="notification-row${unread ? ' notification-row--unread' : ''}"
+              data-dropdown-notification-id="${n.id}"
+              data-notification-link="${escapeHtml(n.link || '#/feed')}">
+              ${n.organizationName ? `<span class="notification-org-label">${escapeHtml(n.organizationName)}</span>` : ''}
+              <span class="notification-message">${escapeHtml(n.message || 'Notification')}</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+      <a href="#/notifications" class="notifications-dropdown-all" data-testid="header-notifications-all">See all</a>
+    `;
+    dropdown.querySelectorAll('[data-dropdown-notification-id]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = parseInt(btn.getAttribute('data-dropdown-notification-id') || '0', 10);
+        const link = btn.getAttribute('data-notification-link') || '#/feed';
+        dropdown.hidden = true;
+        try {
+          await api.markNotificationRead(id);
+          window.dispatchEvent(new Event('notificationschanged'));
+        } catch {
+          // Continue navigation even if mark-read fails.
+        }
+        window.location.hash = link.startsWith('#') ? link : `#${link}`;
+      });
+    });
+  } catch {
+    dropdown.innerHTML = '<p class="notifications-dropdown-empty">Could not load notifications.</p>';
+  }
+}
+
+/**
+ * Bind header notification bell interactions.
+ *
+ * @returns {void}
+ */
+function bindNotificationsBell() {
+  const wrap = document.querySelector('.header-notifications-wrap');
+  const btn = document.querySelector('[data-testid="header-notifications"]');
+  const dropdown = /** @type {HTMLElement | null} */ (
+    document.querySelector('[data-testid="notifications-dropdown"]')
+  );
+  if (!wrap || !btn || !dropdown) {
+    return;
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const willOpen = dropdown.hidden;
+    dropdown.hidden = !willOpen;
+    if (willOpen) {
+      void refreshNotificationsDropdown();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(/** @type {Node} */ (e.target))) {
+      dropdown.hidden = true;
+    }
+  });
+}
+
+/**
  * Update auth status in header.
  */
 export function renderAuthStatus() {
@@ -219,18 +332,28 @@ export function renderAuthStatus() {
     el.innerHTML = `
       <a href="#/messages" class="header-messages-link" data-testid="header-messages">Messages</a>
       <span class="unread-badge" data-testid="header-messages-unread" hidden></span>
+      <div class="header-notifications-wrap">
+        <button type="button" class="header-notifications-btn" data-testid="header-notifications" aria-label="Notifications">🔔</button>
+        <span class="unread-badge header-notifications-badge" data-testid="header-notifications-unread" hidden></span>
+        <div class="notifications-dropdown" data-testid="notifications-dropdown" hidden></div>
+      </div>
       ${renderAccountSwitcher(currentUser)}
       <button class="btn btn-sm" data-testid="btn-logout" id="btn-logout">Logout</button>
     `;
     bindAccountSwitcher();
+    bindNotificationsBell();
     document.getElementById('btn-logout')?.addEventListener('click', async () => {
       await api.logout();
       currentUser = null;
+      stopNotificationsPolling();
       emitAuthChanged();
       window.location.hash = '#/feed';
     });
     void refreshMessagesUnreadBadge();
+    void refreshNotificationsUnreadBadge();
+    startNotificationsPolling();
   } else {
+    stopNotificationsPolling();
     el.innerHTML = `
       <a href="#/login" data-testid="btn-login">Login</a>
       <a href="#/register" data-testid="btn-register">Register</a>
@@ -390,6 +513,34 @@ export function renderRegister(container) {
   });
 }
 
+/**
+ * Refresh the unread notifications badge in the header.
+ *
+ * @returns {Promise<void>}
+ */
+export async function refreshNotificationsUnreadBadge() {
+  const badge = /** @type {HTMLElement | null} */ (
+    document.querySelector('[data-testid="header-notifications-unread"]')
+  );
+  if (!badge || !currentUser) return;
+  try {
+    const data = await api.getNotificationsUnreadCount();
+    const total = data.totalUnread ?? 0;
+    if (total > 0) {
+      badge.textContent = total > 99 ? '99+' : String(total);
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
+  } catch {
+    badge.hidden = true;
+  }
+}
+
 window.addEventListener('messageschanged', () => {
   void refreshMessagesUnreadBadge();
+});
+
+window.addEventListener('notificationschanged', () => {
+  void refreshNotificationsUnreadBadge();
 });

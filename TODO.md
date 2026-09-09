@@ -24,6 +24,23 @@ High-level features
     - register for notification
   - de-centralized using ActivityPub
 
+### General timeline
+
+  - Local dev
+  - Under test domain: UI/UX reviews
+
+  - Under test domain: Real usage tests
+      - general feature tests
+      - password still not choosable
+
+  - Under its own domain:
+      - JSON --> SQL
+      - SQL injection and good safety practices reviews
+      - password protection reviews
+      - email notifications
+      - server moderation
+      - usage stats
+
 ## Prompts
 
 Do you see any dead code?
@@ -44,23 +61,6 @@ Check if README.md or ARCHITECTURE.md need an update
 
 Draw on ASCII-friednly overview of XYZ
 
-## Timeline
-
-  - Local dev
-  - Under test domain: UI/UX reviews
-
-  - Under test domain: Real usage tests
-      - general feature tests
-      - password still not choosable
-
-  - Under its own domain:
-      - JSON --> SQL
-      - SQL injection and good safety practices reviews
-      - password protection reviews
-      - email notifications
-      - server moderation
-      - usage stats
-
 ## Small issues - backlog
 
  - [ ] No user profile image visible in the comments section
@@ -70,6 +70,8 @@ Draw on ASCII-friednly overview of XYZ
 
  - [ ] /#/messages: Ability to set chat title
     - [ ] when clicking on "Message" from "Position applicants" and "Skill offers" automaticly set chat title to reflect that
+ - [ ] In the group chats you cannot see members
+
 
 ## PHASE #1 - UI/UX check: Make it good/complete enough to put it on-line for UI/UX people to take a look
 
@@ -79,18 +81,17 @@ Draw on ASCII-friednly overview of XYZ
 ### Milestone #1 - Direct and group messages ✓
 ### Milestone #2 - More flexible org profile management ✓
 
-### Milestone #3 - Support for notifications
+### Milestone #3 - Support for notifications ✓
 
   - I have decided that we do not need "accept" button and notification. Just "message" button is enough for now
-
-#### TODO
+  - In-app notifications: bell dropdown + `#/notifications` page; org events in admin personal inbox with org label
 
 #### Milestone #x - feature table  ✓
 
-| User profile: Notification for post comment       |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: Notification for post comment        |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: Notification for applied possition   |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: Notification for offered skill       |  ✅︎  |      |       |   🎯︎  |                                                   |
+| User profile: Notification for post comment       |  ✅︎  |      |       |   ✓   |                                                   |
+| Org profile: Notification for post comment        |  ✅︎  |      |       |   ✓   |                                                   |
+| Org profile: Notification for applied possition   |  ✅︎  |      |       |   ✓   |                                                   |
+| Org profile: Notification for offered skill       |  ✅︎  |      |       |   ✓   |                                                   |
 
 
 

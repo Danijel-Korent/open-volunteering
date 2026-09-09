@@ -117,6 +117,21 @@ if (method() === 'POST') {
     ];
     $avail[] = $entry;
     writeJson(AVAILABILITY_JSON, $avail);
+
+    // Notify org admins when a user offers skills (new offer only, not upsert).
+    $orgId = resolveOrgIdFromAvailabilityTarget($targetType, $targetId);
+    if ($orgId !== null) {
+        createNotificationsForOrgAdmins(
+            $orgId,
+            'skill_offer',
+            'user',
+            $auth['id'],
+            'availability',
+            (int) $entry['id'],
+            $auth['id'],
+        );
+    }
+
     jsonResponse($entry, 201);
     exit;
 }

@@ -4,6 +4,7 @@ import { isSameAccount, profileLink, renderProfileBadge } from './account-utils.
 import { renderAvatarHtml, setupImageDropzone } from './components/image-dropzone.js';
 import { renderPostCard } from './components/post-card.js';
 import { startDirectMessage } from './messages.js';
+import { applyProfileDeepLinks } from './route-utils.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -83,6 +84,10 @@ export async function renderOrganization(container, orgId, projectId) {
     && targetId !== undefined
     && current.activeAccountId === targetId
     && current.organizationRole === 'admin';
+  const isAdminMember = targetId !== undefined
+    && (current?.memberships ?? []).some(
+      (m) => m.organizationId === targetId && m.role === 'admin',
+    );
 
   if (!targetId) {
     container.innerHTML = `
@@ -98,7 +103,7 @@ export async function renderOrganization(container, orgId, projectId) {
 
   try {
     const org = await api.getOrganization(targetId);
-    if (isOwnAdmin && current) {
+    if ((isOwnAdmin || isAdminMember) && current) {
       await renderOwnOrganizationProfile(container, org);
     } else {
       await renderPublicOrganizationProfile(container, org);
@@ -229,6 +234,7 @@ async function renderOwnVolunteerProfile(container, user) {
     void showCreateOrganizationModal();
   });
   await loadProfileFeed('user', user.id);
+  await applyProfileDeepLinks();
 }
 
 /**
@@ -334,6 +340,7 @@ async function renderOwnOrganizationProfile(container, org) {
   await setupOrgMemberManagement(container, org);
   await loadOrgMessagingSections(container, org.id);
   await loadProfileFeed('organization', org.id);
+  await applyProfileDeepLinks();
 }
 
 /**
@@ -633,6 +640,7 @@ async function renderPublicVolunteerProfile(container, user) {
   });
 
   await loadProfileFeed('user', user.id);
+  await applyProfileDeepLinks();
 }
 
 /**
@@ -849,6 +857,7 @@ async function renderPublicOrganizationProfile(container, org) {
 
   await loadProjects(container.querySelector('#projects-list'), org.id);
   await loadProfileFeed('organization', org.id);
+  await applyProfileDeepLinks();
 }
 
 /**

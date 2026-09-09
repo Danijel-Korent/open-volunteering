@@ -24,6 +24,7 @@ $routes = [
     'map' => 'map.php',
     'files' => 'files.php',
     'conversations' => 'conversations.php',
+    'notifications' => 'notifications.php',
 ];
 
 if (isset($routes[$resource])) {

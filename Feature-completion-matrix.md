@@ -130,6 +130,19 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 
 ---
 
+## In-app notifications (Milestone #3)
+
+| Feature                                                    |  Placeholder  |  Prototype  |         Full         | Notes                                                                |
+| ---------------------------------------------------------- | :-----------: | :---------: | :------------------: | -------------------------------------------------------------------- |
+| Notification for comment on user’s post                    |               |      ✓      |                      | Delivered to post author’s personal inbox                            |
+| Notification for comment on org post                       |               |      ✓      |                      | Delivered to each org admin’s personal inbox with org label           |
+| Notification for position application                      |               |      ✓      |                      | Org admins; deep-link to applicants section                          |
+| Notification for skill offer                               |               |      ✓      |                      | Org admins; new offers only (not upsert)                             |
+| Header bell + unread badge                                 |               |      ✓      |                      | Dropdown preview + `#/notifications` page                            |
+| Mark notification read on tap                              |               |      ✓      |                      | Badge updates via polling and `notificationschanged` event           |
+
+---
+
 ## Content creation (by role)
 
 | Feature                                                    |  Placeholder  |  Prototype  |         Full         | Notes                                                                |

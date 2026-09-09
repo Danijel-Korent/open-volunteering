@@ -75,6 +75,37 @@ if (method() === 'POST') {
     ];
     $comments[] = $comment;
     writeJson(COMMENTS_JSON, $comments);
+
+    // Notify post owner when someone comments on a post.
+    if ($targetType === 'post') {
+        $post = findPostById($targetId);
+        if ($post !== null) {
+            $authorType = $post['authorType'] ?? 'user';
+            $authorId = (int) ($post['authorId'] ?? 0);
+            $commenterUserId = $auth['type'] === 'user' ? $auth['id'] : null;
+            if ($authorType === 'user') {
+                createNotificationForUser(
+                    $authorId,
+                    'post_comment',
+                    $auth['type'],
+                    $auth['id'],
+                    'post',
+                    $targetId,
+                );
+            } elseif ($authorType === 'organization') {
+                createNotificationsForOrgAdmins(
+                    $authorId,
+                    'post_comment',
+                    $auth['type'],
+                    $auth['id'],
+                    'post',
+                    $targetId,
+                    $commenterUserId,
+                );
+            }
+        }
+    }
+
     jsonResponse([
         ...$comment,
         'author' => publicCommentAuthor($comment),

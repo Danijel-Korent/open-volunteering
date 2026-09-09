@@ -374,6 +374,41 @@ export async function getMapMarkers() {
 }
 
 /**
+ * List in-app notifications for the current user.
+ *
+ * @param {{ limit?: number }} [params]
+ * @returns {Promise<NotificationsResponse>}
+ */
+export async function getNotifications(params = {}) {
+  const qs = new URLSearchParams(
+    Object.entries(params).map(([k, v]) => [k, String(v)])
+  ).toString();
+  const suffix = qs ? `?${qs}` : '';
+  return /** @type {Promise<NotificationsResponse>} */ (request(`notifications${suffix}`));
+}
+
+/** Get unread notification count for the header badge. @returns {Promise<{ totalUnread: number }>} */
+export async function getNotificationsUnreadCount() {
+  return /** @type {Promise<{ totalUnread: number }>} */ (request('notifications/unread-count'));
+}
+
+/** Mark a single notification as read. @param {number} id @returns {Promise<{ ok: boolean }>} */
+export async function markNotificationRead(id) {
+  return /** @type {Promise<{ ok: boolean }>} */ (request(`notifications/${id}/read`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  }));
+}
+
+/** Mark all notifications as read for the current user. @returns {Promise<{ ok: boolean }>} */
+export async function markAllNotificationsRead() {
+  return /** @type {Promise<{ ok: boolean }>} */ (request('notifications/read-all', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  }));
+}
+
+/**
  * List conversations for the current user (inbox).
  *
  * @param {{ page?: number, perPage?: number }} [params]

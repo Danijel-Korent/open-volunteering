@@ -97,6 +97,7 @@ define('APPLICATIONS_JSON', 'social/applications.json');
 define('EVENT_RSVPS_JSON', 'social/event_rsvps.json');
 define('SUBSCRIPTIONS_JSON', 'social/subscriptions.json');
 define('AVAILABILITY_JSON', 'social/availability.json');
+define('NOTIFICATIONS_JSON', 'social/notifications.json');
 
 define('CONVERSATIONS_JSON', 'messaging/conversations.json');
 define('CONVERSATION_PARTICIPANTS_JSON', 'messaging/conversation_participants.json');
@@ -491,6 +492,300 @@ function countOrgAdmins(int $orgId): int {
         }
     }
     return $count;
+}
+
+/**
+ * List user IDs of admins for an organization.
+ *
+ * @param int $orgId
+ * @return array<int, int>
+ */
+function listOrgAdminUserIds(int $orgId): array {
+    $ids = [];
+    foreach (readOrganizationMembers() as $m) {
+        if ((int) $m['organizationId'] === $orgId && ($m['role'] ?? '') === 'admin') {
+            $ids[] = (int) $m['userId'];
+        }
+    }
+    return $ids;
+}
+
+/**
+ * Resolve owning organization id from an availability target.
+ *
+ * @param string $targetType organization|post|position|event
+ * @param int $targetId
+ * @return int|null
+ */
+function resolveOrgIdFromAvailabilityTarget(string $targetType, int $targetId): ?int {
+    if ($targetType === 'organization') {
+        return $targetId;
+    }
+    if ($targetType === 'post') {
+        foreach (readJson(POSTS_JSON) as $post) {
+            if ((int) $post['id'] === $targetId
+                && ($post['authorType'] ?? '') === 'organization') {
+                return (int) $post['authorId'];
+            }
+        }
+        return null;
+    }
+    if ($targetType === 'position') {
+        foreach (readJson(POSITIONS_JSON) as $position) {
+            if ((int) $position['id'] === $targetId
+                && ($position['authorType'] ?? '') === 'organization') {
+                return (int) $position['authorId'];
+            }
+        }
+        return null;
+    }
+    if ($targetType === 'event') {
+        foreach (readJson(EVENTS_JSON) as $event) {
+            if ((int) $event['id'] === $targetId
+                && ($event['authorType'] ?? '') === 'organization') {
+                return (int) $event['authorId'];
+            }
+        }
+        return null;
+    }
+    return null;
+}
+
+/**
+ * Check whether an identical notification already exists for a recipient.
+ *
+ * @param array<int, array<string, mixed>> $notifications
+ * @param int $recipientUserId
+ * @param string $type
+ * @param string $targetType
+ * @param int $targetId
+ * @param string $actorType
+ * @param int $actorId
+ */
+function notificationExists(
+    array $notifications,
+    int $recipientUserId,
+    string $type,
+    string $targetType,
+    int $targetId,
+    string $actorType,
+    int $actorId,
+): bool {
+    foreach ($notifications as $n) {
+        if ((int) ($n['recipientUserId'] ?? 0) === $recipientUserId
+            && ($n['type'] ?? '') === $type
+            && ($n['targetType'] ?? '') === $targetType
+            && (int) ($n['targetId'] ?? 0) === $targetId
+            && ($n['actorType'] ?? '') === $actorType
+            && (int) ($n['actorId'] ?? 0) === $actorId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Create an in-app notification for a single user.
+ *
+ * @param int $recipientUserId
+ * @param string $type post_comment|position_application|skill_offer
+ * @param string $actorType user|organization
+ * @param int $actorId
+ * @param string $targetType
+ * @param int $targetId
+ * @param int|null $organizationId
+ * @param string|null $organizationName
+ */
+function createNotificationForUser(
+    int $recipientUserId,
+    string $type,
+    string $actorType,
+    int $actorId,
+    string $targetType,
+    int $targetId,
+    ?int $organizationId = null,
+    ?string $organizationName = null,
+): void {
+    if ($recipientUserId <= 0) {
+        return;
+    }
+    if ($actorType === 'user' && $actorId === $recipientUserId) {
+        return;
+    }
+
+    $notifications = readJson(NOTIFICATIONS_JSON);
+    if (notificationExists(
+        $notifications,
+        $recipientUserId,
+        $type,
+        $targetType,
+        $targetId,
+        $actorType,
+        $actorId,
+    )) {
+        return;
+    }
+
+    $notifications[] = [
+        'id' => nextId($notifications),
+        'recipientUserId' => $recipientUserId,
+        'type' => $type,
+        'organizationId' => $organizationId,
+        'organizationName' => $organizationName,
+        'actorType' => $actorType,
+        'actorId' => $actorId,
+        'targetType' => $targetType,
+        'targetId' => $targetId,
+        'readAt' => null,
+        'createdAt' => date('c'),
+    ];
+    writeJson(NOTIFICATIONS_JSON, $notifications);
+}
+
+/**
+ * Create in-app notifications for all admins of an organization.
+ *
+ * @param int $orgId
+ * @param string $type post_comment|position_application|skill_offer
+ * @param string $actorType user|organization
+ * @param int $actorId
+ * @param string $targetType
+ * @param int $targetId
+ * @param int|null $excludeUserId Skip this user id (e.g. applicant or commenter)
+ */
+function createNotificationsForOrgAdmins(
+    int $orgId,
+    string $type,
+    string $actorType,
+    int $actorId,
+    string $targetType,
+    int $targetId,
+    ?int $excludeUserId = null,
+): void {
+    $org = findOrganization(readOrganizations(), $orgId);
+    if ($org === null) {
+        return;
+    }
+    $orgName = (string) ($org['name'] ?? 'Organization');
+    foreach (listOrgAdminUserIds($orgId) as $adminUserId) {
+        if ($excludeUserId !== null && $adminUserId === $excludeUserId) {
+            continue;
+        }
+        createNotificationForUser(
+            $adminUserId,
+            $type,
+            $actorType,
+            $actorId,
+            $targetType,
+            $targetId,
+            $orgId,
+            $orgName,
+        );
+    }
+}
+
+/**
+ * Build public actor summary for a notification.
+ *
+ * @param array<string, mixed> $notification
+ * @return array{id: int, name: string, type: string}|null
+ */
+function publicNotificationActor(array $notification): ?array {
+    $actorType = $notification['actorType'] ?? 'user';
+    if ($actorType === 'volunteer') {
+        $actorType = 'user';
+    }
+    $actorId = (int) ($notification['actorId'] ?? 0);
+    $actor = resolveAccount($actorType, $actorId);
+    if ($actor === null) {
+        return null;
+    }
+    return [
+        'id' => $actorId,
+        'name' => (string) ($actor['name'] ?? 'Unknown'),
+        'type' => $actorType,
+    ];
+}
+
+/**
+ * Find a post record by id.
+ *
+ * @param int $postId
+ * @return array<string, mixed>|null
+ */
+function findPostById(int $postId): ?array {
+    foreach (readJson(POSTS_JSON) as $post) {
+        if ((int) $post['id'] === $postId) {
+            return $post;
+        }
+    }
+    return null;
+}
+
+/**
+ * Find a position record by id.
+ *
+ * @param int $positionId
+ * @return array<string, mixed>|null
+ */
+function findPositionById(int $positionId): ?array {
+    foreach (readJson(POSITIONS_JSON) as $position) {
+        if ((int) $position['id'] === $positionId) {
+            return $position;
+        }
+    }
+    return null;
+}
+
+/**
+ * Enrich a notification with message, link, and actor for API output.
+ *
+ * @param array<string, mixed> $notification
+ * @return array<string, mixed>
+ */
+function enrichNotification(array $notification): array {
+    $actor = publicNotificationActor($notification);
+    $actorName = $actor['name'] ?? 'Someone';
+    $type = $notification['type'] ?? '';
+    $orgName = $notification['organizationName'] ?? null;
+    $targetType = $notification['targetType'] ?? '';
+    $targetId = (int) ($notification['targetId'] ?? 0);
+    $message = '';
+    $link = '#/feed';
+
+    if ($type === 'post_comment' && $targetType === 'post') {
+        $post = findPostById($targetId);
+        if ($post !== null) {
+            $authorType = $post['authorType'] ?? 'user';
+            $authorId = (int) ($post['authorId'] ?? 0);
+            if ($authorType === 'organization') {
+                $message = "{$actorName} commented on a post";
+                $link = "#/organization/{$authorId}?highlight=post-{$targetId}";
+            } else {
+                $message = "{$actorName} commented on your post";
+                $link = "#/profile/{$authorId}?highlight=post-{$targetId}";
+            }
+        } else {
+            $message = "{$actorName} commented on a post";
+        }
+    } elseif ($type === 'position_application' && $targetType === 'position') {
+        $position = findPositionById($targetId);
+        $title = $position !== null ? (string) ($position['title'] ?? 'a position') : 'a position';
+        $orgId = (int) ($notification['organizationId'] ?? ($position['authorId'] ?? 0));
+        $message = "{$actorName} applied for {$title}";
+        $link = "#/organization/{$orgId}?section=applicants";
+    } elseif ($type === 'skill_offer') {
+        $orgId = (int) ($notification['organizationId'] ?? 0);
+        $message = "{$actorName} offered skills";
+        $link = "#/organization/{$orgId}?section=availability";
+    }
+
+    return [
+        ...$notification,
+        'message' => $message,
+        'link' => $link,
+        'actor' => $actor,
+    ];
 }
 
 /**

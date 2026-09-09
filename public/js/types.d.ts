@@ -266,6 +266,31 @@ interface MessagesResponse {
   totalItems: number;
 }
 
+type NotificationType = 'post_comment' | 'position_application' | 'skill_offer';
+
+interface Notification {
+  id: number;
+  recipientUserId: number;
+  type: NotificationType;
+  organizationId?: number | null;
+  organizationName?: string | null;
+  actorType: AccountType;
+  actorId: number;
+  targetType: 'post' | 'position' | 'event' | 'organization' | 'availability';
+  targetId: number;
+  readAt: string | null;
+  createdAt: string;
+  message?: string;
+  link?: string;
+  actor?: { id: number; name: string; type: AccountType } | null;
+}
+
+interface NotificationsResponse {
+  items: Notification[];
+  totalUnread: number;
+  totalItems: number;
+}
+
 /** Leaflet global from CDN */
 declare const L: {
   map: (id: string) => LMap;

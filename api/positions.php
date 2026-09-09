@@ -102,14 +102,14 @@ if ($id !== null && $sub === 'apply' && method() === 'POST') {
         exit;
     }
     $positions = readJson(POSITIONS_JSON);
-    $found = false;
+    $position = null;
     foreach ($positions as $p) {
         if ((int) $p['id'] === $id) {
-            $found = true;
+            $position = $p;
             break;
         }
     }
-    if (!$found) {
+    if ($position === null) {
         jsonResponse(['error' => 'Position not found'], 404);
         exit;
     }
@@ -129,6 +129,21 @@ if ($id !== null && $sub === 'apply' && method() === 'POST') {
     ];
     $applications[] = $app;
     writeJson(APPLICATIONS_JSON, $applications);
+
+    // Notify org admins when someone applies for a position.
+    $orgId = (int) ($position['authorId'] ?? 0);
+    if (($position['authorType'] ?? '') === 'organization' && $orgId > 0) {
+        createNotificationsForOrgAdmins(
+            $orgId,
+            'position_application',
+            'user',
+            $userId,
+            'position',
+            $id,
+            $userId,
+        );
+    }
+
     jsonResponse($app, 201);
     exit;
 }

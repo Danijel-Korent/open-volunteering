@@ -4,6 +4,7 @@ import { renderProfile, renderOrganization } from './profile.js';
 import { renderCalendar } from './calendar.js';
 import { renderMap } from './map.js';
 import { renderMessages } from './messages.js';
+import { renderNotifications } from './notifications.js';
 import { loadCurrentUser, renderAuthStatus, renderLogin, renderRegister } from './auth.js';
 
 const appEl = document.getElementById('app');
@@ -41,7 +42,7 @@ async function render() {
   const segments = parseRoute();
   const page = segments[0] || 'feed';
 
-  if (page !== 'login' && page !== 'register' && page !== 'messages') {
+  if (page !== 'login' && page !== 'register' && page !== 'messages' && page !== 'notifications') {
     setActiveNav(page);
   }
 
@@ -56,6 +57,8 @@ async function render() {
   } else if (page === 'messages') {
     const conversationId = segments[1] ? parseInt(segments[1], 10) : undefined;
     await renderMessages(app, conversationId);
+  } else if (page === 'notifications') {
+    await renderNotifications(app);
   } else if (page === 'profile') {
     const userId = segments[1] ? parseInt(segments[1], 10) : undefined;
     const projectId = segments[2] === 'project' && segments[3] ? parseInt(segments[3], 10) : undefined;
