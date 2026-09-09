@@ -18,6 +18,7 @@ High-level features
     - notifications
   - volunteer or paid positions
   - events and calendar
+  - email notifications
   - map of local NGOs, users, events, ...
   - list/overview of open public tenders / founding announcements
     - register for notification
@@ -43,69 +44,55 @@ Check if README.md or ARCHITECTURE.md need an update
 
 Draw on ASCII-friednly overview of XYZ
 
+## Timeline
+
+  - Local dev
+  - Under test domain: UI/UX reviews
+
+  - Under test domain: Real usage tests
+      - general feature tests
+      - password still not choosable
+
+  - Under its own domain:
+      - JSON --> SQL
+      - SQL injection and good safety practices reviews
+      - password protection reviews
+      - email notifications
+      - server moderation
+      - usage stats
+
+## Small issues - backlog
+
+ - [ ] No user profile image visible in the comments section
+ - [ ] Doens't let you to apply to a position unless you enabled "Looking for volunteering positions"
+ - [ ] /#/profile looks horrible even by my standards
+ - [ ] Org profile's "Position applicants" and "Skill offers" - need some way to remove them after they are no longer relevant. Maybe just delete/remove/hide button for start?
+
+ - [ ] /#/messages: Ability to set chat title
+    - [ ] when clicking on "Message" from "Position applicants" and "Skill offers" automaticly set chat title to reflect that
+
 ## PHASE #1 - UI/UX check: Make it good/complete enough to put it on-line for UI/UX people to take a look
 
 - I don't think it makes sense to ask for UI/UX check until all major development is done, so I can focus on UX
 - Basically add as much clickable/interactive stuff and dialogs so that UX people have something to looks at + DM support for communication
 
 ### Milestone #1 - Direct and group messages ✓
+### Milestone #2 - More flexible org profile management ✓
 
-### Milestone #x - More flexible org profile manageemnt
+### Milestone #3 - Support for notifications
 
-  - [x] Instead of single username/password for organizations, let user create organizations, and add or remove members/admins. Then users switch between their profile and his/hers organizations
-  - I decided that this is better to do as early as possible then to "move around" the whole code with already implemented features
-
-#### TODO
-
-  - [x] Move "type: organization" profiles out of user.json into organizations.json
-
-  - [x] Re-organize JSON files into the following folders:
-
- data/
-|-- users.json                      <-- central actor (volunteer | organization)
-|-- files.json                      <-- upload metadata catalog
-|-- uploads/                        <-- binary image storage
-|
-|-- content
-|   |-- posts.json                  authorId -> users
-|   |-- positions.json              authorId -> users
-|   |-- events.json                 authorId -> users
-|   |-- projects.json               orgId    -> users (organization)
-|   |-- project_posts.json          projectId -> projects
-|   |-- comments.json               polymorphic target (see below)
-|
-|-- social
-|   |-- follows.json                followerId, followingId -> users
-|   |-- applications.json           positionId -> positions, volunteerId -> users
-|   |-- event_rsvps.json            eventId -> events, userId -> users
-|   |-- subscriptions.json          userId -> users (filter prefs)
-|   |-- availability.json           volunteerId -> users, polymorphic target
-|
-|-- messaging
-|   |-- conversations.json          createdBy -> users
-|   |-- conversation_participants.json   conversationId, userId
-|   |-- messages.json               conversationId, authorId -> users
-
-#### Milestone #x - feature table  ✓
-
-
-
-
-### Milestone #x - Support for notifications
+  - I have decided that we do not need "accept" button and notification. Just "message" button is enough for now
 
 #### TODO
-
-  - [] For applied possition - Check if we can accept offer
-  - [] For offered skill - Check if we can accept offer
 
 #### Milestone #x - feature table  ✓
 
 | User profile: Notification for post comment       |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: Notification for accepted position  |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: Notification for accepted skill     |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: Notification for post comment        |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: Notification for applied possition   |  ✅︎  |      |       |   🎯︎  |                                                   |
 | Org profile: Notification for offered skill       |  ✅︎  |      |       |   🎯︎  |                                                   |
+
+
 
 ### Milestone #x - Follow post feature
 ### Milestone #x - Follow organization feature
@@ -199,10 +186,10 @@ Draw on ASCII-friednly overview of XYZ
 
 ## PHASE #3 - Prototype for real usage tests
 
-  - Instead of single username/password for organizations, make user create org, add and remove members/moderators/admins
-  - Admins - only ones that can add/remove other members/moderators/admins
-  - Moderators - can delete post replays on ORG's posts
-  - Members - seen as members when responding to ORG posts, can participate in ORG custom chats
+  - [x] Instead of single username/password for organizations, make user create org, add and remove members/moderators/admins
+    - Admins - only ones that can add/remove other members/moderators/admins
+    - Moderators - can delete post replays on ORG's posts
+    - Members - seen as members when responding to ORG posts, can participate in ORG custom chats
 
 ### Milestone #1 - 
 

@@ -81,8 +81,8 @@
         "location": null,
         "skills": [],
         "experience": [],
-        "seekingVolunteering": false,
-        "weeklyVolunteeringHours": 0,
+        "seekingVolunteering": true,
+        "weeklyVolunteeringHours": 10,
         "createdAt": "2026-08-12T08:40:32+02:00",
         "avatarFileId": 2
     }
