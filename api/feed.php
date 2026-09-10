@@ -128,7 +128,7 @@ if ($positionsOnly) {
 if ($algorithm === 'following') {
     $account = getActiveAccount();
     if ($account !== null) {
-        $follows = readJson(FOLLOWS_JSON);
+        $follows = readJson(PROFILE_FOLLOWS_JSON);
         $followingKeys = [];
         foreach ($follows as $f) {
             if ($f['followerType'] === $account['type'] && (int) $f['followerId'] === $account['id']) {

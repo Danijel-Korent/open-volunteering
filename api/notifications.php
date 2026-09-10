@@ -8,7 +8,7 @@ $action = $segments[2] ?? '';
 
 if (method() === 'GET' && $sub === 'unread-count') {
     $userId = requireUserSession();
-    $notifications = readJson(NOTIFICATIONS_JSON);
+    $notifications = readJson(NOTIFICATION_INBOX_JSON);
     $totalUnread = 0;
     foreach ($notifications as $n) {
         if ((int) ($n['recipientUserId'] ?? 0) === $userId && empty($n['readAt'])) {
@@ -22,7 +22,7 @@ if (method() === 'GET' && $sub === 'unread-count') {
 if (method() === 'GET' && $sub === '') {
     $userId = requireUserSession();
     $limit = isset($_GET['limit']) ? max(1, min(100, (int) $_GET['limit'])) : 50;
-    $notifications = readJson(NOTIFICATIONS_JSON);
+    $notifications = readJson(NOTIFICATION_INBOX_JSON);
     $mine = array_values(array_filter(
         $notifications,
         fn($n) => (int) ($n['recipientUserId'] ?? 0) === $userId,
@@ -49,21 +49,21 @@ if (method() === 'GET' && $sub === '') {
 
 if (method() === 'POST' && $sub === 'read-all') {
     $userId = requireUserSession();
-    $notifications = readJson(NOTIFICATIONS_JSON);
+    $notifications = readJson(NOTIFICATION_INBOX_JSON);
     $now = date('c');
     foreach ($notifications as $i => $n) {
         if ((int) ($n['recipientUserId'] ?? 0) === $userId && empty($n['readAt'])) {
             $notifications[$i]['readAt'] = $now;
         }
     }
-    writeJson(NOTIFICATIONS_JSON, $notifications);
+    writeJson(NOTIFICATION_INBOX_JSON, $notifications);
     jsonResponse(['ok' => true]);
     exit;
 }
 
 if (method() === 'POST' && $id !== null && $action === 'read') {
     $userId = requireUserSession();
-    $notifications = readJson(NOTIFICATIONS_JSON);
+    $notifications = readJson(NOTIFICATION_INBOX_JSON);
     $found = false;
     foreach ($notifications as $i => $n) {
         if ((int) ($n['id'] ?? 0) === $id) {
@@ -80,7 +80,7 @@ if (method() === 'POST' && $id !== null && $action === 'read') {
         jsonResponse(['error' => 'Notification not found'], 404);
         exit;
     }
-    writeJson(NOTIFICATIONS_JSON, $notifications);
+    writeJson(NOTIFICATION_INBOX_JSON, $notifications);
     jsonResponse(['ok' => true]);
     exit;
 }

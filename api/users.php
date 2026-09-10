@@ -98,7 +98,7 @@ if ($id !== null && $subAction === 'follow' && method() === 'POST') {
         jsonResponse(['error' => 'User not found'], 404);
         exit;
     }
-    $follows = readJson(FOLLOWS_JSON);
+    $follows = readJson(PROFILE_FOLLOWS_JSON);
     foreach ($follows as $f) {
         if ($f['followerType'] === $auth['type'] && (int) $f['followerId'] === $auth['id']
             && $f['followingType'] === 'user' && (int) $f['followingId'] === $id) {
@@ -119,19 +119,19 @@ if ($id !== null && $subAction === 'follow' && method() === 'POST') {
         'followingId' => $id,
         'createdAt' => date('c'),
     ];
-    writeJson(FOLLOWS_JSON, $follows);
+    writeJson(PROFILE_FOLLOWS_JSON, $follows);
     jsonResponse(['ok' => true, 'following' => true], 201);
     exit;
 }
 
 if ($id !== null && $subAction === 'follow' && method() === 'DELETE') {
     $auth = requireAuth();
-    $follows = readJson(FOLLOWS_JSON);
+    $follows = readJson(PROFILE_FOLLOWS_JSON);
     $follows = array_values(array_filter($follows, fn($f) =>
         !($f['followerType'] === $auth['type'] && (int) $f['followerId'] === $auth['id']
             && $f['followingType'] === 'user' && (int) $f['followingId'] === $id)
     ));
-    writeJson(FOLLOWS_JSON, $follows);
+    writeJson(PROFILE_FOLLOWS_JSON, $follows);
     jsonResponse(['ok' => true, 'following' => false]);
     exit;
 }

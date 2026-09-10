@@ -77,7 +77,7 @@ Three routing layers connect the browser to persisted data.
 | `files` | `files.php` |
 | `conversations` | `conversations.php` |
 | `notifications` | `notifications.php` |
-| `target-follows` | `target-follows.php` |
+| `content-follows` | `content-follows.php` |
 
 Each handler reads further path segments via `getPathSegments()` and dispatches on HTTP method.
 
@@ -199,13 +199,13 @@ erDiagram
 | Comments | `content/comments.json` | `comments.php` |
 | Projects | `content/projects.json` | `projects.php` |
 | Project posts | `content/project_posts.json` | `projects.php` |
-| Follows | `social/follows.json` | `users.php`, `organizations.php` |
-| Target follows | `social/target_follows.json` | `target-follows.php` |
+| Profile follows | `social/profile_follows.json` | `users.php`, `organizations.php` |
+| Content follows | `social/content_follows.json` | `content-follows.php` |
 | Applications | `social/applications.json` | `positions.php` |
 | Event RSVPs | `social/event_rsvps.json` | `events.php` |
 | Subscriptions | `social/subscriptions.json` | `subscriptions.php` |
 | Availability | `social/availability.json` | `availability.php` |
-| Notifications | `social/notifications.json` | `notifications.php` |
+| Notification inbox | `social/notification_inbox.json` | `notifications.php` |
 | Conversations | `messaging/conversations.json` | `conversations.php` |
 | Conversation participants | `messaging/conversation_participants.json` | `conversations.php` |
 | Messages | `messaging/messages.json` | `conversations.php` |
@@ -243,8 +243,8 @@ Records not yet fully defined in `types.d.ts`:
 
 | Entity | Fields |
 |--------|--------|
-| Follow | `followerType`, `followerId`, `actingUserId?`, `followingType`, `followingId`, `createdAt` |
-| Target follow | `followerType`, `followerId`, `actingUserId`, `targetType` (`post` \| `position` \| `event`), `targetId`, `createdAt` |
+| Profile follow | `followerType`, `followerId`, `actingUserId?`, `followingType`, `followingId`, `createdAt` |
+| Content follow | `followerType`, `followerId`, `actingUserId`, `targetType` (`post` \| `position` \| `event`), `targetId`, `createdAt` |
 | Application | `id`, `positionId`, `userId`, `status`, `createdAt` |
 | Event RSVP | `eventId`, `accountType`, `accountId`, `status` (`going` \| `maybe`) |
 | Project post | `id`, `projectId`, `content`, `createdAt` |
@@ -428,7 +428,7 @@ The most complex handler. Aggregates posts, positions, and events into a unified
 
 ### notifications — `/api/notifications[/{id}[/{sub}]]`
 
-In-app notifications for the logged-in user. Org-related events are delivered to each org admin's personal inbox with an `organizationName` label.
+In-app notifications for the logged-in user, stored in `notification_inbox.json`. Org-related events are delivered to each org admin's personal inbox with an `organizationName` label.
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
@@ -441,16 +441,16 @@ In-app notifications for the logged-in user. Org-related events are delivered to
 
 Notification types include `post_comment`, `position_application`, `skill_offer`, `followed_target_comment`, `followed_author_post`, `followed_author_event`, `followed_author_position`.
 
-### target-follows — `/api/target-follows[/{sub}]`
+### content-follows — `/api/content-follows[/{sub}]`
 
-Content follows (post, position, event) — separate from profile follows in `follows.json`. When the active account is an organization, notifications go to `actingUserId` (the logged-in admin), not all org admins.
+Content follows (post, position, event) — separate from profile follows in `profile_follows.json`. When the active account is an organization, notifications go to `actingUserId` (the logged-in admin), not all org admins.
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| GET | `/api/target-follows/mine` | Yes | List `{ targetType, targetId }[]` for active account |
-| GET | `/api/target-follows?targetType=&targetId=` | Yes | `{ following }` for active account |
-| POST | `/api/target-follows` | Yes | Body: `targetType`, `targetId`; cannot follow own content |
-| DELETE | `/api/target-follows` | Yes | Body: `targetType`, `targetId` |
+| GET | `/api/content-follows/mine` | Yes | List `{ targetType, targetId }[]` for active account |
+| GET | `/api/content-follows?targetType=&targetId=` | Yes | `{ following }` for active account |
+| POST | `/api/content-follows` | Yes | Body: `targetType`, `targetId`; cannot follow own content |
+| DELETE | `/api/content-follows` | Yes | Body: `targetType`, `targetId` |
 
 ### conversations — `/api/conversations[/{id}[/{sub}]]`
 

@@ -150,11 +150,11 @@ export async function unfollowOrganization(id) {
   return request(`organizations/${id}/follow`, { method: 'DELETE' });
 }
 
-/** @typedef {{ targetType: 'post' | 'position' | 'event', targetId: number }} TargetFollowRef */
+/** @typedef {{ targetType: 'post' | 'position' | 'event', targetId: number }} ContentFollowRef */
 
-/** List content targets the active account follows. @returns {Promise<TargetFollowRef[]>} */
-export async function getMyTargetFollows() {
-  return /** @type {Promise<TargetFollowRef[]>} */ (request('target-follows/mine'));
+/** List content targets the active account follows. @returns {Promise<ContentFollowRef[]>} */
+export async function getMyContentFollows() {
+  return /** @type {Promise<ContentFollowRef[]>} */ (request('content-follows/mine'));
 }
 
 /**
@@ -166,7 +166,7 @@ export async function getMyTargetFollows() {
  */
 export async function getTargetFollowStatus(targetType, targetId) {
   const qs = new URLSearchParams({ targetType, targetId: String(targetId) });
-  return /** @type {Promise<{ following: boolean }>} */ (request(`target-follows?${qs}`));
+  return /** @type {Promise<{ following: boolean }>} */ (request(`content-follows?${qs}`));
 }
 
 /**
@@ -176,7 +176,7 @@ export async function getTargetFollowStatus(targetType, targetId) {
  * @param {number} targetId
  */
 export async function followTarget(targetType, targetId) {
-  return request('target-follows', {
+  return request('content-follows', {
     method: 'POST',
     body: JSON.stringify({ targetType, targetId }),
   });
@@ -189,7 +189,7 @@ export async function followTarget(targetType, targetId) {
  * @param {number} targetId
  */
 export async function unfollowTarget(targetType, targetId) {
-  return request('target-follows', {
+  return request('content-follows', {
     method: 'DELETE',
     body: JSON.stringify({ targetType, targetId }),
   });
@@ -202,7 +202,7 @@ export async function unfollowTarget(targetType, targetId) {
  */
 export async function loadFollowedTargetsSet() {
   try {
-    const items = await getMyTargetFollows();
+    const items = await getMyContentFollows();
     return new Set(items.map((i) => `${i.targetType}:${i.targetId}`));
   } catch {
     return new Set();

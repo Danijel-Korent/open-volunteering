@@ -7,7 +7,7 @@ $sub = $segments[1] ?? '';
 if ($sub === 'mine' && method() === 'GET') {
     $auth = requireAuth();
     $result = [];
-    foreach (readJson(TARGET_FOLLOWS_JSON) as $f) {
+    foreach (readJson(CONTENT_FOLLOWS_JSON) as $f) {
         if (($f['followerType'] ?? '') === $auth['type'] && (int) ($f['followerId'] ?? 0) === $auth['id']) {
             $result[] = [
                 'targetType' => $f['targetType'],
@@ -70,7 +70,7 @@ if (method() === 'POST') {
         jsonResponse(['error' => 'Authentication required'], 401);
         exit;
     }
-    $follows = readJson(TARGET_FOLLOWS_JSON);
+    $follows = readJson(CONTENT_FOLLOWS_JSON);
     $follows[] = [
         'followerType' => $auth['type'],
         'followerId' => $auth['id'],
@@ -79,7 +79,7 @@ if (method() === 'POST') {
         'targetId' => $targetId,
         'createdAt' => date('c'),
     ];
-    writeJson(TARGET_FOLLOWS_JSON, $follows);
+    writeJson(CONTENT_FOLLOWS_JSON, $follows);
     jsonResponse(['ok' => true, 'following' => true], 201);
     exit;
 }
@@ -97,14 +97,14 @@ if (method() === 'DELETE') {
         jsonResponse(['error' => 'Invalid targetType'], 400);
         exit;
     }
-    $follows = readJson(TARGET_FOLLOWS_JSON);
+    $follows = readJson(CONTENT_FOLLOWS_JSON);
     $follows = array_values(array_filter($follows, fn($f) =>
         !(($f['targetType'] ?? '') === $targetType
             && (int) ($f['targetId'] ?? 0) === $targetId
             && ($f['followerType'] ?? '') === $auth['type']
             && (int) ($f['followerId'] ?? 0) === $auth['id'])
     ));
-    writeJson(TARGET_FOLLOWS_JSON, $follows);
+    writeJson(CONTENT_FOLLOWS_JSON, $follows);
     jsonResponse(['ok' => true, 'following' => false]);
     exit;
 }

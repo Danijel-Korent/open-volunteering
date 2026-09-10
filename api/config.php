@@ -92,13 +92,13 @@ define('PROJECTS_JSON', 'content/projects.json');
 define('PROJECT_POSTS_JSON', 'content/project_posts.json');
 define('COMMENTS_JSON', 'content/comments.json');
 
-define('FOLLOWS_JSON', 'social/follows.json');
-define('TARGET_FOLLOWS_JSON', 'social/target_follows.json');
+define('PROFILE_FOLLOWS_JSON', 'social/profile_follows.json');
+define('CONTENT_FOLLOWS_JSON', 'social/content_follows.json');
 define('APPLICATIONS_JSON', 'social/applications.json');
 define('EVENT_RSVPS_JSON', 'social/event_rsvps.json');
 define('SUBSCRIPTIONS_JSON', 'social/subscriptions.json');
 define('AVAILABILITY_JSON', 'social/availability.json');
-define('NOTIFICATIONS_JSON', 'social/notifications.json');
+define('NOTIFICATION_INBOX_JSON', 'social/notification_inbox.json');
 
 define('CONVERSATIONS_JSON', 'messaging/conversations.json');
 define('CONVERSATION_PARTICIPANTS_JSON', 'messaging/conversation_participants.json');
@@ -614,7 +614,7 @@ function createNotificationForUser(
         return;
     }
 
-    $notifications = readJson(NOTIFICATIONS_JSON);
+    $notifications = readJson(NOTIFICATION_INBOX_JSON);
     if (notificationExists(
         $notifications,
         $recipientUserId,
@@ -640,7 +640,7 @@ function createNotificationForUser(
         'readAt' => null,
         'createdAt' => date('c'),
     ];
-    writeJson(NOTIFICATIONS_JSON, $notifications);
+    writeJson(NOTIFICATION_INBOX_JSON, $notifications);
 }
 
 /**
@@ -788,7 +788,7 @@ function followActingUserId(): ?int {
  * @return bool
  */
 function isFollowingTarget(string $targetType, int $targetId, string $followerType, int $followerId): bool {
-    foreach (readJson(TARGET_FOLLOWS_JSON) as $f) {
+    foreach (readJson(CONTENT_FOLLOWS_JSON) as $f) {
         if (($f['targetType'] ?? '') === $targetType
             && (int) ($f['targetId'] ?? 0) === $targetId
             && ($f['followerType'] ?? '') === $followerType
@@ -809,7 +809,7 @@ function isFollowingTarget(string $targetType, int $targetId, string $followerTy
  * @return bool
  */
 function isFollowingProfile(string $followingType, int $followingId, string $followerType, int $followerId): bool {
-    foreach (readJson(FOLLOWS_JSON) as $f) {
+    foreach (readJson(PROFILE_FOLLOWS_JSON) as $f) {
         if (($f['followingType'] ?? '') === $followingType
             && (int) ($f['followingId'] ?? 0) === $followingId
             && ($f['followerType'] ?? '') === $followerType
@@ -829,7 +829,7 @@ function isFollowingProfile(string $followingType, int $followingId, string $fol
  */
 function listTargetFollowers(string $targetType, int $targetId): array {
     $result = [];
-    foreach (readJson(TARGET_FOLLOWS_JSON) as $f) {
+    foreach (readJson(CONTENT_FOLLOWS_JSON) as $f) {
         if (($f['targetType'] ?? '') === $targetType && (int) ($f['targetId'] ?? 0) === $targetId) {
             $result[] = $f;
         }
@@ -846,7 +846,7 @@ function listTargetFollowers(string $targetType, int $targetId): array {
  */
 function listProfileFollowers(string $authorType, int $authorId): array {
     $result = [];
-    foreach (readJson(FOLLOWS_JSON) as $f) {
+    foreach (readJson(PROFILE_FOLLOWS_JSON) as $f) {
         if (($f['followingType'] ?? '') === $authorType && (int) ($f['followingId'] ?? 0) === $authorId) {
             $result[] = $f;
         }
