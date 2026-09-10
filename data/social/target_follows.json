@@ -1,0 +1,18 @@
+[
+    {
+        "followerType": "user",
+        "followerId": 1,
+        "actingUserId": 1,
+        "targetType": "post",
+        "targetId": 8,
+        "createdAt": "2026-09-10T08:18:53+02:00"
+    },
+    {
+        "followerType": "organization",
+        "followerId": 1,
+        "actingUserId": 1,
+        "targetType": "post",
+        "targetId": 2,
+        "createdAt": "2026-09-10T08:21:24+02:00"
+    }
+]

@@ -80,6 +80,14 @@ if ($id !== null && $subAction === '' && method() === 'PATCH') {
     exit;
 }
 
+if ($id !== null && $subAction === 'follow' && method() === 'GET') {
+    $auth = requireAuth();
+    jsonResponse([
+        'following' => isFollowingProfile('user', $id, $auth['type'], $auth['id']),
+    ]);
+    exit;
+}
+
 if ($id !== null && $subAction === 'follow' && method() === 'POST') {
     $auth = requireAuth();
     if ($auth['type'] === 'user' && $auth['id'] === $id) {
@@ -98,9 +106,15 @@ if ($id !== null && $subAction === 'follow' && method() === 'POST') {
             exit;
         }
     }
+    $actingUserId = followActingUserId();
+    if ($actingUserId === null) {
+        jsonResponse(['error' => 'Authentication required'], 401);
+        exit;
+    }
     $follows[] = [
         'followerType' => $auth['type'],
         'followerId' => $auth['id'],
+        'actingUserId' => $actingUserId,
         'followingType' => 'user',
         'followingId' => $id,
         'createdAt' => date('c'),

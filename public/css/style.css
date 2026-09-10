@@ -228,6 +228,66 @@ main#app {
   margin-bottom: 12px;
 }
 
+.post-card-menu {
+  position: relative;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.post-card-menu-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted, #666);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.post-card-menu-toggle:hover,
+.post-card-menu-toggle:focus-visible {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.card-overflow-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #ddd);
+  border-radius: var(--radius, 8px);
+  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.12));
+  z-index: 20;
+  overflow: hidden;
+}
+
+.card-overflow-menu.is-open {
+  display: block;
+}
+
+.card-overflow-menu-item {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.card-overflow-menu-item:hover,
+.card-overflow-menu-item:focus-visible {
+  background: rgba(0, 0, 0, 0.06);
+}
+
 .post-card-avatar {
   flex-shrink: 0;
   width: 40px;

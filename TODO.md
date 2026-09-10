@@ -82,13 +82,13 @@ Draw on ASCII-friednly overview of XYZ
 ### Milestone #2 - More flexible org profile management ✓
 ### Milestone #3 - Support for notifications ✓
 
-### Milestone #x - Follow post feature
+### Milestone #x - Follow post feature ✓
 
-  - [] Get notification when someone comments a post you are following 
+  - [x] Get notification when someone comments a post you are following
 
-### Milestone #x - Follow organization feature
+### Milestone #x - Follow organization feature ✓
 
-  - [] Get notification when organization you are following creates a post, event or position
+  - [x] Get notification when organization you are following creates a post, event or position
 
 ### Milestone #x - Deleting posts/events/positions
 ### Milestone #x - Editing posts/events/positions

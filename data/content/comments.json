@@ -97,5 +97,32 @@
         "authorId": 9,
         "content": "test test",
         "createdAt": "2026-09-09T08:08:56+02:00"
+    },
+    {
+        "id": 12,
+        "targetType": "post",
+        "targetId": 8,
+        "authorType": "user",
+        "authorId": 2,
+        "content": "Follow test comment from James",
+        "createdAt": "2026-09-10T08:20:31+02:00"
+    },
+    {
+        "id": 13,
+        "targetType": "position",
+        "targetId": 1,
+        "authorType": "user",
+        "authorId": 2,
+        "content": "Comment on followed position",
+        "createdAt": "2026-09-10T08:21:01+02:00"
+    },
+    {
+        "id": 14,
+        "targetType": "post",
+        "targetId": 2,
+        "authorType": "user",
+        "authorId": 2,
+        "content": "Org follow acting admin test",
+        "createdAt": "2026-09-10T08:21:24+02:00"
     }
 ]

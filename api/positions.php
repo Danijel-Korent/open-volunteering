@@ -41,6 +41,12 @@ if ($id === null && method() === 'POST') {
     ];
     $positions[] = $position;
     writeJson(POSITIONS_JSON, $positions);
+    notifyProfileFollowersOnNewContent(
+        'position',
+        'organization',
+        $auth['id'],
+        (int) $position['id'],
+    );
     jsonResponse($position, 201);
     exit;
 }

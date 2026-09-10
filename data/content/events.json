@@ -1,10 +1,139 @@
 [
-    { "id": 1, "authorType": "organization", "authorId": 1, "title": "Spring Park Cleanup Day", "description": "Community-wide park cleanup event. All ages welcome.", "startDate": "2026-06-21T09:00:00+02:00", "endDate": "2026-06-21T14:00:00+02:00", "locationType": "physical", "location": { "label": "Maksimir Park", "lat": 45.826, "lng": 16.018 }, "likeCount": 30, "createdAt": "2026-06-01T10:00:00+02:00" },
-    { "id": 2, "authorType": "organization", "authorId": 2, "title": "Fundraising Gala", "description": "Annual fundraising dinner for the shelter. Volunteers needed for setup and service.", "startDate": "2026-07-05T17:00:00+02:00", "endDate": "2026-07-05T22:00:00+02:00", "locationType": "physical", "location": { "label": "Hotel Esplanade", "lat": 45.805, "lng": 15.975 }, "likeCount": 18, "createdAt": "2026-06-03T12:00:00+02:00" },
-    { "id": 3, "authorType": "organization", "authorId": 3, "title": "Online Mentorship Kickoff", "description": "Virtual launch event for the new mentorship program.", "startDate": "2026-06-28T18:00:00+02:00", "endDate": "2026-06-28T19:30:00+02:00", "locationType": "online", "location": null, "likeCount": 12, "createdAt": "2026-06-04T09:00:00+02:00" },
-    { "id": 4, "authorType": "user", "authorId": 1, "title": "Neighborhood Food Drive", "description": "Volunteer-organized food collection for local families.", "startDate": "2026-07-12T10:00:00+02:00", "endDate": "2026-07-12T16:00:00+02:00", "locationType": "physical", "location": { "label": "Downtown Community Center", "lat": 45.815, "lng": 15.9819 }, "likeCount": 25, "createdAt": "2026-06-06T15:00:00+02:00" },
-    { "id": 5, "authorType": "organization", "authorId": 1, "title": "Autumn Tree Planting", "description": "Plant 1000 trees before winter. Multiple weekend sessions.", "startDate": "2026-09-15T08:00:00+02:00", "endDate": "2026-09-15T17:00:00+02:00", "locationType": "physical", "location": { "label": "Sljeme foothills", "lat": 45.898, "lng": 15.95 }, "likeCount": 40, "createdAt": "2026-06-08T11:00:00+02:00" },
-    { "id": 6, "authorType": "user", "authorId": 2, "title": "Coding Workshop for Teens", "description": "Free intro to web development for teenagers aged 14-18.", "startDate": "2026-08-02T10:00:00+02:00", "endDate": "2026-08-02T15:00:00+02:00", "locationType": "physical", "location": { "label": "Tech Hub Zagreb", "lat": 45.812, "lng": 15.978 }, "likeCount": 16, "createdAt": "2026-06-10T13:00:00+02:00" },
-    { "id": 7, "authorType": "organization", "authorId": 5, "title": "Test event by ngo1", "description": "test desc", "startDate": "2026-08-23T06:03:00.000Z", "endDate": "2026-08-23T06:03:00.000Z", "locationType": "physical", "location": null, "likeCount": 0, "createdAt": "2026-08-23T08:03:09+02:00" },
-    { "id": 8, "authorType": "organization", "authorId": 5, "title": "Test event2 by ngo1", "description": "Test decription", "startDate": "2026-09-01T06:03:00.000Z", "endDate": "2026-09-01T06:03:00.000Z", "locationType": "online", "location": null, "likeCount": 1, "createdAt": "2026-08-23T08:03:57+02:00" }
+    {
+        "id": 1,
+        "authorType": "organization",
+        "authorId": 1,
+        "title": "Spring Park Cleanup Day",
+        "description": "Community-wide park cleanup event. All ages welcome.",
+        "startDate": "2026-06-21T09:00:00+02:00",
+        "endDate": "2026-06-21T14:00:00+02:00",
+        "locationType": "physical",
+        "location": {
+            "label": "Maksimir Park",
+            "lat": 45.826,
+            "lng": 16.018
+        },
+        "likeCount": 30,
+        "createdAt": "2026-06-01T10:00:00+02:00"
+    },
+    {
+        "id": 2,
+        "authorType": "organization",
+        "authorId": 2,
+        "title": "Fundraising Gala",
+        "description": "Annual fundraising dinner for the shelter. Volunteers needed for setup and service.",
+        "startDate": "2026-07-05T17:00:00+02:00",
+        "endDate": "2026-07-05T22:00:00+02:00",
+        "locationType": "physical",
+        "location": {
+            "label": "Hotel Esplanade",
+            "lat": 45.805,
+            "lng": 15.975
+        },
+        "likeCount": 18,
+        "createdAt": "2026-06-03T12:00:00+02:00"
+    },
+    {
+        "id": 3,
+        "authorType": "organization",
+        "authorId": 3,
+        "title": "Online Mentorship Kickoff",
+        "description": "Virtual launch event for the new mentorship program.",
+        "startDate": "2026-06-28T18:00:00+02:00",
+        "endDate": "2026-06-28T19:30:00+02:00",
+        "locationType": "online",
+        "location": null,
+        "likeCount": 12,
+        "createdAt": "2026-06-04T09:00:00+02:00"
+    },
+    {
+        "id": 4,
+        "authorType": "user",
+        "authorId": 1,
+        "title": "Neighborhood Food Drive",
+        "description": "Volunteer-organized food collection for local families.",
+        "startDate": "2026-07-12T10:00:00+02:00",
+        "endDate": "2026-07-12T16:00:00+02:00",
+        "locationType": "physical",
+        "location": {
+            "label": "Downtown Community Center",
+            "lat": 45.815,
+            "lng": 15.9819
+        },
+        "likeCount": 25,
+        "createdAt": "2026-06-06T15:00:00+02:00"
+    },
+    {
+        "id": 5,
+        "authorType": "organization",
+        "authorId": 1,
+        "title": "Autumn Tree Planting",
+        "description": "Plant 1000 trees before winter. Multiple weekend sessions.",
+        "startDate": "2026-09-15T08:00:00+02:00",
+        "endDate": "2026-09-15T17:00:00+02:00",
+        "locationType": "physical",
+        "location": {
+            "label": "Sljeme foothills",
+            "lat": 45.898,
+            "lng": 15.95
+        },
+        "likeCount": 40,
+        "createdAt": "2026-06-08T11:00:00+02:00"
+    },
+    {
+        "id": 6,
+        "authorType": "user",
+        "authorId": 2,
+        "title": "Coding Workshop for Teens",
+        "description": "Free intro to web development for teenagers aged 14-18.",
+        "startDate": "2026-08-02T10:00:00+02:00",
+        "endDate": "2026-08-02T15:00:00+02:00",
+        "locationType": "physical",
+        "location": {
+            "label": "Tech Hub Zagreb",
+            "lat": 45.812,
+            "lng": 15.978
+        },
+        "likeCount": 16,
+        "createdAt": "2026-06-10T13:00:00+02:00"
+    },
+    {
+        "id": 7,
+        "authorType": "organization",
+        "authorId": 5,
+        "title": "Test event by ngo1",
+        "description": "test desc",
+        "startDate": "2026-08-23T06:03:00.000Z",
+        "endDate": "2026-08-23T06:03:00.000Z",
+        "locationType": "physical",
+        "location": null,
+        "likeCount": 0,
+        "createdAt": "2026-08-23T08:03:09+02:00"
+    },
+    {
+        "id": 8,
+        "authorType": "organization",
+        "authorId": 5,
+        "title": "Test event2 by ngo1",
+        "description": "Test decription",
+        "startDate": "2026-09-01T06:03:00.000Z",
+        "endDate": "2026-09-01T06:03:00.000Z",
+        "locationType": "online",
+        "location": null,
+        "likeCount": 1,
+        "createdAt": "2026-08-23T08:03:57+02:00"
+    },
+    {
+        "id": 9,
+        "authorType": "organization",
+        "authorId": 1,
+        "title": "Follow notify event",
+        "description": "Test event for followers",
+        "startDate": "2026-10-01T10:00:00+02:00",
+        "endDate": "2026-10-01T10:00:00+02:00",
+        "locationType": "physical",
+        "location": null,
+        "likeCount": 0,
+        "createdAt": "2026-09-10T08:20:45+02:00"
+    }
 ]

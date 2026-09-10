@@ -41,6 +41,12 @@ if ($id === null && method() === 'POST') {
     ];
     $events[] = $event;
     writeJson(EVENTS_JSON, $events);
+    notifyProfileFollowersOnNewContent(
+        'event',
+        $auth['type'],
+        $auth['id'],
+        (int) $event['id'],
+    );
     jsonResponse($event, 201);
     exit;
 }

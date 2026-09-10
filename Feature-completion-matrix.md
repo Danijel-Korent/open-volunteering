@@ -112,8 +112,11 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 | Organization: open position                                |               |      ✓      |                      | Inline form on own profile                                           |
 | Organization: create project                               |               |      ✓      |                      | Listed on org profile                                                |
 | Project detail + news posts                                |               |      ✓      |                      | `#/profile/{orgId}/project/{projectId}`                              |
-| Follow profile                                             |               |      ✓      |                      | Follow button only; no unfollow UI or “already following” state      |
-| Unfollow profile                                           |       ✓       |             |                      | API exists (`DELETE /follow`); no UI                                 |
+| Follow profile                                             |               |      ✓      |                      | Toggle Follow/Following on profile pages                             |
+| Unfollow profile                                           |               |      ✓      |                      | Same toggle; `DELETE /follow`                                        |
+| Follow content (post/position/event)                       |               |      ✓      |                      | Card ⋯ menu; stored in `target_follows.json`                         |
+| Notification: comment on followed content                  |               |      ✓      |                      | `followed_target_comment`                                            |
+| Notification: followed author new post/event/position      |               |      ✓      |                      | Profile follow in `follows.json`                                     |
 | Multiple roles per user (volunteer + org member)           |       ✓       |             |                      | Single `type` at registration                                        |
 | Switch between user and managed org profile                |       ✓       |             |                      | Milestone #2 spec; not built                                         |
 | Registered vs informal organization type                   |       ✓       |             |                      | Milestone #2 spec; not built                                         |

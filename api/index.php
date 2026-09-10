@@ -25,6 +25,7 @@ $routes = [
     'files' => 'files.php',
     'conversations' => 'conversations.php',
     'notifications' => 'notifications.php',
+    'target-follows' => 'target-follows.php',
 ];
 
 if (isset($routes[$resource])) {

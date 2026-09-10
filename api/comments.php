@@ -106,6 +106,8 @@ if (method() === 'POST') {
         }
     }
 
+    notifyTargetFollowersOnComment($targetType, $targetId, $auth['type'], $auth['id']);
+
     jsonResponse([
         ...$comment,
         'author' => publicCommentAuthor($comment),

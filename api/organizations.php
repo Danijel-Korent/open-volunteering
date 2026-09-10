@@ -210,6 +210,14 @@ if ($id !== null && $sub === 'members' && $memberUserId !== null && method() ===
     exit;
 }
 
+if ($id !== null && $sub === 'follow' && method() === 'GET') {
+    $auth = requireAuth();
+    jsonResponse([
+        'following' => isFollowingProfile('organization', $id, $auth['type'], $auth['id']),
+    ]);
+    exit;
+}
+
 if ($id !== null && $sub === 'follow' && method() === 'POST') {
     $auth = requireAuth();
     if ($auth['type'] === 'organization' && $auth['id'] === $id) {
@@ -228,9 +236,15 @@ if ($id !== null && $sub === 'follow' && method() === 'POST') {
             exit;
         }
     }
+    $actingUserId = followActingUserId();
+    if ($actingUserId === null) {
+        jsonResponse(['error' => 'Authentication required'], 401);
+        exit;
+    }
     $follows[] = [
         'followerType' => $auth['type'],
         'followerId' => $auth['id'],
+        'actingUserId' => $actingUserId,
         'followingType' => 'organization',
         'followingId' => $id,
         'createdAt' => date('c'),

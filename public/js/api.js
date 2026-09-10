@@ -150,6 +150,75 @@ export async function unfollowOrganization(id) {
   return request(`organizations/${id}/follow`, { method: 'DELETE' });
 }
 
+/** @typedef {{ targetType: 'post' | 'position' | 'event', targetId: number }} TargetFollowRef */
+
+/** List content targets the active account follows. @returns {Promise<TargetFollowRef[]>} */
+export async function getMyTargetFollows() {
+  return /** @type {Promise<TargetFollowRef[]>} */ (request('target-follows/mine'));
+}
+
+/**
+ * Check whether the active account follows a content target.
+ *
+ * @param {'post' | 'position' | 'event'} targetType
+ * @param {number} targetId
+ * @returns {Promise<{ following: boolean }>}
+ */
+export async function getTargetFollowStatus(targetType, targetId) {
+  const qs = new URLSearchParams({ targetType, targetId: String(targetId) });
+  return /** @type {Promise<{ following: boolean }>} */ (request(`target-follows?${qs}`));
+}
+
+/**
+ * Follow a content target (post, position, or event).
+ *
+ * @param {'post' | 'position' | 'event'} targetType
+ * @param {number} targetId
+ */
+export async function followTarget(targetType, targetId) {
+  return request('target-follows', {
+    method: 'POST',
+    body: JSON.stringify({ targetType, targetId }),
+  });
+}
+
+/**
+ * Unfollow a content target.
+ *
+ * @param {'post' | 'position' | 'event'} targetType
+ * @param {number} targetId
+ */
+export async function unfollowTarget(targetType, targetId) {
+  return request('target-follows', {
+    method: 'DELETE',
+    body: JSON.stringify({ targetType, targetId }),
+  });
+}
+
+/**
+ * Load followed content targets as a Set keyed by "targetType:targetId".
+ *
+ * @returns {Promise<Set<string>>}
+ */
+export async function loadFollowedTargetsSet() {
+  try {
+    const items = await getMyTargetFollows();
+    return new Set(items.map((i) => `${i.targetType}:${i.targetId}`));
+  } catch {
+    return new Set();
+  }
+}
+
+/** Get profile follow status for a user. @param {number} id @returns {Promise<{ following: boolean }>} */
+export async function getUserFollowStatus(id) {
+  return /** @type {Promise<{ following: boolean }>} */ (request(`users/${id}/follow`));
+}
+
+/** Get profile follow status for an organization. @param {number} id @returns {Promise<{ following: boolean }>} */
+export async function getOrganizationFollowStatus(id) {
+  return /** @type {Promise<{ following: boolean }>} */ (request(`organizations/${id}/follow`));
+}
+
 /**
  * Fetch the global unified feed.
  *

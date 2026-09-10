@@ -53,6 +53,7 @@ async function loadPositions() {
   list.innerHTML = '<p class="empty-state">Loading…</p>';
 
   try {
+    const followedTargets = await api.loadFollowedTargetsSet();
     const data = await api.getFeed({
       algorithm: prefs.algorithm,
       positionsOnly: '1',
@@ -65,7 +66,7 @@ async function loadPositions() {
       list.innerHTML = '<p class="empty-state">No open positions.</p>';
     } else {
       data.items.forEach((item) => {
-        list.appendChild(renderPostCard(item, { showApply: true }));
+        list.appendChild(renderPostCard(item, { showApply: true, followedTargets }));
       });
     }
 

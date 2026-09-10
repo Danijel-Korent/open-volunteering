@@ -93,6 +93,7 @@ define('PROJECT_POSTS_JSON', 'content/project_posts.json');
 define('COMMENTS_JSON', 'content/comments.json');
 
 define('FOLLOWS_JSON', 'social/follows.json');
+define('TARGET_FOLLOWS_JSON', 'social/target_follows.json');
 define('APPLICATIONS_JSON', 'social/applications.json');
 define('EVENT_RSVPS_JSON', 'social/event_rsvps.json');
 define('SUBSCRIPTIONS_JSON', 'social/subscriptions.json');
@@ -588,7 +589,7 @@ function notificationExists(
  * Create an in-app notification for a single user.
  *
  * @param int $recipientUserId
- * @param string $type post_comment|position_application|skill_offer
+ * @param string $type post_comment|position_application|skill_offer|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
  * @param string $actorType user|organization
  * @param int $actorId
  * @param string $targetType
@@ -646,7 +647,7 @@ function createNotificationForUser(
  * Create in-app notifications for all admins of an organization.
  *
  * @param int $orgId
- * @param string $type post_comment|position_application|skill_offer
+ * @param string $type post_comment|position_application|skill_offer|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
  * @param string $actorType user|organization
  * @param int $actorId
  * @param string $targetType
@@ -738,6 +739,282 @@ function findPositionById(int $positionId): ?array {
 }
 
 /**
+ * Find an event record by id.
+ *
+ * @param int $eventId
+ * @return array<string, mixed>|null
+ */
+function findEventById(int $eventId): ?array {
+    foreach (readJson(EVENTS_JSON) as $event) {
+        if ((int) $event['id'] === $eventId) {
+            return $event;
+        }
+    }
+    return null;
+}
+
+/**
+ * Resolve the user inbox id for a follow record (profile or content follow).
+ *
+ * @param array<string, mixed> $follow
+ * @return int|null
+ */
+function resolveFollowNotificationUserId(array $follow): ?int {
+    $followerType = $follow['followerType'] ?? 'user';
+    if ($followerType === 'user') {
+        $id = (int) ($follow['followerId'] ?? 0);
+        return $id > 0 ? $id : null;
+    }
+    $actingUserId = (int) ($follow['actingUserId'] ?? 0);
+    return $actingUserId > 0 ? $actingUserId : null;
+}
+
+/**
+ * Build actingUserId for a new follow record from the current session.
+ *
+ * @return int|null
+ */
+function followActingUserId(): ?int {
+    return getSessionUserId();
+}
+
+/**
+ * Check whether the active account follows a comment target (post, position, event).
+ *
+ * @param string $targetType post|position|event
+ * @param int $targetId
+ * @param string $followerType user|organization
+ * @param int $followerId
+ * @return bool
+ */
+function isFollowingTarget(string $targetType, int $targetId, string $followerType, int $followerId): bool {
+    foreach (readJson(TARGET_FOLLOWS_JSON) as $f) {
+        if (($f['targetType'] ?? '') === $targetType
+            && (int) ($f['targetId'] ?? 0) === $targetId
+            && ($f['followerType'] ?? '') === $followerType
+            && (int) ($f['followerId'] ?? 0) === $followerId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Check whether the active account follows a user or organization profile.
+ *
+ * @param string $followingType user|organization
+ * @param int $followingId
+ * @param string $followerType user|organization
+ * @param int $followerId
+ * @return bool
+ */
+function isFollowingProfile(string $followingType, int $followingId, string $followerType, int $followerId): bool {
+    foreach (readJson(FOLLOWS_JSON) as $f) {
+        if (($f['followingType'] ?? '') === $followingType
+            && (int) ($f['followingId'] ?? 0) === $followingId
+            && ($f['followerType'] ?? '') === $followerType
+            && (int) ($f['followerId'] ?? 0) === $followerId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * List all content-follow records for a comment target.
+ *
+ * @param string $targetType post|position|event
+ * @param int $targetId
+ * @return array<int, array<string, mixed>>
+ */
+function listTargetFollowers(string $targetType, int $targetId): array {
+    $result = [];
+    foreach (readJson(TARGET_FOLLOWS_JSON) as $f) {
+        if (($f['targetType'] ?? '') === $targetType && (int) ($f['targetId'] ?? 0) === $targetId) {
+            $result[] = $f;
+        }
+    }
+    return $result;
+}
+
+/**
+ * List profile-follow records where the given account is being followed.
+ *
+ * @param string $authorType user|organization
+ * @param int $authorId
+ * @return array<int, array<string, mixed>>
+ */
+function listProfileFollowers(string $authorType, int $authorId): array {
+    $result = [];
+    foreach (readJson(FOLLOWS_JSON) as $f) {
+        if (($f['followingType'] ?? '') === $authorType && (int) ($f['followingId'] ?? 0) === $authorId) {
+            $result[] = $f;
+        }
+    }
+    return $result;
+}
+
+/**
+ * Resolve author of a comment target for ownership checks.
+ *
+ * @param string $targetType post|position|event
+ * @param int $targetId
+ * @return array{type: string, id: int}|null
+ */
+function findTargetAuthor(string $targetType, int $targetId): ?array {
+    if ($targetType === 'post') {
+        $post = findPostById($targetId);
+        if ($post === null) {
+            return null;
+        }
+        return [
+            'type' => (string) ($post['authorType'] ?? 'user'),
+            'id' => (int) ($post['authorId'] ?? 0),
+        ];
+    }
+    if ($targetType === 'position') {
+        $position = findPositionById($targetId);
+        if ($position === null) {
+            return null;
+        }
+        return [
+            'type' => 'organization',
+            'id' => (int) ($position['authorId'] ?? 0),
+        ];
+    }
+    if ($targetType === 'event') {
+        $event = findEventById($targetId);
+        if ($event === null) {
+            return null;
+        }
+        return [
+            'type' => (string) ($event['authorType'] ?? 'user'),
+            'id' => (int) ($event['authorId'] ?? 0),
+        ];
+    }
+    return null;
+}
+
+/**
+ * Validate that a comment target exists.
+ *
+ * @param string $targetType post|position|event
+ * @param int $targetId
+ * @return bool
+ */
+function targetExists(string $targetType, int $targetId): bool {
+    return findTargetAuthor($targetType, $targetId) !== null;
+}
+
+/**
+ * Build highlight link for a feed/comment target on the author's profile page.
+ *
+ * @param string $authorType user|organization
+ * @param int $authorId
+ * @param string $targetType post|position|event
+ * @param int $targetId
+ * @return string
+ */
+function targetHighlightLink(string $authorType, int $authorId, string $targetType, int $targetId): string {
+    $highlightType = $targetType === 'post' ? 'post' : $targetType;
+    if ($authorType === 'organization') {
+        return "#/organization/{$authorId}?highlight={$highlightType}-{$targetId}";
+    }
+    return "#/profile/{$authorId}?highlight={$highlightType}-{$targetId}";
+}
+
+/**
+ * Notify users following a comment target when someone comments.
+ *
+ * @param string $targetType post|position|event
+ * @param int $targetId
+ * @param string $actorType user|organization
+ * @param int $actorId
+ */
+function notifyTargetFollowersOnComment(
+    string $targetType,
+    int $targetId,
+    string $actorType,
+    int $actorId,
+): void {
+    $author = findTargetAuthor($targetType, $targetId);
+    $skipOwnerUserIds = [];
+    if ($targetType === 'post' && $author !== null) {
+        if ($author['type'] === 'user') {
+            $skipOwnerUserIds[] = $author['id'];
+        } else {
+            foreach (listOrgAdminUserIds($author['id']) as $adminUserId) {
+                $skipOwnerUserIds[] = $adminUserId;
+            }
+        }
+    }
+
+    foreach (listTargetFollowers($targetType, $targetId) as $follow) {
+        $recipientUserId = resolveFollowNotificationUserId($follow);
+        if ($recipientUserId === null) {
+            continue;
+        }
+        if ($actorType === 'user' && $actorId === $recipientUserId) {
+            continue;
+        }
+        if (in_array($recipientUserId, $skipOwnerUserIds, true)) {
+            continue;
+        }
+        createNotificationForUser(
+            $recipientUserId,
+            'followed_target_comment',
+            $actorType,
+            $actorId,
+            $targetType,
+            $targetId,
+        );
+    }
+}
+
+/**
+ * Notify profile followers when a followed author publishes new content.
+ *
+ * @param string $contentType post|event|position
+ * @param string $authorType user|organization
+ * @param int $authorId
+ * @param int $contentId
+ */
+function notifyProfileFollowersOnNewContent(
+    string $contentType,
+    string $authorType,
+    int $authorId,
+    int $contentId,
+): void {
+    $typeMap = [
+        'post' => 'followed_author_post',
+        'event' => 'followed_author_event',
+        'position' => 'followed_author_position',
+    ];
+    $notificationType = $typeMap[$contentType] ?? null;
+    if ($notificationType === null) {
+        return;
+    }
+
+    foreach (listProfileFollowers($authorType, $authorId) as $follow) {
+        $recipientUserId = resolveFollowNotificationUserId($follow);
+        if ($recipientUserId === null) {
+            continue;
+        }
+        if ($authorType === 'user' && $authorId === $recipientUserId) {
+            continue;
+        }
+        createNotificationForUser(
+            $recipientUserId,
+            $notificationType,
+            $authorType,
+            $authorId,
+            $contentType,
+            $contentId,
+        );
+    }
+}
+
+/**
  * Enrich a notification with message, link, and actor for API output.
  *
  * @param array<string, mixed> $notification
@@ -778,6 +1055,31 @@ function enrichNotification(array $notification): array {
         $orgId = (int) ($notification['organizationId'] ?? 0);
         $message = "{$actorName} offered skills";
         $link = "#/organization/{$orgId}?section=availability";
+    } elseif ($type === 'followed_target_comment') {
+        $author = findTargetAuthor($targetType, $targetId);
+        $label = match ($targetType) {
+            'position' => 'a position you follow',
+            'event' => 'an event you follow',
+            default => 'a post you follow',
+        };
+        $message = "{$actorName} commented on {$label}";
+        if ($author !== null) {
+            $link = targetHighlightLink($author['type'], $author['id'], $targetType, $targetId);
+        }
+    } elseif ($type === 'followed_author_post' && $targetType === 'post') {
+        $message = "{$actorName} posted an update";
+        $actorType = $notification['actorType'] ?? 'user';
+        $actorId = (int) ($notification['actorId'] ?? 0);
+        $link = targetHighlightLink($actorType, $actorId, 'post', $targetId);
+    } elseif ($type === 'followed_author_event' && $targetType === 'event') {
+        $message = "{$actorName} created an event";
+        $actorType = $notification['actorType'] ?? 'user';
+        $actorId = (int) ($notification['actorId'] ?? 0);
+        $link = targetHighlightLink($actorType, $actorId, 'event', $targetId);
+    } elseif ($type === 'followed_author_position' && $targetType === 'position') {
+        $message = "{$actorName} opened a position";
+        $actorId = (int) ($notification['actorId'] ?? 0);
+        $link = targetHighlightLink('organization', $actorId, 'position', $targetId);
     }
 
     return [

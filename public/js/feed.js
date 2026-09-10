@@ -120,6 +120,7 @@ async function loadFeed() {
   list.innerHTML = '<p class="empty-state">Loading…</p>';
 
   try {
+    const followedTargets = await api.loadFollowedTargetsSet();
     const data = await api.getFeed({
       algorithm: prefs.algorithm,
       types: prefs.types.join(','),
@@ -132,7 +133,7 @@ async function loadFeed() {
       list.innerHTML = '<p class="empty-state">No posts to show.</p>';
     } else {
       data.items.forEach((item) => {
-        list.appendChild(renderPostCard(item, { showApply: true }));
+        list.appendChild(renderPostCard(item, { showApply: true, followedTargets }));
       });
     }
 

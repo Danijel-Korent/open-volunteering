@@ -3,6 +3,10 @@ import { getCurrentUser } from '../auth.js';
 import { profileLink } from '../account-utils.js';
 import { renderAvatarHtml } from './image-dropzone.js';
 import { toggleComments } from './comment-section.js';
+import {
+  createCardOverflowMenu,
+  createFollowTargetMenuItem,
+} from './card-overflow-menu.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -142,10 +146,21 @@ function getApplyState(user, item) {
 }
 
 /**
+ * Whether the logged-in account authored this feed item.
+ *
+ * @param {Account | null | undefined} user
+ * @param {FeedItem} item
+ * @returns {boolean}
+ */
+function isOwnFeedItem(user, item) {
+  return Boolean(user && user.type === item.authorType && user.id === item.authorId);
+}
+
+/**
  * Render a single feed item card.
  *
  * @param {FeedItem} item
- * @param {{ showApply?: boolean }} opts
+ * @param {{ showApply?: boolean, followedTargets?: Set<string> }} opts
  * @returns {HTMLElement}
  */
 export function renderPostCard(item, opts = {}) {
@@ -158,6 +173,9 @@ export function renderPostCard(item, opts = {}) {
   const authorLink = item.author ? profileLink(item.author) : '#';
   let liked = false;
   let commentCount = 0;
+  const targetType = commentTargetType(item);
+  const followKey = `${targetType}:${item.id}`;
+  let followingTarget = opts.followedTargets?.has(followKey) ?? false;
 
   card.innerHTML = `
     <div class="post-card-header">
@@ -175,10 +193,40 @@ export function renderPostCard(item, opts = {}) {
     <div class="post-actions"></div>
   `;
 
+  const header = card.querySelector('.post-card-header');
+  if (header instanceof HTMLElement && user && !isOwnFeedItem(user, item)) {
+    const followBtn = createFollowTargetMenuItem({
+      testId: `post-card-menu-follow-${item.feedType}-${item.id}`,
+      following: followingTarget,
+      onToggle: async () => {
+        try {
+          if (followingTarget) {
+            await api.unfollowTarget(targetType, item.id);
+            followingTarget = false;
+            opts.followedTargets?.delete(followKey);
+            api.showToast('Unfollowed');
+          } else {
+            await api.followTarget(targetType, item.id);
+            followingTarget = true;
+            opts.followedTargets?.add(followKey);
+            api.showToast('Following this post');
+          }
+          followBtn.textContent = followingTarget ? 'Following' : 'Follow';
+        } catch (err) {
+          api.showToast(err instanceof Error ? err.message : 'Failed to update follow');
+        }
+      },
+    });
+
+    const menu = createCardOverflowMenu({
+      menuTestId: `post-card-menu-${item.feedType}-${item.id}`,
+      items: [followBtn],
+    });
+    header.appendChild(menu);
+  }
+
   const actions = card.querySelector('.post-actions');
   if (!(actions instanceof HTMLElement)) return card;
-
-  const targetType = commentTargetType(item);
 
   const likeBtn = document.createElement('button');
   likeBtn.type = 'button';

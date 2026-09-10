@@ -626,10 +626,7 @@ async function renderPublicVolunteerProfile(container, user) {
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
 
-  container.querySelector('[data-testid="btn-follow"]')?.addEventListener('click', async () => {
-    await api.followUser(user.id);
-    api.showToast('Following!');
-  });
+  await bindProfileFollowToggle(container, 'user', user.id);
 
   container.querySelector(`[data-testid="btn-message-user-${user.id}"]`)?.addEventListener('click', async () => {
     try {
@@ -842,10 +839,7 @@ async function renderPublicOrganizationProfile(container, org) {
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
 
-  container.querySelector('[data-testid="btn-follow"]')?.addEventListener('click', async () => {
-    await api.followOrganization(org.id);
-    api.showToast('Following!');
-  });
+  await bindProfileFollowToggle(container, 'organization', org.id);
 
   container.querySelector(`[data-testid="btn-message-user-${org.id}"]`)?.addEventListener('click', async () => {
     try {
@@ -968,6 +962,7 @@ async function loadOrgMessagingSections(container, orgId) {
 async function loadProfileFeed(accountType, accountId) {
   const feed = document.getElementById('profile-feed');
   if (!feed) return;
+  const followedTargets = await api.loadFollowedTargetsSet();
   const data = accountType === 'organization'
     ? await api.getOrganizationFeed(accountId, { perPage: 20 })
     : await api.getUserFeed(accountId, { perPage: 20 });
@@ -975,8 +970,69 @@ async function loadProfileFeed(accountType, accountId) {
   if (data.items.length === 0) {
     feed.innerHTML = '<p class="empty-state">No posts yet.</p>';
   } else {
-    data.items.forEach((item) => feed.appendChild(renderPostCard(item, { showApply: true })));
+    data.items.forEach((item) => feed.appendChild(renderPostCard(item, { showApply: true, followedTargets })));
   }
+}
+
+/**
+ * Bind profile Follow/Following toggle for a user or organization.
+ *
+ * @param {HTMLElement} container
+ * @param {'user' | 'organization'} profileType
+ * @param {number} profileId
+ */
+async function bindProfileFollowToggle(container, profileType, profileId) {
+  const btn = container.querySelector('[data-testid="btn-follow"]');
+  if (!(btn instanceof HTMLButtonElement)) return;
+
+  let following = false;
+  try {
+    const status = profileType === 'user'
+      ? await api.getUserFollowStatus(profileId)
+      : await api.getOrganizationFollowStatus(profileId);
+    following = status.following;
+  } catch {
+    following = false;
+  }
+
+  /**
+   * Update button label and pressed state.
+   *
+   * @param {boolean} isFollowing
+   */
+  function updateFollowButton(isFollowing) {
+    btn.textContent = isFollowing ? 'Following' : 'Follow';
+    btn.setAttribute('aria-pressed', isFollowing ? 'true' : 'false');
+    btn.classList.toggle('btn-secondary', isFollowing);
+    btn.classList.toggle('btn-primary', !isFollowing);
+  }
+
+  updateFollowButton(following);
+
+  btn.addEventListener('click', async () => {
+    try {
+      if (following) {
+        if (profileType === 'user') {
+          await api.unfollowUser(profileId);
+        } else {
+          await api.unfollowOrganization(profileId);
+        }
+        following = false;
+        api.showToast('Unfollowed');
+      } else {
+        if (profileType === 'user') {
+          await api.followUser(profileId);
+        } else {
+          await api.followOrganization(profileId);
+        }
+        following = true;
+        api.showToast('Following!');
+      }
+      updateFollowButton(following);
+    } catch (err) {
+      api.showToast(err instanceof Error ? err.message : 'Failed to update follow');
+    }
+  });
 }
 
 /**

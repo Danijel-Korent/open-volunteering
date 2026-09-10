@@ -59,7 +59,8 @@ A social-network-like web page where people/organizations could perform the foll
 - A volunteer can add skills and previous experience (that could be useful for the organization, project, or event) to the personal profile 
 - organizations and volunteers can create public posts
 - organizations and volunteers can see public posts in their feed
-- organizations and volunteers can follow profiles of organizations and volunteers 
+- organizations and volunteers can follow profiles of organizations and volunteers (toggle on profile pages; notifications when followed authors publish)
+- users and organizations can follow individual posts, positions, and events (⋯ menu on feed cards; notifications on new comments)
 - organizations and volunteers can choose algorithm which chooses what they see in their feed
 - organizations and volunteers can leave a comment on public posts
 - logged-in users can send private direct messages and group chats to other users

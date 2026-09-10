@@ -267,7 +267,14 @@ interface MessagesResponse {
   totalItems: number;
 }
 
-type NotificationType = 'post_comment' | 'position_application' | 'skill_offer';
+type NotificationType =
+  | 'post_comment'
+  | 'position_application'
+  | 'skill_offer'
+  | 'followed_target_comment'
+  | 'followed_author_post'
+  | 'followed_author_event'
+  | 'followed_author_position';
 
 interface Notification {
   id: number;

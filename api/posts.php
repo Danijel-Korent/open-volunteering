@@ -50,6 +50,12 @@ if ($id === null && method() === 'POST') {
     if ($imageFileId) {
         attachFileTo($imageFileId, 'post', (int) $post['id']);
     }
+    notifyProfileFollowersOnNewContent(
+        'post',
+        $auth['type'],
+        $auth['id'],
+        (int) $post['id'],
+    );
     jsonResponse($post, 201);
     exit;
 }
