@@ -92,13 +92,13 @@ define('PROJECTS_JSON', 'content/projects.json');
 define('PROJECT_POSTS_JSON', 'content/project_posts.json');
 define('COMMENTS_JSON', 'content/comments.json');
 
-define('PROFILE_FOLLOWS_JSON', 'social/profile_follows.json');
-define('CONTENT_FOLLOWS_JSON', 'social/content_follows.json');
+define('PROFILE_FOLLOWS_JSON', 'notifications/profile_follows.json');
+define('CONTENT_FOLLOWS_JSON', 'notifications/content_follows.json');
 define('APPLICATIONS_JSON', 'social/applications.json');
 define('EVENT_RSVPS_JSON', 'social/event_rsvps.json');
 define('SUBSCRIPTIONS_JSON', 'social/subscriptions.json');
 define('AVAILABILITY_JSON', 'social/availability.json');
-define('NOTIFICATION_INBOX_JSON', 'social/notification_inbox.json');
+define('NOTIFICATION_INBOX_JSON', 'notifications/notification_inbox.json');
 
 define('CONVERSATIONS_JSON', 'messaging/conversations.json');
 define('CONVERSATION_PARTICIPANTS_JSON', 'messaging/conversation_participants.json');

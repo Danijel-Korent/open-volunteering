@@ -199,13 +199,13 @@ erDiagram
 | Comments | `content/comments.json` | `comments.php` |
 | Projects | `content/projects.json` | `projects.php` |
 | Project posts | `content/project_posts.json` | `projects.php` |
-| Profile follows | `social/profile_follows.json` | `users.php`, `organizations.php` |
-| Content follows | `social/content_follows.json` | `content-follows.php` |
+| Profile follows | `notifications/profile_follows.json` | `users.php`, `organizations.php` |
+| Content follows | `notifications/content_follows.json` | `content-follows.php` |
 | Applications | `social/applications.json` | `positions.php` |
 | Event RSVPs | `social/event_rsvps.json` | `events.php` |
 | Subscriptions | `social/subscriptions.json` | `subscriptions.php` |
 | Availability | `social/availability.json` | `availability.php` |
-| Notification inbox | `social/notification_inbox.json` | `notifications.php` |
+| Notification inbox | `notifications/notification_inbox.json` | `notifications.php` |
 | Conversations | `messaging/conversations.json` | `conversations.php` |
 | Conversation participants | `messaging/conversation_participants.json` | `conversations.php` |
 | Messages | `messaging/messages.json` | `conversations.php` |
@@ -428,7 +428,7 @@ The most complex handler. Aggregates posts, positions, and events into a unified
 
 ### notifications — `/api/notifications[/{id}[/{sub}]]`
 
-In-app notifications for the logged-in user, stored in `notification_inbox.json`. Org-related events are delivered to each org admin's personal inbox with an `organizationName` label.
+In-app notifications for the logged-in user, stored in `notifications/notification_inbox.json`. Org-related events are delivered to each org admin's personal inbox with an `organizationName` label.
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
@@ -443,7 +443,7 @@ Notification types include `post_comment`, `position_application`, `skill_offer`
 
 ### content-follows — `/api/content-follows[/{sub}]`
 
-Content follows (post, position, event) — separate from profile follows in `profile_follows.json`. When the active account is an organization, notifications go to `actingUserId` (the logged-in admin), not all org admins.
+Content follows (post, position, event) — separate from profile follows in `notifications/profile_follows.json`. When the active account is an organization, notifications go to `actingUserId` (the logged-in admin), not all org admins.
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
