@@ -322,6 +322,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | POST | `/api/posts` | Yes | Body: `content`, optional `imageFileId`. `authorType`/`postType` set from session account |
 | POST | `/api/posts/{id}/like` | Yes | Increment like count |
 | POST | `/api/posts/{id}/share` | Yes | Increment share count |
+| PATCH | `/api/posts/{id}` | Yes (author) | Body: `content`, optional `imageFileId` (null removes image). Updates attached file like profile avatar |
 | DELETE | `/api/posts/{id}` | Yes (author) | Remove post; `purgeContentTarget('post', id)`; deletes attached image file when present |
 
 ### files — `/api/files[/{id}[/content]]`
@@ -342,6 +343,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | POST | `/api/positions/{id}/apply` | Yes (volunteer) | Apply to position |
 | GET | `/api/positions/{id}/applications` | Yes (position owner org) | List applications with embedded `volunteer` |
 | POST | `/api/positions/{id}/like` | Yes | Increment like count |
+| PATCH | `/api/positions/{id}` | Yes (author org admin) | Body: `title`, `description`, optional `category`, `remote`, `location` |
 | DELETE | `/api/positions/{id}` | Yes (author org admin) | Remove position; `purgeContentTarget('position', id)` |
 
 ### events — `/api/events[/{id}[/{sub}]]`
@@ -352,6 +354,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | POST | `/api/events` | Yes | Body: `title`, `description`, `startDate`, optional `endDate`, `locationType`, `location` |
 | POST | `/api/events/{id}/rsvp` | Yes | Body: `status` (`going` \| `maybe`) |
 | POST | `/api/events/{id}/like` | Yes | Increment like count |
+| PATCH | `/api/events/{id}` | Yes (author) | Body: `title`, `description`, `startDate`, optional `endDate`, `locationType`, `location` |
 | DELETE | `/api/events/{id}` | Yes (author) | Remove event; `purgeContentTarget('event', id)` |
 
 ### comments — `/api/comments`

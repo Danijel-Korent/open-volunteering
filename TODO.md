@@ -84,10 +84,7 @@ Draw on ASCII-friednly overview of XYZ
 ### Milestone #4 - Follow post feature ✓
 ### Milestone #5 - Follow organization feature ✓
 ### Milestone #6 - Deleting posts/events/positions ✓
-
-In the "3 dots menu", add option to delete posts/events/positions
-
-### Milestone #x - Editing posts/events/positions
+### Milestone #7 - Editing posts/events/positions ✓
 
 In the "3 dots menu", add option to edit posts/events/positions
 

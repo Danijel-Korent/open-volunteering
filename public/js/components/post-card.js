@@ -6,9 +6,11 @@ import { toggleComments } from './comment-section.js';
 import {
   createCardOverflowMenu,
   createDeleteMenuItem,
+  createEditMenuItem,
   createFollowTargetMenuItem,
 } from './card-overflow-menu.js';
 import { showConfirmDialog } from './confirm-dialog.js';
+import { showEditFeedItemDialog } from './edit-content-dialog.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -264,6 +266,20 @@ export function renderPostCard(item, opts = {}) {
     }
 
     if (isOwnFeedItem(user, item)) {
+      menuItems.push(createEditMenuItem({
+        testId: `post-card-menu-edit-${item.feedType}-${item.id}`,
+        onEdit: async () => {
+          const updated = await showEditFeedItemDialog(item);
+          if (!updated) return;
+          try {
+            const newCard = renderPostCard(updated, opts);
+            card.replaceWith(newCard);
+            api.showToast('Saved');
+          } catch (err) {
+            api.showToast(err instanceof Error ? err.message : 'Failed to update card');
+          }
+        },
+      }));
       menuItems.push(createDeleteMenuItem({
         testId: `post-card-menu-delete-${item.feedType}-${item.id}`,
         onDelete: async () => {

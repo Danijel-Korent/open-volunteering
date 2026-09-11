@@ -174,6 +174,57 @@ if ($id !== null && $sub === 'like' && method() === 'POST') {
     exit;
 }
 
+if ($id !== null && $sub === '' && method() === 'PATCH') {
+    $positions = readJson(POSITIONS_JSON);
+    $idx = null;
+    foreach ($positions as $i => $p) {
+        if ((int) $p['id'] === $id) {
+            $idx = $i;
+            break;
+        }
+    }
+    if ($idx === null) {
+        jsonResponse(['error' => 'Position not found'], 404);
+        exit;
+    }
+    $position = $positions[$idx];
+    requireContentAuthorSession($position);
+    $input = getJsonInput();
+
+    $allowed = ['title', 'description', 'category', 'remote', 'location'];
+    foreach ($allowed as $field) {
+        if (!array_key_exists($field, $input)) {
+            continue;
+        }
+        if ($field === 'remote') {
+            $positions[$idx]['remote'] = (bool) $input['remote'];
+            continue;
+        }
+        if ($field === 'location') {
+            if ($input['location'] === null) {
+                $positions[$idx]['location'] = null;
+            } elseif (is_array($input['location'])) {
+                $positions[$idx]['location'] = $input['location'];
+            }
+            continue;
+        }
+        $positions[$idx][$field] = $input[$field];
+    }
+
+    $title = trim((string) ($positions[$idx]['title'] ?? ''));
+    $description = trim((string) ($positions[$idx]['description'] ?? ''));
+    if ($title === '' || $description === '') {
+        jsonResponse(['error' => 'Title and description are required'], 400);
+        exit;
+    }
+    $positions[$idx]['title'] = $title;
+    $positions[$idx]['description'] = $description;
+
+    writeJson(POSITIONS_JSON, $positions);
+    jsonResponse($positions[$idx]);
+    exit;
+}
+
 if ($id !== null && $sub === '' && method() === 'DELETE') {
     $positions = readJson(POSITIONS_JSON);
     $idx = null;

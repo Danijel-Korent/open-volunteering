@@ -130,5 +130,15 @@
         "shareCount": 0,
         "createdAt": "2026-09-06T08:53:36+02:00",
         "imageFileId": 2
+    },
+    {
+        "id": 14,
+        "authorType": "organization",
+        "authorId": 1,
+        "postType": "org_post",
+        "content": "Org post EDITED content",
+        "likeCount": 0,
+        "shareCount": 0,
+        "createdAt": "2026-09-11T19:42:04+02:00"
     }
 ]

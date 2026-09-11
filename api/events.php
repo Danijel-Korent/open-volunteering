@@ -120,6 +120,63 @@ if ($id !== null && $sub === 'like' && method() === 'POST') {
     exit;
 }
 
+if ($id !== null && $sub === '' && method() === 'PATCH') {
+    $events = readJson(EVENTS_JSON);
+    $idx = null;
+    foreach ($events as $i => $e) {
+        if ((int) $e['id'] === $id) {
+            $idx = $i;
+            break;
+        }
+    }
+    if ($idx === null) {
+        jsonResponse(['error' => 'Event not found'], 404);
+        exit;
+    }
+    $event = $events[$idx];
+    requireContentAuthorSession($event);
+    $input = getJsonInput();
+
+    $allowed = ['title', 'description', 'startDate', 'endDate', 'locationType', 'location'];
+    foreach ($allowed as $field) {
+        if (!array_key_exists($field, $input)) {
+            continue;
+        }
+        if ($field === 'location') {
+            if ($input['location'] === null) {
+                $events[$idx]['location'] = null;
+            } elseif (is_array($input['location'])) {
+                $events[$idx]['location'] = $input['location'];
+            }
+            continue;
+        }
+        if ($field === 'locationType') {
+            $locationType = (string) $input['locationType'];
+            if (!in_array($locationType, ['physical', 'online'], true)) {
+                jsonResponse(['error' => 'locationType must be physical or online'], 400);
+                exit;
+            }
+            $events[$idx]['locationType'] = $locationType;
+            continue;
+        }
+        $events[$idx][$field] = $input[$field];
+    }
+
+    $title = trim((string) ($events[$idx]['title'] ?? ''));
+    $description = trim((string) ($events[$idx]['description'] ?? ''));
+    $startDate = (string) ($events[$idx]['startDate'] ?? '');
+    if ($title === '' || $description === '' || $startDate === '') {
+        jsonResponse(['error' => 'Title, description, and startDate are required'], 400);
+        exit;
+    }
+    $events[$idx]['title'] = $title;
+    $events[$idx]['description'] = $description;
+
+    writeJson(EVENTS_JSON, $events);
+    jsonResponse($events[$idx]);
+    exit;
+}
+
 if ($id !== null && $sub === '' && method() === 'DELETE') {
     $events = readJson(EVENTS_JSON);
     $idx = null;

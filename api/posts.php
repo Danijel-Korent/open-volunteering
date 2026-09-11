@@ -100,6 +100,63 @@ if ($id !== null && $sub === 'share' && method() === 'POST') {
     exit;
 }
 
+if ($id !== null && $sub === '' && method() === 'PATCH') {
+    $auth = requireAuth();
+    $posts = readJson(POSTS_JSON);
+    $idx = null;
+    foreach ($posts as $i => $p) {
+        if ((int) $p['id'] === $id) {
+            $idx = $i;
+            break;
+        }
+    }
+    if ($idx === null) {
+        jsonResponse(['error' => 'Post not found'], 404);
+        exit;
+    }
+    $post = $posts[$idx];
+    requireContentAuthorSession($post);
+    $input = getJsonInput();
+
+    if (array_key_exists('content', $input)) {
+        $content = trim((string) $input['content']);
+        if ($content === '') {
+            jsonResponse(['error' => 'Content is required'], 400);
+            exit;
+        }
+        $posts[$idx]['content'] = $content;
+    }
+
+    if (array_key_exists('imageFileId', $input)) {
+        $imageFileId = $input['imageFileId'] !== null ? (int) $input['imageFileId'] : null;
+        if ($imageFileId === null || $imageFileId === 0) {
+            $oldImageId = isset($posts[$idx]['imageFileId']) ? (int) $posts[$idx]['imageFileId'] : null;
+            if ($oldImageId) {
+                deleteStoredFile($oldImageId);
+            }
+            unset($posts[$idx]['imageFileId']);
+        } else {
+            requireAttachableFile($imageFileId, $auth['type'], $auth['id']);
+            $oldImageId = isset($posts[$idx]['imageFileId']) ? (int) $posts[$idx]['imageFileId'] : null;
+            if ($oldImageId && $oldImageId !== $imageFileId) {
+                deleteStoredFile($oldImageId);
+            }
+            $posts[$idx]['imageFileId'] = $imageFileId;
+            attachFileTo($imageFileId, 'post', $id);
+        }
+    }
+
+    $mergedContent = trim((string) ($posts[$idx]['content'] ?? ''));
+    if ($mergedContent === '') {
+        jsonResponse(['error' => 'Content is required'], 400);
+        exit;
+    }
+
+    writeJson(POSTS_JSON, $posts);
+    jsonResponse($posts[$idx]);
+    exit;
+}
+
 if ($id !== null && $sub === '' && method() === 'DELETE') {
     $posts = readJson(POSTS_JSON);
     $idx = null;

@@ -50,5 +50,31 @@
         "targetId": 2,
         "readAt": "2026-09-10T08:28:18+02:00",
         "createdAt": "2026-09-10T08:21:24+02:00"
+    },
+    {
+        "id": 6,
+        "recipientUserId": 1,
+        "type": "followed_author_post",
+        "organizationId": null,
+        "organizationName": null,
+        "actorType": "organization",
+        "actorId": 1,
+        "targetType": "post",
+        "targetId": 14,
+        "readAt": null,
+        "createdAt": "2026-09-11T19:42:04+02:00"
+    },
+    {
+        "id": 7,
+        "recipientUserId": 2,
+        "type": "followed_author_post",
+        "organizationId": null,
+        "organizationName": null,
+        "actorType": "organization",
+        "actorId": 1,
+        "targetType": "post",
+        "targetId": 14,
+        "readAt": null,
+        "createdAt": "2026-09-11T19:42:04+02:00"
     }
 ]

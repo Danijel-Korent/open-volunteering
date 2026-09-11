@@ -6,6 +6,8 @@ import * as api from '../api.js';
  * @property {string} fileInputTestId
  * @property {string} [previewTestId]
  * @property {string} [label]
+ * @property {number} [initialFileId] Existing uploaded file to show in preview (edit flows)
+ * @property {boolean} [removeDeletesFile] When false, Remove clears preview only (edit until save). Default true.
  * @property {(state: { fileId: number | null, uploading: boolean }) => void} [onChange]
  */
 
@@ -155,6 +157,10 @@ export function setupImageDropzone(container, opts) {
 
   removeBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
+    if (opts.removeDeletesFile === false) {
+      release();
+      return;
+    }
     void clear();
   });
 
@@ -171,6 +177,12 @@ export function setupImageDropzone(container, opts) {
     revokeLocalPreview();
     notify();
   };
+
+  if (opts.initialFileId) {
+    fileId = opts.initialFileId;
+    showPreview(api.fileContentUrl(opts.initialFileId));
+    notify();
+  }
 
   return {
     getFileId: () => fileId,

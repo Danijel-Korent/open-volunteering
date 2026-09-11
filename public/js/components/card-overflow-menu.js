@@ -84,6 +84,31 @@ export function createFollowTargetMenuItem({ testId, following, onToggle }) {
 }
 
 /**
+ * Build a menu item button for edit actions.
+ *
+ * @param {object} options
+ * @param {string} options.testId
+ * @param {() => void | Promise<void>} options.onEdit
+ * @returns {HTMLButtonElement}
+ */
+export function createEditMenuItem({ testId, onEdit }) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'card-overflow-menu-item';
+  btn.dataset.testid = testId;
+  btn.setAttribute('role', 'menuitem');
+  btn.textContent = 'Edit';
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllCardOverflowMenus();
+    void Promise.resolve(onEdit());
+  });
+
+  return btn;
+}
+
+/**
  * Build a destructive menu item button for delete actions.
  *
  * @param {object} options

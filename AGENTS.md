@@ -48,7 +48,7 @@ Prefer `data-testid` attributes:
 - `profile-seeking-volunteering`, `profile-weekly-volunteering-hours`, `btn-create-organization`, `create-org-modal`, `create-org-name`
 - `user-memberships-section`, `membership-{orgId}`, `org-members-section`, `org-member-{userId}`, `org-member-search`
 - `feed-algorithm`, `feed-filter-user-post`, `feed-filter-org-post`, `feed-filter-position`, `feed-filter-event`
-- `post-card-{type}-{id}`, `post-card-menu-{feedType}-{id}`, `post-card-menu-follow-{feedType}-{id}`, `post-card-menu-delete-{feedType}-{id}`, `confirm-delete-dialog`, `confirm-delete-submit`, `confirm-delete-cancel`, `pagination-next`, `map-container`
+- `post-card-{type}-{id}`, `post-card-menu-{feedType}-{id}`, `post-card-menu-follow-{feedType}-{id}`, `post-card-menu-edit-{feedType}-{id}`, `post-card-menu-delete-{feedType}-{id}`, `confirm-delete-dialog`, `confirm-delete-submit`, `confirm-delete-cancel`, `edit-content-dialog`, `edit-content-submit`, `edit-content-cancel`, `pagination-next`, `map-container`
 - `calendar-event-{id}`, `create-post-form`, `create-post-dropzone`, `create-post-file-input`, `create-post-image-preview`, `profile-save`
 - `profile-avatar-section`, `profile-avatar-dropzone`, `profile-avatar-file-input`, `profile-avatar-display`
 - `post-image-{type}-{id}` (e.g. `post-image-user_post-1`)

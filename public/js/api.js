@@ -313,6 +313,17 @@ export async function deletePost(id) {
   return /** @type {Promise<{ ok: boolean }>} */ (request(`posts/${id}`, { method: 'DELETE' }));
 }
 
+/**
+ * Update a post (author only).
+ *
+ * @param {number} id
+ * @param {{ content?: string, imageFileId?: number | null }} data
+ * @returns {Promise<Post>}
+ */
+export async function updatePost(id, data) {
+  return /** @type {Promise<Post>} */ (request(`posts/${id}`, { method: 'PATCH', body: JSON.stringify(data) }));
+}
+
 /** List all volunteering positions. @returns {Promise<Position[]>} */
 export async function getPositions() {
   return /** @type {Promise<Position[]>} */ (request('positions'));
@@ -343,6 +354,17 @@ export async function deletePosition(id) {
   return /** @type {Promise<{ ok: boolean }>} */ (request(`positions/${id}`, { method: 'DELETE' }));
 }
 
+/**
+ * Update a position (author org admin only).
+ *
+ * @param {number} id
+ * @param {Partial<Position>} data
+ * @returns {Promise<Position>}
+ */
+export async function updatePosition(id, data) {
+  return /** @type {Promise<Position>} */ (request(`positions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }));
+}
+
 /** List all events. @returns {Promise<VolEvent[]>} */
 export async function getEvents() {
   return /** @type {Promise<VolEvent[]>} */ (request('events'));
@@ -371,6 +393,17 @@ export async function likeEvent(id) {
 /** Delete an event by id (author only). @param {number} id @returns {Promise<{ ok: boolean }>} */
 export async function deleteEvent(id) {
   return /** @type {Promise<{ ok: boolean }>} */ (request(`events/${id}`, { method: 'DELETE' }));
+}
+
+/**
+ * Update an event (author only).
+ *
+ * @param {number} id
+ * @param {Partial<VolEvent>} data
+ * @returns {Promise<VolEvent>}
+ */
+export async function updateEvent(id, data) {
+  return /** @type {Promise<VolEvent>} */ (request(`events/${id}`, { method: 'PATCH', body: JSON.stringify(data) }));
 }
 
 /** List comments for a post, position, or event. @param {string} targetType @param {number} targetId @returns {Promise<Comment[]>} */

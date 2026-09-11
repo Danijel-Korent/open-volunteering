@@ -3,12 +3,12 @@
         "id": 1,
         "authorType": "organization",
         "authorId": 1,
-        "title": "Park Cleanup Volunteer",
+        "title": "Park Cleanup Volunteer EDITED",
         "description": "Join us for a monthly park cleanup. Gloves and bags provided.",
         "category": "environment",
         "remote": false,
         "location": {
-            "label": "Maksimir Park",
+            "label": "Maksimir Park Updated",
             "lat": 45.826,
             "lng": 16.018
         },
