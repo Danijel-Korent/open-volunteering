@@ -130,15 +130,5 @@
         "shareCount": 0,
         "createdAt": "2026-09-06T08:53:36+02:00",
         "imageFileId": 2
-    },
-    {
-        "id": 14,
-        "authorType": "user",
-        "authorId": 1,
-        "postType": "user_post",
-        "content": "New post for follow notification test",
-        "likeCount": 0,
-        "shareCount": 0,
-        "createdAt": "2026-09-10T08:20:44+02:00"
     }
 ]

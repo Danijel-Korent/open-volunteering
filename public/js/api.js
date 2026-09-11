@@ -308,6 +308,11 @@ export async function sharePost(id) {
   return /** @type {Promise<Post>} */ (request(`posts/${id}/share`, { method: 'POST' }));
 }
 
+/** Delete a post by id (author only). @param {number} id @returns {Promise<{ ok: boolean }>} */
+export async function deletePost(id) {
+  return /** @type {Promise<{ ok: boolean }>} */ (request(`posts/${id}`, { method: 'DELETE' }));
+}
+
 /** List all volunteering positions. @returns {Promise<Position[]>} */
 export async function getPositions() {
   return /** @type {Promise<Position[]>} */ (request('positions'));
@@ -333,6 +338,11 @@ export async function likePosition(id) {
   return /** @type {Promise<Position>} */ (request(`positions/${id}/like`, { method: 'POST' }));
 }
 
+/** Delete a position by id (author org admin only). @param {number} id @returns {Promise<{ ok: boolean }>} */
+export async function deletePosition(id) {
+  return /** @type {Promise<{ ok: boolean }>} */ (request(`positions/${id}`, { method: 'DELETE' }));
+}
+
 /** List all events. @returns {Promise<VolEvent[]>} */
 export async function getEvents() {
   return /** @type {Promise<VolEvent[]>} */ (request('events'));
@@ -356,6 +366,11 @@ export async function rsvpEvent(id, data) {
 /** Increment like count on an event. @param {number} id @returns {Promise<VolEvent>} */
 export async function likeEvent(id) {
   return /** @type {Promise<VolEvent>} */ (request(`events/${id}/like`, { method: 'POST' }));
+}
+
+/** Delete an event by id (author only). @param {number} id @returns {Promise<{ ok: boolean }>} */
+export async function deleteEvent(id) {
+  return /** @type {Promise<{ ok: boolean }>} */ (request(`events/${id}`, { method: 'DELETE' }));
 }
 
 /** List comments for a post, position, or event. @param {string} targetType @param {number} targetId @returns {Promise<Comment[]>} */

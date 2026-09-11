@@ -5,8 +5,10 @@ import { renderAvatarHtml } from './image-dropzone.js';
 import { toggleComments } from './comment-section.js';
 import {
   createCardOverflowMenu,
+  createDeleteMenuItem,
   createFollowTargetMenuItem,
 } from './card-overflow-menu.js';
+import { showConfirmDialog } from './confirm-dialog.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -156,6 +158,43 @@ function isOwnFeedItem(user, item) {
   return Boolean(user && user.type === item.authorType && user.id === item.authorId);
 }
 
+/** @type {Record<string, string>} */
+const LIST_EMPTY_MESSAGES = {
+  'feed-list': 'No posts to show.',
+  'profile-feed': 'No posts yet.',
+  'positions-list': 'No open positions.',
+};
+
+/**
+ * If the list container has no post cards left, show its empty-state message.
+ *
+ * @param {HTMLElement} removedCard
+ */
+function maybeShowEmptyListAfterRemove(removedCard) {
+  const list = removedCard.parentElement;
+  if (!list) return;
+  const testId = list.dataset.testid;
+  if (!testId || !LIST_EMPTY_MESSAGES[testId]) return;
+  if (list.querySelector('.post-card')) return;
+  list.innerHTML = `<p class="empty-state">${LIST_EMPTY_MESSAGES[testId]}</p>`;
+}
+
+/**
+ * Call the API to delete a feed item by its feed type.
+ *
+ * @param {FeedItem} item
+ * @returns {Promise<void>}
+ */
+async function deleteFeedItem(item) {
+  if (item.feedType === 'user_post' || item.feedType === 'org_post') {
+    await api.deletePost(item.id);
+  } else if (item.feedType === 'position') {
+    await api.deletePosition(item.id);
+  } else {
+    await api.deleteEvent(item.id);
+  }
+}
+
 /**
  * Render a single feed item card.
  *
@@ -194,35 +233,61 @@ export function renderPostCard(item, opts = {}) {
   `;
 
   const header = card.querySelector('.post-card-header');
-  if (header instanceof HTMLElement && user && !isOwnFeedItem(user, item)) {
-    const followBtn = createFollowTargetMenuItem({
-      testId: `post-card-menu-follow-${item.feedType}-${item.id}`,
-      following: followingTarget,
-      onToggle: async () => {
-        try {
-          if (followingTarget) {
-            await api.unfollowTarget(targetType, item.id);
-            followingTarget = false;
-            opts.followedTargets?.delete(followKey);
-            api.showToast('Unfollowed');
-          } else {
-            await api.followTarget(targetType, item.id);
-            followingTarget = true;
-            opts.followedTargets?.add(followKey);
-            api.showToast('Following this post');
-          }
-          followBtn.textContent = followingTarget ? 'Following' : 'Follow';
-        } catch (err) {
-          api.showToast(err instanceof Error ? err.message : 'Failed to update follow');
-        }
-      },
-    });
+  if (header instanceof HTMLElement && user) {
+    /** @type {HTMLElement[]} */
+    const menuItems = [];
 
-    const menu = createCardOverflowMenu({
-      menuTestId: `post-card-menu-${item.feedType}-${item.id}`,
-      items: [followBtn],
-    });
-    header.appendChild(menu);
+    if (!isOwnFeedItem(user, item)) {
+      const followBtn = createFollowTargetMenuItem({
+        testId: `post-card-menu-follow-${item.feedType}-${item.id}`,
+        following: followingTarget,
+        onToggle: async () => {
+          try {
+            if (followingTarget) {
+              await api.unfollowTarget(targetType, item.id);
+              followingTarget = false;
+              opts.followedTargets?.delete(followKey);
+              api.showToast('Unfollowed');
+            } else {
+              await api.followTarget(targetType, item.id);
+              followingTarget = true;
+              opts.followedTargets?.add(followKey);
+              api.showToast('Following this post');
+            }
+            followBtn.textContent = followingTarget ? 'Following' : 'Follow';
+          } catch (err) {
+            api.showToast(err instanceof Error ? err.message : 'Failed to update follow');
+          }
+        },
+      });
+      menuItems.push(followBtn);
+    }
+
+    if (isOwnFeedItem(user, item)) {
+      menuItems.push(createDeleteMenuItem({
+        testId: `post-card-menu-delete-${item.feedType}-${item.id}`,
+        onDelete: async () => {
+          const confirmed = await showConfirmDialog();
+          if (!confirmed) return;
+          try {
+            await deleteFeedItem(item);
+            api.showToast('Deleted');
+            maybeShowEmptyListAfterRemove(card);
+            card.remove();
+          } catch (err) {
+            api.showToast(err instanceof Error ? err.message : 'Failed to delete');
+          }
+        },
+      }));
+    }
+
+    if (menuItems.length > 0) {
+      const menu = createCardOverflowMenu({
+        menuTestId: `post-card-menu-${item.feedType}-${item.id}`,
+        items: menuItems,
+      });
+      header.appendChild(menu);
+    }
   }
 
   const actions = card.querySelector('.post-actions');

@@ -281,6 +281,80 @@ function requireOrgAdminSession(int $orgId): void {
 }
 
 /**
+ * Require the active session account is the author of a content entity.
+ *
+ * Organization-authored content additionally requires org-admin session context.
+ *
+ * @param array<string, mixed> $entity Must include authorType and authorId
+ */
+function requireContentAuthorSession(array $entity): void {
+    $auth = requireAuth();
+    $authorType = (string) ($entity['authorType'] ?? 'user');
+    $authorId = (int) ($entity['authorId'] ?? 0);
+    if ($auth['type'] !== $authorType || $auth['id'] !== $authorId) {
+        jsonResponse(['error' => 'Forbidden'], 403);
+        exit;
+    }
+    if ($authorType === 'organization') {
+        requireOrgAdminSession($authorId);
+    }
+}
+
+/**
+ * Remove related JSON rows when a post, position, or event is deleted.
+ *
+ * @param 'post'|'position'|'event' $targetType Comment API target vocabulary
+ * @param int $targetId
+ */
+function purgeContentTarget(string $targetType, int $targetId): void {
+    $comments = readJson(COMMENTS_JSON);
+    $comments = array_values(array_filter(
+        $comments,
+        fn($c) => ($c['targetType'] ?? '') !== $targetType || (int) ($c['targetId'] ?? 0) !== $targetId,
+    ));
+    writeJson(COMMENTS_JSON, $comments);
+
+    $follows = readJson(CONTENT_FOLLOWS_JSON);
+    $follows = array_values(array_filter(
+        $follows,
+        fn($f) => ($f['targetType'] ?? '') !== $targetType || (int) ($f['targetId'] ?? 0) !== $targetId,
+    ));
+    writeJson(CONTENT_FOLLOWS_JSON, $follows);
+
+    $availability = readJson(AVAILABILITY_JSON);
+    $availability = array_values(array_filter(
+        $availability,
+        fn($a) => ($a['targetType'] ?? '') !== $targetType || (int) ($a['targetId'] ?? 0) !== $targetId,
+    ));
+    writeJson(AVAILABILITY_JSON, $availability);
+
+    $notifications = readJson(NOTIFICATION_INBOX_JSON);
+    $notifications = array_values(array_filter(
+        $notifications,
+        fn($n) => ($n['targetType'] ?? '') !== $targetType || (int) ($n['targetId'] ?? 0) !== $targetId,
+    ));
+    writeJson(NOTIFICATION_INBOX_JSON, $notifications);
+
+    if ($targetType === 'position') {
+        $applications = readJson(APPLICATIONS_JSON);
+        $applications = array_values(array_filter(
+            $applications,
+            fn($a) => (int) ($a['positionId'] ?? 0) !== $targetId,
+        ));
+        writeJson(APPLICATIONS_JSON, $applications);
+    }
+
+    if ($targetType === 'event') {
+        $rsvps = readJson(EVENT_RSVPS_JSON);
+        $rsvps = array_values(array_filter(
+            $rsvps,
+            fn($r) => (int) ($r['eventId'] ?? 0) !== $targetId,
+        ));
+        writeJson(EVENT_RSVPS_JSON, $rsvps);
+    }
+}
+
+/**
  * Find user by ID.
  *
  * @param array<int, array<string, mixed>> $users

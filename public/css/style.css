@@ -7,6 +7,8 @@
   --primary: #1877f2;
   --primary-hover: #166fe5;
   --accent: #8b5cf6;
+  --danger: #e41e3f;
+  --danger-hover: #c81e3a;
   --fb-muted: #65676b;
   --radius: 8px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -286,6 +288,37 @@ main#app {
 .card-overflow-menu-item:hover,
 .card-overflow-menu-item:focus-visible {
   background: rgba(0, 0, 0, 0.06);
+}
+
+.card-overflow-menu-item--danger {
+  color: var(--danger);
+}
+
+.card-overflow-menu-item--danger:hover,
+.card-overflow-menu-item--danger:focus-visible {
+  background: rgba(228, 30, 63, 0.08);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
+
+.btn-danger:hover,
+.btn-danger:focus-visible {
+  background: var(--danger-hover);
+}
+
+.confirm-dialog-message {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .post-card-avatar {

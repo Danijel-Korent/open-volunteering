@@ -82,3 +82,28 @@ export function createFollowTargetMenuItem({ testId, following, onToggle }) {
 
   return btn;
 }
+
+/**
+ * Build a destructive menu item button for delete actions.
+ *
+ * @param {object} options
+ * @param {string} options.testId
+ * @param {() => void | Promise<void>} options.onDelete
+ * @returns {HTMLButtonElement}
+ */
+export function createDeleteMenuItem({ testId, onDelete }) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'card-overflow-menu-item card-overflow-menu-item--danger';
+  btn.dataset.testid = testId;
+  btn.setAttribute('role', 'menuitem');
+  btn.textContent = 'Delete';
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeAllCardOverflowMenus();
+    void Promise.resolve(onDelete());
+  });
+
+  return btn;
+}

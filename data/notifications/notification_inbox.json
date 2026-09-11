@@ -13,19 +13,6 @@
         "createdAt": "2026-09-10T08:20:31+02:00"
     },
     {
-        "id": 2,
-        "recipientUserId": 2,
-        "type": "followed_author_post",
-        "organizationId": null,
-        "organizationName": null,
-        "actorType": "user",
-        "actorId": 1,
-        "targetType": "post",
-        "targetId": 14,
-        "readAt": null,
-        "createdAt": "2026-09-10T08:20:44+02:00"
-    },
-    {
         "id": 3,
         "recipientUserId": 1,
         "type": "followed_author_event",

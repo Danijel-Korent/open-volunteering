@@ -174,4 +174,26 @@ if ($id !== null && $sub === 'like' && method() === 'POST') {
     exit;
 }
 
+if ($id !== null && $sub === '' && method() === 'DELETE') {
+    $positions = readJson(POSITIONS_JSON);
+    $idx = null;
+    foreach ($positions as $i => $p) {
+        if ((int) $p['id'] === $id) {
+            $idx = $i;
+            break;
+        }
+    }
+    if ($idx === null) {
+        jsonResponse(['error' => 'Position not found'], 404);
+        exit;
+    }
+    $position = $positions[$idx];
+    requireContentAuthorSession($position);
+    purgeContentTarget('position', $id);
+    array_splice($positions, $idx, 1);
+    writeJson(POSITIONS_JSON, array_values($positions));
+    jsonResponse(['ok' => true]);
+    exit;
+}
+
 jsonResponse(['error' => 'Not found'], 404);

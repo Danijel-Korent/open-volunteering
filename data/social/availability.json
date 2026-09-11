@@ -4,7 +4,10 @@
         "userId": 1,
         "targetType": "organization",
         "targetId": 1,
-        "skillsOffered": ["Event planning", "First aid"],
+        "skillsOffered": [
+            "Event planning",
+            "First aid"
+        ],
         "createdAt": "2026-06-01T10:00:00+02:00"
     },
     {
@@ -12,7 +15,10 @@
         "userId": 2,
         "targetType": "event",
         "targetId": 6,
-        "skillsOffered": ["Web development", "Teaching"],
+        "skillsOffered": [
+            "Web development",
+            "Teaching"
+        ],
         "createdAt": "2026-06-10T14:00:00+02:00"
     },
     {
@@ -20,7 +26,10 @@
         "userId": 1,
         "targetType": "post",
         "targetId": 9,
-        "skillsOffered": ["Skill1", "Skill2"],
+        "skillsOffered": [
+            "Skill1",
+            "Skill2"
+        ],
         "createdAt": "2026-06-15T09:10:51+02:00"
     },
     {
@@ -28,7 +37,10 @@
         "userId": 9,
         "targetType": "organization",
         "targetId": 1,
-        "skillsOffered": ["skil1", "skil2"],
+        "skillsOffered": [
+            "skil1",
+            "skil2"
+        ],
         "createdAt": "2026-08-23T07:47:38+02:00"
     },
     {
@@ -36,7 +48,10 @@
         "userId": 9,
         "targetType": "post",
         "targetId": 10,
-        "skillsOffered": ["skil1", "skil2"],
+        "skillsOffered": [
+            "skil1",
+            "skil2"
+        ],
         "createdAt": "2026-08-23T07:47:48+02:00"
     },
     {
@@ -44,7 +59,9 @@
         "userId": 9,
         "targetType": "post",
         "targetId": 13,
-        "skillsOffered": ["test"],
+        "skillsOffered": [
+            "test"
+        ],
         "createdAt": "2026-09-06T08:53:55+02:00"
     }
 ]

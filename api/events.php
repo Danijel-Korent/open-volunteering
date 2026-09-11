@@ -120,4 +120,26 @@ if ($id !== null && $sub === 'like' && method() === 'POST') {
     exit;
 }
 
+if ($id !== null && $sub === '' && method() === 'DELETE') {
+    $events = readJson(EVENTS_JSON);
+    $idx = null;
+    foreach ($events as $i => $e) {
+        if ((int) $e['id'] === $id) {
+            $idx = $i;
+            break;
+        }
+    }
+    if ($idx === null) {
+        jsonResponse(['error' => 'Event not found'], 404);
+        exit;
+    }
+    $event = $events[$idx];
+    requireContentAuthorSession($event);
+    purgeContentTarget('event', $id);
+    array_splice($events, $idx, 1);
+    writeJson(EVENTS_JSON, array_values($events));
+    jsonResponse(['ok' => true]);
+    exit;
+}
+
 jsonResponse(['error' => 'Not found'], 404);

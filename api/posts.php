@@ -100,4 +100,30 @@ if ($id !== null && $sub === 'share' && method() === 'POST') {
     exit;
 }
 
+if ($id !== null && $sub === '' && method() === 'DELETE') {
+    $posts = readJson(POSTS_JSON);
+    $idx = null;
+    foreach ($posts as $i => $p) {
+        if ((int) $p['id'] === $id) {
+            $idx = $i;
+            break;
+        }
+    }
+    if ($idx === null) {
+        jsonResponse(['error' => 'Post not found'], 404);
+        exit;
+    }
+    $post = $posts[$idx];
+    requireContentAuthorSession($post);
+    purgeContentTarget('post', $id);
+    $imageFileId = isset($post['imageFileId']) ? (int) $post['imageFileId'] : 0;
+    if ($imageFileId > 0) {
+        deleteStoredFile($imageFileId);
+    }
+    array_splice($posts, $idx, 1);
+    writeJson(POSTS_JSON, array_values($posts));
+    jsonResponse(['ok' => true]);
+    exit;
+}
+
 jsonResponse(['error' => 'Not found'], 404);

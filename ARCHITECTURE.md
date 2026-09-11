@@ -40,7 +40,7 @@ flowchart LR
 | [public/js/components/](public/js/components/) | Shared UI (post-card, comments, pagination, feed-controls) |
 | [public/js/types.d.ts](public/js/types.d.ts) | Domain type definitions (canonical schema) |
 | [api/index.php](api/index.php) | Central API router |
-| [api/config.php](api/config.php) | Shared helpers: JSON I/O, auth, geo |
+| [api/config.php](api/config.php) | Shared helpers: JSON I/O, auth, geo, `requireContentAuthorSession`, `purgeContentTarget` (cascade on content delete) |
 | [api/*.php](api/) | One handler per REST resource |
 | [data/*.json](data/) | One file per entity collection |
 | [.htaccess](.htaccess) | Rewrites `/api/*` to `api/index.php?path=...` |
@@ -261,6 +261,7 @@ From [`api/config.php`](api/config.php):
 - Reads and writes are **whole-file** (`readJson` / `writeJson`); there are no transactions or referential integrity checks.
 - `GeoLocation` is `{ label, lat, lng }`; distance sorting uses `haversineKm()`.
 - Uploaded images: max 2 MB; JPEG/PNG/WebP only; validated with `finfo` + `getimagesize`.
+- Deleting a post, position, or event calls `purgeContentTarget()` to remove related comments, content follows, availability rows, notifications, and (for positions/events) applications or RSVPs.
 
 ## 6. API reference
 
@@ -321,6 +322,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | POST | `/api/posts` | Yes | Body: `content`, optional `imageFileId`. `authorType`/`postType` set from session account |
 | POST | `/api/posts/{id}/like` | Yes | Increment like count |
 | POST | `/api/posts/{id}/share` | Yes | Increment share count |
+| DELETE | `/api/posts/{id}` | Yes (author) | Remove post; `purgeContentTarget('post', id)`; deletes attached image file when present |
 
 ### files — `/api/files[/{id}[/content]]`
 
@@ -340,6 +342,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | POST | `/api/positions/{id}/apply` | Yes (volunteer) | Apply to position |
 | GET | `/api/positions/{id}/applications` | Yes (position owner org) | List applications with embedded `volunteer` |
 | POST | `/api/positions/{id}/like` | Yes | Increment like count |
+| DELETE | `/api/positions/{id}` | Yes (author org admin) | Remove position; `purgeContentTarget('position', id)` |
 
 ### events — `/api/events[/{id}[/{sub}]]`
 
@@ -349,6 +352,7 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | POST | `/api/events` | Yes | Body: `title`, `description`, `startDate`, optional `endDate`, `locationType`, `location` |
 | POST | `/api/events/{id}/rsvp` | Yes | Body: `status` (`going` \| `maybe`) |
 | POST | `/api/events/{id}/like` | Yes | Increment like count |
+| DELETE | `/api/events/{id}` | Yes (author) | Remove event; `purgeContentTarget('event', id)` |
 
 ### comments — `/api/comments`
 
@@ -507,6 +511,8 @@ Navigation links in [`index.html`](index.html) use `data-route` attributes match
 | `feed-controls.js` | `getFeedPrefs`, `saveFeedPref`, `renderFeedControls` | `feed.js`, `profile.js` |
 | `pagination.js` | `renderPagination` | `feed.js`, `profile.js` |
 | `post-card.js` | `renderPostCard` | `feed.js`, `positions.js`, `profile.js` |
+| `card-overflow-menu.js` | `createCardOverflowMenu`, follow/delete menu items | `post-card.js` |
+| `confirm-dialog.js` | `showConfirmDialog` | `post-card.js` |
 | `comment-section.js` | `renderCommentSection`, `toggleComments`, `updateCommentStats` | `positions.js`, `profile.js` |
 
 - **Types:** JSDoc references types from `types.d.ts`; run `npx tsc -p public/js/jsconfig.json --noEmit` after JS changes.
