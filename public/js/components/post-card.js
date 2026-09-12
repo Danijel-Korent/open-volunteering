@@ -4,6 +4,7 @@ import { profileLink } from '../account-utils.js';
 import { renderAvatarHtml } from './image-dropzone.js';
 import { toggleComments } from './comment-section.js';
 import {
+  createActionMenuItem,
   createCardOverflowMenu,
   createDeleteMenuItem,
   createEditMenuItem,
@@ -11,6 +12,7 @@ import {
 } from './card-overflow-menu.js';
 import { showConfirmDialog } from './confirm-dialog.js';
 import { showEditFeedItemDialog } from './edit-content-dialog.js';
+import { applyToPositionWithDialog } from './apply-position-dialog.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -140,13 +142,44 @@ function getApplyState(user, item) {
   if (user.type !== 'user') {
     return { enabled: false, title: 'Switch to your profile to apply to positions' };
   }
-  if (!user.seekingVolunteering) {
-    return { enabled: false, title: 'Enable volunteering on your profile to apply' };
+  if (item.closed) {
+    return { enabled: false, title: 'This position is closed' };
   }
-  if (item.hasApplied) {
+  if (item.applicationStatus === 'accepted') {
+    return { enabled: false, title: 'Your application was accepted' };
+  }
+  if (item.applicationStatus === 'pending' || item.hasApplied) {
     return { enabled: false, title: 'You have already applied to this position' };
   }
   return { enabled: true };
+}
+
+/**
+ * Merge position API fields into a feed card item.
+ *
+ * @param {FeedItem} item
+ * @param {Position} position
+ * @returns {FeedItem}
+ */
+function mergePositionIntoFeedItem(item, position) {
+  /** @type {FeedItem} */
+  const merged = {
+    ...item,
+    title: position.title,
+    content: position.description,
+    category: position.category,
+    remote: position.remote,
+    location: position.location ?? null,
+    closed: Boolean(position.closedAt),
+  };
+  if (position.imageFileId) {
+    merged.imageFileId = position.imageFileId;
+    merged.imageUrl = api.fileContentUrl(position.imageFileId);
+  } else {
+    delete merged.imageFileId;
+    delete merged.imageUrl;
+  }
+  return merged;
 }
 
 /**
@@ -223,6 +256,7 @@ export function renderPostCard(item, opts = {}) {
       ${renderAvatarHtml({ avatarFileId: item.author?.avatarFileId, name: authorName })}
       <div class="post-card-headline">
         <a class="post-author" href="${authorLink}">${escapeHtml(authorName)}</a>
+        ${item.closed ? '<span class="position-status-badge" data-testid="position-closed-badge">Closed</span>' : ''}
         <div class="post-meta-line">${buildMetaSubline(item)}</div>
       </div>
     </div>
@@ -280,6 +314,26 @@ export function renderPostCard(item, opts = {}) {
           }
         },
       }));
+      if (item.feedType === 'position') {
+        const closing = !item.closed;
+        menuItems.push(createActionMenuItem({
+          testId: closing
+            ? `post-card-menu-close-position-${item.id}`
+            : `post-card-menu-reopen-position-${item.id}`,
+          label: closing ? 'Close position' : 'Reopen position',
+          onClick: async () => {
+            try {
+              const position = await api.updatePosition(item.id, { closed: closing });
+              const updated = mergePositionIntoFeedItem(item, position);
+              const newCard = renderPostCard(updated, opts);
+              card.replaceWith(newCard);
+              api.showToast(closing ? 'Position closed' : 'Position reopened');
+            } catch (err) {
+              api.showToast(err instanceof Error ? err.message : 'Failed to update position');
+            }
+          },
+        }));
+      }
       menuItems.push(createDeleteMenuItem({
         testId: `post-card-menu-delete-${item.feedType}-${item.id}`,
         onDelete: async () => {
@@ -399,7 +453,7 @@ export function renderPostCard(item, opts = {}) {
       applyBtn.addEventListener('click', async () => {
         if (applyBtn.disabled) return;
         try {
-          await api.applyPosition(item.id);
+          await applyToPositionWithDialog(item.id, item.title || 'Position');
           applyBtn.disabled = true;
           setApplyTooltip(wrap, applyBtn, 'You have already applied to this position');
           api.showToast('Application submitted!');

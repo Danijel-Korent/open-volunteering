@@ -176,6 +176,10 @@ async function renderOwnVolunteerProfile(container, user) {
     </div>
     ${renderVolunteerActions()}
     ${renderSubscriptionsSection()}
+    <div class="profile-section" data-testid="user-applications-section">
+      <h3>My applications</h3>
+      <div id="user-applications-list"><p class="empty-state">Loading…</p></div>
+    </div>
     <h2 class="page-title" style="font-size:1rem">Your feed</h2>
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
@@ -233,8 +237,53 @@ async function renderOwnVolunteerProfile(container, user) {
   container.querySelector('[data-testid="btn-create-organization"]')?.addEventListener('click', () => {
     void showCreateOrganizationModal();
   });
+  await loadUserApplications(container);
   await loadProfileFeed('user', user.id);
   await applyProfileDeepLinks();
+}
+
+/**
+ * Load and render the current user's position applications.
+ *
+ * @param {HTMLElement} container
+ * @returns {Promise<void>}
+ */
+async function loadUserApplications(container) {
+  const listEl = container.querySelector('#user-applications-list');
+  if (!listEl) return;
+  try {
+    const apps = await api.getMyApplications();
+    if (apps.length === 0) {
+      listEl.innerHTML = '<p class="empty-state">You have not applied to any positions yet.</p>';
+      return;
+    }
+    listEl.innerHTML = `
+      <ul class="user-applications-list">
+        ${apps.map((app) => {
+          const title = escapeHtml(app.position?.title || 'Unknown position');
+          const orgName = app.organizationName ? escapeHtml(app.organizationName) : 'Organization';
+          const orgId = app.organizationId ?? app.position?.authorId ?? 0;
+          const status = escapeHtml((app.status || 'pending').toLowerCase());
+          const date = escapeHtml(new Date(app.createdAt).toLocaleDateString());
+          return `
+            <li class="user-application-row" data-testid="user-application-${app.id}">
+              <div>
+                <strong>${title}</strong>
+                <div class="post-meta">
+                  <a href="#/organization/${orgId}">${orgName}</a>
+                  · <span class="application-status application-status--${status}">${status}</span>
+                  · ${date}
+                </div>
+              </div>
+              <a class="btn btn-sm" href="#/positions">View positions</a>
+            </li>
+          `;
+        }).join('')}
+      </ul>
+    `;
+  } catch (err) {
+    listEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load applications'}</p>`;
+  }
 }
 
 /**
@@ -461,18 +510,42 @@ async function setupOrgForms(container, orgId) {
         <div class="form-group"><label>Description</label><textarea id="pos-desc" data-testid="position-description"></textarea></div>
         <div class="form-group"><label>Category</label><input id="pos-cat" data-testid="position-category" value="general"></div>
         <div class="form-group"><label><input type="checkbox" id="pos-remote" data-testid="position-remote"> Remote</label></div>
+        <div id="position-create-dropzone-mount"></div>
         <button class="btn btn-primary" data-testid="position-submit">Publish</button>
       </div>
     `;
+    const dropzoneMount = mount.querySelector('#position-create-dropzone-mount');
+    /** @type {import('./components/image-dropzone.js').ImageDropzoneHandle | null} */
+    let positionDropzone = null;
+    if (dropzoneMount instanceof HTMLElement) {
+      positionDropzone = setupImageDropzone(dropzoneMount, {
+        dropzoneTestId: 'position-create-dropzone',
+        fileInputTestId: 'position-create-file-input',
+        previewTestId: 'position-create-image-preview',
+        label: 'Photo — drop here or tap',
+      });
+    }
     mount.querySelector('[data-testid="position-submit"]')?.addEventListener('click', async () => {
-      await api.createPosition({
+      if (positionDropzone?.isUploading()) {
+        api.showToast('Wait for the image upload to finish');
+        return;
+      }
+      const fileId = positionDropzone?.getFileId();
+      /** @type {Partial<Position>} */
+      const payload = {
         title: /** @type {HTMLInputElement} */ (document.getElementById('pos-title')).value,
         description: /** @type {HTMLTextAreaElement} */ (document.getElementById('pos-desc')).value,
         category: /** @type {HTMLInputElement} */ (document.getElementById('pos-cat')).value,
         remote: /** @type {HTMLInputElement} */ (document.getElementById('pos-remote')).checked,
-      });
+      };
+      if (fileId) {
+        payload.imageFileId = fileId;
+      }
+      await api.createPosition(payload);
       api.showToast('Position published!');
       mount.innerHTML = '';
+      positionDropzone?.release();
+      await loadProfileFeed('organization', orgId);
     });
   });
 
@@ -879,18 +952,40 @@ async function loadOrgMessagingSections(container, orgId) {
           const apps = await api.getPositionApplications(position.id);
           if (apps.length === 0) continue;
           blocks.push(`
-            <div class="org-list-block">
+            <div class="org-list-block" data-position-id="${position.id}">
               <h4>${escapeHtml(position.title)}</h4>
               <ul class="org-messaging-list">
                 ${apps.map((app) => {
                   const applicant = app.user;
                   if (!applicant) return '';
-                  return `
-                    <li>
-                      <span>${escapeHtml(applicant.name)}</span>
+                  const status = (app.status || 'pending').toLowerCase();
+                  const message = app.message ? `<div class="post-meta applicant-message">${escapeHtml(app.message)}</div>` : '';
+                  const actions = status === 'pending'
+                    ? `
                       <button type="button" class="btn btn-sm btn-primary"
-                        data-testid="btn-message-applicant-${applicant.id}"
-                        data-user-id="${applicant.id}">Message</button>
+                        data-testid="btn-accept-applicant-${applicant.id}"
+                        data-application-id="${app.id}"
+                        data-position-id="${position.id}">Accept</button>
+                      <button type="button" class="btn btn-sm"
+                        data-testid="btn-reject-applicant-${applicant.id}"
+                        data-application-id="${app.id}"
+                        data-position-id="${position.id}">Reject</button>
+                    `
+                    : '';
+                  return `
+                    <li class="org-applicant-row">
+                      <div class="org-applicant-info">
+                        <span>${escapeHtml(applicant.name)}</span>
+                        <span class="application-status application-status--${escapeHtml(status)}">${escapeHtml(status)}</span>
+                        ${message}
+                      </div>
+                      <div class="org-applicant-actions">
+                        ${actions}
+                        <button type="button" class="btn btn-sm btn-primary"
+                          data-testid="btn-message-applicant-${applicant.id}"
+                          data-user-id="${applicant.id}"
+                          data-position-title="${escapeHtml(position.title)}">Message</button>
+                      </div>
                     </li>
                   `;
                 }).join('')}
@@ -944,10 +1039,31 @@ async function loadOrgMessagingSections(container, orgId) {
     btn.addEventListener('click', async () => {
       const uid = parseInt(btn.getAttribute('data-user-id') || '0', 10);
       if (!uid) return;
+      const positionTitle = btn.getAttribute('data-position-title') || 'position';
       try {
-        await startDirectMessage('user', uid);
+        await startDirectMessage('user', uid, {
+          initialMessage: `Re: "${positionTitle}" application`,
+        });
       } catch (err) {
         api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
+      }
+    });
+  });
+
+  container.querySelectorAll('[data-application-id]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const applicationId = parseInt(btn.getAttribute('data-application-id') || '0', 10);
+      const positionId = parseInt(btn.getAttribute('data-position-id') || '0', 10);
+      const isAccept = btn.getAttribute('data-testid')?.startsWith('btn-accept-applicant');
+      if (!applicationId || !positionId) return;
+      try {
+        await api.updatePositionApplication(positionId, applicationId, {
+          status: isAccept ? 'accepted' : 'rejected',
+        });
+        api.showToast(isAccept ? 'Applicant accepted' : 'Applicant rejected');
+        await loadOrgMessagingSections(container, orgId);
+      } catch (err) {
+        api.showToast(err instanceof Error ? err.message : 'Failed to update application');
       }
     });
   });

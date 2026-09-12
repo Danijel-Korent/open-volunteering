@@ -49,7 +49,7 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
             continue;
         }
         $author = resolveAuthor($maps, $itemAuthorType, $itemAuthorId);
-        $items[] = [
+        $item = [
             'feedType' => 'position',
             'id' => (int) $p['id'],
             'authorType' => $itemAuthorType,
@@ -63,6 +63,15 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
             'likeCount' => $p['likeCount'] ?? 0,
             'createdAt' => $p['createdAt'],
         ];
+        if (!empty($p['closedAt'])) {
+            $item['closed'] = true;
+        }
+        if (!empty($p['imageFileId'])) {
+            $imageFileId = (int) $p['imageFileId'];
+            $item['imageFileId'] = $imageFileId;
+            $item['imageUrl'] = fileContentUrl($imageFileId);
+        }
+        $items[] = $item;
     }
 
     foreach (readJson(EVENTS_JSON) as $e) {
@@ -198,15 +207,26 @@ $account = getCurrentAccount();
 if ($account !== null && $account['type'] === 'user') {
     $userId = $account['id'];
     $applications = readJson(APPLICATIONS_JSON);
-    $appliedIds = [];
+    /** @var array<int, string> $statusByPositionId */
+    $statusByPositionId = [];
     foreach ($applications as $a) {
-        if ((int) ($a['userId'] ?? $a['volunteerId'] ?? 0) === $userId) {
-            $appliedIds[] = (int) $a['positionId'];
+        if ((int) ($a['userId'] ?? $a['volunteerId'] ?? 0) !== $userId) {
+            continue;
         }
+        $statusByPositionId[(int) $a['positionId']] = (string) ($a['status'] ?? 'pending');
     }
     foreach ($paged as &$item) {
-        if ($item['feedType'] === 'position') {
-            $item['hasApplied'] = in_array((int) $item['id'], $appliedIds, true);
+        if ($item['feedType'] !== 'position') {
+            continue;
+        }
+        $positionId = (int) $item['id'];
+        $status = $statusByPositionId[$positionId] ?? null;
+        if ($status === 'pending' || $status === 'accepted') {
+            $item['hasApplied'] = true;
+            $item['applicationStatus'] = $status;
+        } elseif ($status === 'rejected') {
+            $item['hasApplied'] = false;
+            $item['applicationStatus'] = 'rejected';
         }
     }
     unset($item);

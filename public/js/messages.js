@@ -423,12 +423,17 @@ async function showNewConversationModal(current) {
  *
  * @param {AccountType} accountType
  * @param {number} accountId
+ * @param {{ initialMessage?: string }} [options]
  * @returns {Promise<void>}
  */
-export async function startDirectMessage(accountType, accountId) {
+export async function startDirectMessage(accountType, accountId, options = {}) {
   const conv = await api.createConversation({
     type: 'direct',
     participants: [{ accountType, accountId }],
   });
+  const initialMessage = options.initialMessage?.trim() ?? '';
+  if (initialMessage) {
+    await api.sendMessage(conv.id, initialMessage);
+  }
   window.location.hash = `#/messages/${conv.id}`;
 }

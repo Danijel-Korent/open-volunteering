@@ -245,7 +245,8 @@ Records not yet fully defined in `types.d.ts`:
 |--------|--------|
 | Profile follow | `followerType`, `followerId`, `actingUserId?`, `followingType`, `followingId`, `createdAt` |
 | Content follow | `followerType`, `followerId`, `actingUserId`, `targetType` (`post` \| `position` \| `event`), `targetId`, `createdAt` |
-| Application | `id`, `positionId`, `userId`, `status`, `createdAt` |
+| Application | `id`, `positionId`, `userId`, `status` (`pending` \| `accepted` \| `rejected`), optional `message`, `statusUpdatedAt`, `createdAt` |
+| Position (extra) | optional `closedAt`, `imageFileId` |
 | Event RSVP | `eventId`, `accountType`, `accountId`, `status` (`going` \| `maybe`) |
 | Project post | `id`, `projectId`, `content`, `createdAt` |
 | Conversation participant | `conversationId`, `accountType`, `accountId`, `joinedAt`, `role`, `lastReadAt?` |
@@ -271,7 +272,8 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 
 - GET list/detail endpoints are **public** (no login required).
 - POST, PATCH, DELETE mutations require a **valid session**.
-- **Role checks:** org admins (in active org context) create positions/projects and manage members; users with `seekingVolunteering` apply to positions; users PATCH only their own profile.
+- **Role checks:** org admins (in active org context) create positions/projects and manage members; logged-in users apply to open positions; users PATCH only their own profile.
+- **Position applications:** volunteer applies (optional message) → org admins notified → org accepts or rejects per applicant → volunteer notified; closed positions remain visible but cannot receive new applications.
 
 **CORS:** `OPTIONS` returns 204; `Access-Control-Allow-Origin: *` on all responses (prototype setting).
 
@@ -339,11 +341,13 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
 | GET | `/api/positions` | No | List positions (newest first) |
-| POST | `/api/positions` | Yes (organization) | Body: `title`, `description`, optional `category`, `remote`, `location` |
-| POST | `/api/positions/{id}/apply` | Yes (volunteer) | Apply to position |
-| GET | `/api/positions/{id}/applications` | Yes (position owner org) | List applications with embedded `volunteer` |
+| POST | `/api/positions` | Yes (organization) | Body: `title`, `description`, optional `category`, `remote`, `location`, `imageFileId` |
+| POST | `/api/positions/{id}/apply` | Yes (user) | Body: optional `message`; blocked when `closedAt` is set |
+| GET | `/api/positions/{id}/applications` | Yes (position owner org) | List applications with embedded `user` |
+| PATCH | `/api/positions/{id}/applications/{applicationId}` | Yes (position owner org) | Body: `status` (`accepted` \| `rejected`); notifies applicant |
+| GET | `/api/users/me/applications` | Yes (user) | Current user's applications with `position` and org summary |
 | POST | `/api/positions/{id}/like` | Yes | Increment like count |
-| PATCH | `/api/positions/{id}` | Yes (author org admin) | Body: `title`, `description`, optional `category`, `remote`, `location` |
+| PATCH | `/api/positions/{id}` | Yes (author org admin) | Body: `title`, `description`, optional `category`, `remote`, `location`, `imageFileId`, `closed` (bool → `closedAt`) |
 | DELETE | `/api/positions/{id}` | Yes (author org admin) | Remove position; `purgeContentTarget('position', id)` |
 
 ### events — `/api/events[/{id}[/{sub}]]`
@@ -446,7 +450,7 @@ In-app notifications for the logged-in user, stored in `notifications/notificati
 
 **Creation hooks** (not separate endpoints): `comments.php` (post comments), `positions.php` (new applications), `availability.php` (new skill offers only), `comments.php` / `posts.php` / `events.php` / `positions.php` (follow-based notifications).
 
-Notification types include `post_comment`, `position_application`, `skill_offer`, `followed_target_comment`, `followed_author_post`, `followed_author_event`, `followed_author_position`.
+Notification types include `post_comment`, `position_application`, `position_application_accepted`, `position_application_rejected`, `skill_offer`, `followed_target_comment`, `followed_author_post`, `followed_author_event`, `followed_author_position`.
 
 ### content-follows — `/api/content-follows[/{sub}]`
 

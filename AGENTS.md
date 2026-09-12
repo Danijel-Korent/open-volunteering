@@ -57,4 +57,7 @@ Prefer `data-testid` attributes:
 - `message-user-picker`, `message-picker-search`, `group-chat-title`
 - `message-thread-{id}`, `message-list`, `message-{id}`, `message-compose-input`, `message-send`
 - `btn-message-user-{id}`, `btn-message-applicant-{id}`, `btn-message-volunteer-{id}`
-- `org-applicants-section`, `org-availability-section`
+- `org-applicants-section`, `org-availability-section`, `btn-accept-applicant-{userId}`, `btn-reject-applicant-{userId}`
+- `apply-position-dialog`, `apply-position-message`, `apply-position-submit`, `apply-position-cancel`, `btn-apply-{positionId}`
+- `post-card-menu-close-position-{id}`, `post-card-menu-reopen-position-{id}`, `position-closed-badge`
+- `user-applications-section`, `user-application-{id}`, `position-create-dropzone`, `position-create-file-input`

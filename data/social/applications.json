@@ -33,5 +33,14 @@
         "userId": 9,
         "status": "pending",
         "createdAt": "2026-09-09T08:24:59+02:00"
+    },
+    {
+        "id": 6,
+        "positionId": 9,
+        "userId": 1,
+        "status": "accepted",
+        "createdAt": "2026-09-12T18:47:57+02:00",
+        "message": "Happy to help with this role.",
+        "statusUpdatedAt": "2026-09-12T18:49:35+02:00"
     }
 ]

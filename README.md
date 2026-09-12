@@ -5,7 +5,7 @@
 ## Pages
 
 - **Feed** — unified posts, positions, events with filters, algorithms, pagination
-- **Positions** — volunteering positions with apply and comments
+- **Positions** — volunteering positions with apply (optional message), close/reopen, org accept/reject, and comments
 - **Calendar** — events for the next 12 months
 - **Map** — Leaflet map of organizations, volunteers, positions, events
 - **Profile** — edit own profile or view others; orgs manage projects/positions; private messaging entry points

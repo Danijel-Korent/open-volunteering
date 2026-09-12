@@ -339,9 +339,42 @@ export async function createPosition(data) {
   return /** @type {Promise<Position>} */ (request('positions', { method: 'POST', body: JSON.stringify(data) }));
 }
 
-/** Apply to a position (volunteers only). @param {number} id @returns {Promise<unknown>} */
-export async function applyPosition(id) {
-  return request(`positions/${id}/apply`, { method: 'POST' });
+/**
+ * Apply to a position (volunteers only).
+ *
+ * @param {number} id
+ * @param {{ message?: string }} [data]
+ * @returns {Promise<Application>}
+ */
+export async function applyPosition(id, data = {}) {
+  return /** @type {Promise<Application>} */ (request(`positions/${id}/apply`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }));
+}
+
+/**
+ * Update application status (organization admin only).
+ *
+ * @param {number} positionId
+ * @param {number} applicationId
+ * @param {{ status: 'accepted' | 'rejected' }} data
+ * @returns {Promise<Application>}
+ */
+export async function updatePositionApplication(positionId, applicationId, data) {
+  return /** @type {Promise<Application>} */ (request(
+    `positions/${positionId}/applications/${applicationId}`,
+    { method: 'PATCH', body: JSON.stringify(data) },
+  ));
+}
+
+/**
+ * List the current user's position applications.
+ *
+ * @returns {Promise<UserApplication[]>}
+ */
+export async function getMyApplications() {
+  return /** @type {Promise<UserApplication[]>} */ (request('users/me/applications'));
 }
 
 /** Increment like count on a position. @param {number} id @returns {Promise<Position>} */

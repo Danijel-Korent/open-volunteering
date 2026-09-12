@@ -64,7 +64,7 @@ Draw on ASCII-friednly overview of XYZ
 ## Small issues - backlog
 
  - [ ] No user profile image visible in the comments section
- - [ ] Doens't let you to apply to a position unless you enabled "Looking for volunteering positions"
+ - [x] Doens't let you to apply to a position unless you enabled "Looking for volunteering positions" (removed gate — apply no longer requires the checkbox)
  - [ ] /#/profile looks horrible even by my standards
  - [ ] Org profile's "Position applicants" and "Skill offers" - need some way to remove them after they are no longer relevant. Maybe just delete/remove/hide button for start?
 
@@ -85,12 +85,10 @@ Draw on ASCII-friednly overview of XYZ
 ### Milestone #5 - Follow organization feature ✓
 ### Milestone #6 - Deleting posts/events/positions ✓
 ### Milestone #7 - Editing posts/events/positions ✓
+### Milestone #x - Full functionality for applying to position ✓
 
-In the "3 dots menu", add option to edit posts/events/positions
+  - [x] Close/reopen positions, images, optional apply message, accept/reject, notifications, my applications, DM context message
 
-### Milestone #x - Full functionality for applying to position
-
-  - [ ] Check what currently works and does't work
 
 ### Milestone #x - Full functionality for offering skils
 

@@ -663,7 +663,7 @@ function notificationExists(
  * Create an in-app notification for a single user.
  *
  * @param int $recipientUserId
- * @param string $type post_comment|position_application|skill_offer|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
+ * @param string $type post_comment|position_application|position_application_accepted|position_application_rejected|skill_offer|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
  * @param string $actorType user|organization
  * @param int $actorId
  * @param string $targetType
@@ -721,7 +721,7 @@ function createNotificationForUser(
  * Create in-app notifications for all admins of an organization.
  *
  * @param int $orgId
- * @param string $type post_comment|position_application|skill_offer|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
+ * @param string $type post_comment|position_application|position_application_accepted|position_application_rejected|skill_offer|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
  * @param string $actorType user|organization
  * @param int $actorId
  * @param string $targetType
@@ -1125,6 +1125,17 @@ function enrichNotification(array $notification): array {
         $orgId = (int) ($notification['organizationId'] ?? ($position['authorId'] ?? 0));
         $message = "{$actorName} applied for {$title}";
         $link = "#/organization/{$orgId}?section=applicants";
+    } elseif ($type === 'position_application_accepted' && $targetType === 'position') {
+        $position = findPositionById($targetId);
+        $title = $position !== null ? (string) ($position['title'] ?? 'a position') : 'a position';
+        $orgId = (int) ($notification['organizationId'] ?? ($position['authorId'] ?? 0));
+        $message = "{$actorName} accepted your application for {$title}";
+        $link = '#/positions';
+    } elseif ($type === 'position_application_rejected' && $targetType === 'position') {
+        $position = findPositionById($targetId);
+        $title = $position !== null ? (string) ($position['title'] ?? 'a position') : 'a position';
+        $message = "{$actorName} declined your application for {$title}";
+        $link = '#/positions';
     } elseif ($type === 'skill_offer') {
         $orgId = (int) ($notification['organizationId'] ?? 0);
         $message = "{$actorName} offered skills";
@@ -1423,7 +1434,7 @@ function requireAttachableFile(int $fileId, string $ownerType, int $ownerId): ar
  * Mark a file as attached to a parent entity.
  *
  * @param int $fileId
- * @param string $type post|user|organization
+ * @param string $type post|user|organization|position
  * @param int $parentId
  */
 function attachFileTo(int $fileId, string $type, int $parentId): void {

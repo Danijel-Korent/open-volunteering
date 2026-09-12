@@ -104,6 +104,9 @@ interface Position {
   location?: GeoLocation | null;
   likeCount: number;
   createdAt: string;
+  closedAt?: string | null;
+  imageFileId?: number;
+  closed?: boolean;
 }
 
 interface VolEvent {
@@ -149,6 +152,8 @@ interface FeedItem {
   remote?: boolean;
   category?: string;
   hasApplied?: boolean;
+  applicationStatus?: 'pending' | 'accepted' | 'rejected';
+  closed?: boolean;
   imageFileId?: number;
   imageUrl?: string;
 }
@@ -205,9 +210,22 @@ interface Application {
   id: number;
   positionId: number;
   userId: number;
-  status: 'pending' | string;
+  status: 'pending' | 'accepted' | 'rejected';
+  message?: string;
+  statusUpdatedAt?: string;
   createdAt: string;
   user?: User | null;
+}
+
+interface UserApplication extends Application {
+  position?: {
+    id: number;
+    title: string;
+    authorId: number;
+    closedAt?: string | null;
+  } | null;
+  organizationId?: number | null;
+  organizationName?: string | null;
 }
 
 interface AccountRef {

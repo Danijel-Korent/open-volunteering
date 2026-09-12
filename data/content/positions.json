@@ -110,5 +110,18 @@
         "location": null,
         "likeCount": 0,
         "createdAt": "2026-09-07T08:24:51+02:00"
+    },
+    {
+        "id": 9,
+        "authorType": "organization",
+        "authorId": 1,
+        "title": "E2E Workflow Position",
+        "description": "Created during automated browser test.",
+        "category": "general",
+        "remote": false,
+        "location": null,
+        "likeCount": 0,
+        "createdAt": "2026-09-12T17:46:19+02:00",
+        "closedAt": "2026-09-12T18:50:54+02:00"
     }
 ]

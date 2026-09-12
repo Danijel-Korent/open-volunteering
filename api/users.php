@@ -14,6 +14,49 @@ if ($sub === 'me' && $subAction === 'memberships' && method() === 'GET') {
     exit;
 }
 
+if ($sub === 'me' && $subAction === 'applications' && method() === 'GET') {
+    $userId = requireUserSession();
+    $applications = readJson(APPLICATIONS_JSON);
+    $organizations = readOrganizations();
+    $mine = array_values(array_filter(
+        $applications,
+        fn($a) => (int) ($a['userId'] ?? $a['volunteerId'] ?? 0) === $userId,
+    ));
+    usort($mine, fn($a, $b) => strcmp($b['createdAt'], $a['createdAt']));
+
+    $result = [];
+    foreach ($mine as $app) {
+        $positionId = (int) ($app['positionId'] ?? 0);
+        $position = findPositionById($positionId);
+        $organizationId = null;
+        $organizationName = null;
+        if ($position !== null && ($position['authorType'] ?? '') === 'organization') {
+            $organizationId = (int) ($position['authorId'] ?? 0);
+            $org = findOrganization($organizations, $organizationId);
+            if ($org !== null) {
+                $organizationName = (string) ($org['name'] ?? '');
+            }
+        }
+        $positionSummary = null;
+        if ($position !== null) {
+            $positionSummary = [
+                'id' => (int) $position['id'],
+                'title' => (string) ($position['title'] ?? ''),
+                'authorId' => (int) ($position['authorId'] ?? 0),
+                'closedAt' => $position['closedAt'] ?? null,
+            ];
+        }
+        $result[] = [
+            ...$app,
+            'position' => $positionSummary,
+            'organizationId' => $organizationId,
+            'organizationName' => $organizationName,
+        ];
+    }
+    jsonResponse($result);
+    exit;
+}
+
 if ($id === null && method() === 'GET') {
     jsonResponse(array_map('publicUser', $users));
     exit;

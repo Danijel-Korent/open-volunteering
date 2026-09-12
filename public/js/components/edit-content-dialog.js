@@ -113,14 +113,24 @@ export function mergeFeedItemFromApi(original, apiEntity) {
   }
   if (original.feedType === 'position') {
     const position = /** @type {Position} */ (apiEntity);
-    return {
+    /** @type {FeedItem} */
+    const merged = {
       ...original,
       title: position.title,
       content: position.description,
       category: position.category,
       remote: position.remote,
       location: position.location ?? null,
+      closed: Boolean(position.closedAt),
     };
+    if (position.imageFileId) {
+      merged.imageFileId = position.imageFileId;
+      merged.imageUrl = api.fileContentUrl(position.imageFileId);
+    } else {
+      delete merged.imageFileId;
+      delete merged.imageUrl;
+    }
+    return merged;
   }
   const event = /** @type {VolEvent} */ (apiEntity);
   return {
@@ -180,6 +190,7 @@ export function showEditFeedItemDialog(item) {
         <div class="form-group"><label>Category</label><input data-testid="edit-position-category" value="${escapeHtml(item.category || 'general')}"></div>
         <div class="form-group"><label><input type="checkbox" data-testid="edit-position-remote" ${item.remote ? 'checked' : ''}> Remote</label></div>
         <div id="edit-position-location-mount" ${item.remote ? 'hidden' : ''}>${locationFieldsHtml('edit-position', item.location)}</div>
+        <div id="edit-position-dropzone-mount"></div>
       `;
     }
 
@@ -200,6 +211,9 @@ export function showEditFeedItemDialog(item) {
     /** @type {number | undefined} */
     const initialPostImageId = item.imageFileId;
     let postImageRemoved = false;
+    /** @type {number | undefined} */
+    const initialPositionImageId = item.imageFileId;
+    let positionImageRemoved = false;
 
     const submitBtn = overlay.querySelector('[data-testid="edit-content-submit"]');
     const cancelBtn = overlay.querySelector('[data-testid="edit-content-cancel"]');
@@ -250,6 +264,25 @@ export function showEditFeedItemDialog(item) {
         if (!(locMount instanceof HTMLElement) || !(remoteCheck instanceof HTMLInputElement)) return;
         locMount.hidden = remoteCheck.checked;
       });
+      const posMount = overlay.querySelector('#edit-position-dropzone-mount');
+      if (posMount instanceof HTMLElement) {
+        postDropzone = setupImageDropzone(posMount, {
+          dropzoneTestId: 'edit-position-dropzone',
+          fileInputTestId: 'edit-position-file-input',
+          previewTestId: 'edit-position-image-preview',
+          label: 'Photo — drop here or tap',
+          initialFileId: item.imageFileId,
+          removeDeletesFile: false,
+          onChange: ({ fileId }) => {
+            if (initialPositionImageId && fileId === null) {
+              positionImageRemoved = true;
+            } else if (fileId !== null) {
+              positionImageRemoved = false;
+            }
+            updateSaveDisabled();
+          },
+        });
+      }
     }
 
     const close = (/** @type {FeedItem | null} */ result) => {
@@ -327,13 +360,23 @@ export function showEditFeedItemDialog(item) {
             return;
           }
           const location = remote ? null : readLocationFromForm(overlay, 'edit-position');
-          apiEntity = await api.updatePosition(item.id, {
+          /** @type {Partial<Position> & { imageFileId?: number | null }} */
+          const payload = {
             title,
             description,
             category,
             remote,
             location,
-          });
+          };
+          const fileId = postDropzone?.getFileId() ?? null;
+          if (positionImageRemoved && !fileId) {
+            payload.imageFileId = null;
+          } else if (fileId && fileId !== initialPositionImageId) {
+            payload.imageFileId = fileId;
+          } else if (positionImageRemoved) {
+            payload.imageFileId = null;
+          }
+          apiEntity = await api.updatePosition(item.id, payload);
         }
         close(mergeFeedItemFromApi(item, apiEntity));
       } catch (err) {
