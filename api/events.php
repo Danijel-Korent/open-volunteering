@@ -8,6 +8,7 @@ $sub = $segments[2] ?? '';
 if ($id === null && method() === 'GET') {
     $events = readJson(EVENTS_JSON);
     usort($events, fn($a, $b) => strcmp($a['startDate'], $b['startDate']));
+    $events = enrichEventsWithMyRsvp($events);
     jsonResponse($events);
     exit;
 }
@@ -25,6 +26,10 @@ if ($id === null && method() === 'POST') {
         jsonResponse(['error' => 'Title, description, and startDate are required'], 400);
         exit;
     }
+    $imageFileId = isset($input['imageFileId']) ? (int) $input['imageFileId'] : null;
+    if ($imageFileId) {
+        requireAttachableFile($imageFileId, $auth['type'], $auth['id']);
+    }
     $events = readJson(EVENTS_JSON);
     $event = [
         'id' => nextId($events),
@@ -39,8 +44,14 @@ if ($id === null && method() === 'POST') {
         'likeCount' => 0,
         'createdAt' => date('c'),
     ];
+    if ($imageFileId) {
+        $event['imageFileId'] = $imageFileId;
+    }
     $events[] = $event;
     writeJson(EVENTS_JSON, $events);
+    if ($imageFileId) {
+        attachFileTo($imageFileId, 'event', (int) $event['id']);
+    }
     notifyProfileFollowersOnNewContent(
         'event',
         $auth['type'],
@@ -48,6 +59,36 @@ if ($id === null && method() === 'POST') {
         (int) $event['id'],
     );
     jsonResponse($event, 201);
+    exit;
+}
+
+if ($id !== null && $sub === 'rsvps' && method() === 'GET') {
+    $event = findEventById($id);
+    if ($event === null) {
+        jsonResponse(['error' => 'Event not found'], 404);
+        exit;
+    }
+    requireContentAuthorSession($event);
+    jsonResponse(listEventRsvpsGrouped($id));
+    exit;
+}
+
+if ($id !== null && $sub === 'rsvp' && method() === 'DELETE') {
+    $auth = requireAuth();
+    $event = findEventById($id);
+    if ($event === null) {
+        jsonResponse(['error' => 'Event not found'], 404);
+        exit;
+    }
+    $rsvps = readJson(EVENT_RSVPS_JSON);
+    $rsvps = array_values(array_filter(
+        $rsvps,
+        fn($r) => (int) ($r['eventId'] ?? 0) !== $id
+            || ($r['accountType'] ?? 'user') !== $auth['type']
+            || (int) ($r['accountId'] ?? 0) !== $auth['id'],
+    ));
+    writeJson(EVENT_RSVPS_JSON, $rsvps);
+    jsonResponse(['ok' => true, 'eventId' => $id]);
     exit;
 }
 
@@ -59,16 +100,13 @@ if ($id !== null && $sub === 'rsvp' && method() === 'POST') {
         jsonResponse(['error' => 'Status must be going or maybe'], 400);
         exit;
     }
-    $events = readJson(EVENTS_JSON);
-    $found = false;
-    foreach ($events as $e) {
-        if ((int) $e['id'] === $id) {
-            $found = true;
-            break;
-        }
-    }
-    if (!$found) {
+    $event = findEventById($id);
+    if ($event === null) {
         jsonResponse(['error' => 'Event not found'], 404);
+        exit;
+    }
+    if (eventIsCancelled($event)) {
+        jsonResponse(['error' => 'This event is cancelled'], 403);
         exit;
     }
     $rsvps = readJson(EVENT_RSVPS_JSON);
@@ -135,6 +173,7 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
     }
     $event = $events[$idx];
     requireContentAuthorSession($event);
+    $auth = requireAuth();
     $input = getJsonInput();
 
     $allowed = ['title', 'description', 'startDate', 'endDate', 'locationType', 'location'];
@@ -160,6 +199,33 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
             continue;
         }
         $events[$idx][$field] = $input[$field];
+    }
+
+    if (array_key_exists('cancelled', $input)) {
+        if ((bool) $input['cancelled']) {
+            $events[$idx]['cancelledAt'] = date('c');
+        } else {
+            unset($events[$idx]['cancelledAt']);
+        }
+    }
+
+    if (array_key_exists('imageFileId', $input)) {
+        $imageFileId = $input['imageFileId'] !== null ? (int) $input['imageFileId'] : null;
+        if ($imageFileId === null || $imageFileId === 0) {
+            $oldImageId = isset($events[$idx]['imageFileId']) ? (int) $events[$idx]['imageFileId'] : null;
+            if ($oldImageId) {
+                deleteStoredFile($oldImageId);
+            }
+            unset($events[$idx]['imageFileId']);
+        } else {
+            requireAttachableFile($imageFileId, $auth['type'], $auth['id']);
+            $oldImageId = isset($events[$idx]['imageFileId']) ? (int) $events[$idx]['imageFileId'] : null;
+            if ($oldImageId && $oldImageId !== $imageFileId) {
+                deleteStoredFile($oldImageId);
+            }
+            $events[$idx]['imageFileId'] = $imageFileId;
+            attachFileTo($imageFileId, 'event', $id);
+        }
     }
 
     $title = trim((string) ($events[$idx]['title'] ?? ''));
@@ -193,6 +259,10 @@ if ($id !== null && $sub === '' && method() === 'DELETE') {
     $event = $events[$idx];
     requireContentAuthorSession($event);
     purgeContentTarget('event', $id);
+    $imageFileId = isset($event['imageFileId']) ? (int) $event['imageFileId'] : 0;
+    if ($imageFileId > 0) {
+        deleteStoredFile($imageFileId);
+    }
     array_splice($events, $idx, 1);
     writeJson(EVENTS_JSON, array_values($events));
     jsonResponse(['ok' => true]);

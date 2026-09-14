@@ -60,4 +60,8 @@ Prefer `data-testid` attributes:
 - `org-applicants-section`, `org-availability-section`, `btn-accept-applicant-{userId}`, `btn-reject-applicant-{userId}`
 - `apply-position-dialog`, `apply-position-message`, `apply-position-submit`, `apply-position-cancel`, `btn-apply-{positionId}`
 - `post-card-menu-close-position-{id}`, `post-card-menu-reopen-position-{id}`, `position-closed-badge`
+- `btn-rsvp-going-{id}`, `btn-rsvp-maybe-{id}`, `event-rsvp-mount-{id}`, `calendar-rsvp-going-{id}`, `calendar-rsvp-maybe-{id}`, `calendar-rsvp-mount-{id}`
+- `post-card-menu-cancel-event-{id}`, `post-card-menu-reopen-event-{id}`, `event-cancelled-badge`
+- `org-event-rsvps-section`, `user-event-rsvps-section`, `event-rsvp-block-{eventId}`, `event-rsvp-going-{accountType}-{accountId}`, `event-rsvp-maybe-{accountType}-{accountId}`
+- `event-create-dropzone`, `event-create-file-input`, `event-create-image-preview`, `edit-event-dropzone`, `edit-event-file-input`, `edit-event-image-preview`
 - `user-applications-section`, `user-application-{id}`, `position-create-dropzone`, `position-create-file-input`

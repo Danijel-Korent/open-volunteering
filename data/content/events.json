@@ -135,5 +135,22 @@
         "location": null,
         "likeCount": 0,
         "createdAt": "2026-09-10T08:20:45+02:00"
+    },
+    {
+        "id": 10,
+        "authorType": "organization",
+        "authorId": 4,
+        "title": "E2E Workflow Event",
+        "description": "Browser test event for RSVP workflow",
+        "startDate": "2026-09-20T08:00:00.000Z",
+        "endDate": "2026-09-20T08:00:00.000Z",
+        "locationType": "physical",
+        "location": {
+            "label": "Test Park",
+            "lat": 0,
+            "lng": 0
+        },
+        "likeCount": 0,
+        "createdAt": "2026-09-14T09:16:30+02:00"
     }
 ]

@@ -354,12 +354,14 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| GET | `/api/events` | No | List events (sorted by `startDate`) |
-| POST | `/api/events` | Yes | Body: `title`, `description`, `startDate`, optional `endDate`, `locationType`, `location` |
-| POST | `/api/events/{id}/rsvp` | Yes | Body: `status` (`going` \| `maybe`) |
+| GET | `/api/events` | No | List events (sorted by `startDate`); when logged in each row includes `myRsvp` (`going` \| `maybe` \| omitted) |
+| POST | `/api/events` | Yes | Body: `title`, `description`, `startDate`, optional `endDate`, `locationType`, `location`, `imageFileId` |
+| GET | `/api/events/{id}/rsvps` | Yes (event author) | `{ eventId, going: [...], maybe: [...] }` with attendee `name` |
+| POST | `/api/events/{id}/rsvp` | Yes | Body: `status` (`going` \| `maybe`); rejected when event has `cancelledAt` |
+| DELETE | `/api/events/{id}/rsvp` | Yes | Clear active account RSVP (idempotent) |
 | POST | `/api/events/{id}/like` | Yes | Increment like count |
-| PATCH | `/api/events/{id}` | Yes (author) | Body: `title`, `description`, `startDate`, optional `endDate`, `locationType`, `location` |
-| DELETE | `/api/events/{id}` | Yes (author) | Remove event; `purgeContentTarget('event', id)` |
+| PATCH | `/api/events/{id}` | Yes (author) | Body: `title`, `description`, `startDate`, optional `endDate`, `locationType`, `location`, `imageFileId`, `cancelled` (bool → `cancelledAt`) |
+| DELETE | `/api/events/{id}` | Yes (author) | Remove event and image file; `purgeContentTarget('event', id)` |
 
 ### comments — `/api/comments`
 

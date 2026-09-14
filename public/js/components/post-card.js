@@ -13,6 +13,7 @@ import {
 import { showConfirmDialog } from './confirm-dialog.js';
 import { showEditFeedItemDialog } from './edit-content-dialog.js';
 import { applyToPositionWithDialog } from './apply-position-dialog.js';
+import { mountEventRsvpControls } from './event-rsvp-controls.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -183,6 +184,35 @@ function mergePositionIntoFeedItem(item, position) {
 }
 
 /**
+ * Merge event API fields into a feed card item.
+ *
+ * @param {FeedItem} item
+ * @param {VolEvent} event
+ * @returns {FeedItem}
+ */
+function mergeEventIntoFeedItem(item, event) {
+  /** @type {FeedItem} */
+  const merged = {
+    ...item,
+    title: event.title,
+    content: event.description,
+    startDate: event.startDate,
+    endDate: event.endDate,
+    locationType: event.locationType,
+    location: event.location ?? null,
+    cancelled: Boolean(event.cancelledAt),
+  };
+  if (event.imageFileId) {
+    merged.imageFileId = event.imageFileId;
+    merged.imageUrl = api.fileContentUrl(event.imageFileId);
+  } else {
+    delete merged.imageFileId;
+    delete merged.imageUrl;
+  }
+  return merged;
+}
+
+/**
  * Whether the logged-in account authored this feed item.
  *
  * @param {Account | null | undefined} user
@@ -257,6 +287,7 @@ export function renderPostCard(item, opts = {}) {
       <div class="post-card-headline">
         <a class="post-author" href="${authorLink}">${escapeHtml(authorName)}</a>
         ${item.closed ? '<span class="position-status-badge" data-testid="position-closed-badge">Closed</span>' : ''}
+        ${item.cancelled ? '<span class="position-status-badge" data-testid="event-cancelled-badge">Cancelled</span>' : ''}
         <div class="post-meta-line">${buildMetaSubline(item)}</div>
       </div>
     </div>
@@ -330,6 +361,26 @@ export function renderPostCard(item, opts = {}) {
               api.showToast(closing ? 'Position closed' : 'Position reopened');
             } catch (err) {
               api.showToast(err instanceof Error ? err.message : 'Failed to update position');
+            }
+          },
+        }));
+      }
+      if (item.feedType === 'event') {
+        const cancelling = !item.cancelled;
+        menuItems.push(createActionMenuItem({
+          testId: cancelling
+            ? `post-card-menu-cancel-event-${item.id}`
+            : `post-card-menu-reopen-event-${item.id}`,
+          label: cancelling ? 'Cancel event' : 'Reopen event',
+          onClick: async () => {
+            try {
+              const event = await api.updateEvent(item.id, { cancelled: cancelling });
+              const updated = mergeEventIntoFeedItem(item, event);
+              const newCard = renderPostCard(updated, opts);
+              card.replaceWith(newCard);
+              api.showToast(cancelling ? 'Event cancelled' : 'Event reopened');
+            } catch (err) {
+              api.showToast(err instanceof Error ? err.message : 'Failed to update event');
             }
           },
         }));
@@ -465,17 +516,23 @@ export function renderPostCard(item, opts = {}) {
     }
 
     if (item.feedType === 'event' && user) {
-      ['going', 'maybe'].forEach((status) => {
-        const rsvpBtn = document.createElement('button');
-        rsvpBtn.type = 'button';
-        rsvpBtn.className = 'post-action-btn';
-        rsvpBtn.dataset.testid = `btn-rsvp-${status}-${item.id}`;
-        rsvpBtn.textContent = status === 'going' ? 'Going' : 'Maybe';
-        rsvpBtn.addEventListener('click', async () => {
-          await api.rsvpEvent(item.id, { status });
-          api.showToast(`Marked as ${status}`);
-        });
-        secondaryRow.appendChild(rsvpBtn);
+      const rsvpMount = document.createElement('div');
+      rsvpMount.dataset.testid = `event-rsvp-mount-${item.id}`;
+      secondaryRow.appendChild(rsvpMount);
+      /** @type {FeedItem} */
+      const rsvpItem = { ...item };
+      mountEventRsvpControls(rsvpMount, {
+        eventId: item.id,
+        myRsvp: item.myRsvp ?? null,
+        cancelled: Boolean(item.cancelled),
+        onChange: (myRsvp) => {
+          if (myRsvp) {
+            rsvpItem.myRsvp = myRsvp;
+          } else {
+            delete rsvpItem.myRsvp;
+          }
+          item.myRsvp = rsvpItem.myRsvp;
+        },
       });
     }
 

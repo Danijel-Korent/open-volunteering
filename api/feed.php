@@ -84,7 +84,7 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
             continue;
         }
         $author = resolveAuthor($maps, $itemAuthorType, $itemAuthorId);
-        $items[] = [
+        $item = [
             'feedType' => 'event',
             'id' => (int) $e['id'],
             'authorType' => $itemAuthorType,
@@ -99,6 +99,15 @@ function buildFeedItems(?string $authorType = null, ?int $authorId = null): arra
             'likeCount' => $e['likeCount'] ?? 0,
             'createdAt' => $e['createdAt'],
         ];
+        if (!empty($e['cancelledAt'])) {
+            $item['cancelled'] = true;
+        }
+        if (!empty($e['imageFileId'])) {
+            $imageFileId = (int) $e['imageFileId'];
+            $item['imageFileId'] = $imageFileId;
+            $item['imageUrl'] = fileContentUrl($imageFileId);
+        }
+        $items[] = $item;
     }
 
     return $items;
@@ -227,6 +236,22 @@ if ($account !== null && $account['type'] === 'user') {
         } elseif ($status === 'rejected') {
             $item['hasApplied'] = false;
             $item['applicationStatus'] = 'rejected';
+        }
+    }
+    unset($item);
+}
+
+$activeAccount = getActiveAccount();
+if ($activeAccount !== null) {
+    $accountType = (string) $activeAccount['type'];
+    $accountId = (int) $activeAccount['id'];
+    foreach ($paged as &$item) {
+        if ($item['feedType'] !== 'event') {
+            continue;
+        }
+        $status = findEventRsvpStatusForAccount((int) $item['id'], $accountType, $accountId);
+        if ($status !== null) {
+            $item['myRsvp'] = $status;
         }
     }
     unset($item);

@@ -413,9 +413,26 @@ export async function createEvent(data) {
   return /** @type {Promise<VolEvent>} */ (request('events', { method: 'POST', body: JSON.stringify(data) }));
 }
 
-/** RSVP to an event. @param {number} id @param {{ status: string }} data @returns {Promise<unknown>} */
+/** RSVP to an event. @param {number} id @param {{ status: 'going' | 'maybe' }} data @returns {Promise<unknown>} */
 export async function rsvpEvent(id, data) {
   return request(`events/${id}/rsvp`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+/** Clear the current account's RSVP on an event. @param {number} id @returns {Promise<{ ok: boolean, eventId: number }>} */
+export async function clearEventRsvp(id) {
+  return /** @type {Promise<{ ok: boolean, eventId: number }>} */ (
+    request(`events/${id}/rsvp`, { method: 'DELETE' })
+  );
+}
+
+/**
+ * List RSVPs for an event (event author only).
+ *
+ * @param {number} id
+ * @returns {Promise<EventRsvpLists>}
+ */
+export async function getEventRsvps(id) {
+  return /** @type {Promise<EventRsvpLists>} */ (request(`events/${id}/rsvps`));
 }
 
 /** Increment like count on an event. @param {number} id @returns {Promise<VolEvent>} */

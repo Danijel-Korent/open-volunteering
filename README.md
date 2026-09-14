@@ -67,7 +67,8 @@ A social-network-like web page where people/organizations could perform the foll
 - organizations can message position applicants and volunteers who offered skills from their profile
 - organizations and volunteers can create events (some activity/actions with specific date/range, and physical or online location)
 - volunteer can subscribe for new volunteering positions and events from organizations
-- organizations and volunteer can set going/maybe on the events
+- organizations and volunteers can set going/maybe on events (tap the active choice again to clear RSVP)
+- event authors can cancel or reopen an event (cancelled events stay on the feed but are hidden from the calendar)
 - organizations and volunteer can see a calendar page with list of events happening in next 12 months
 - organizations and volunteer can create a project page which contains description of a project and news posts about it
 - Users and organizations can offer skills on posts, positions, events, and organization targets from the feed

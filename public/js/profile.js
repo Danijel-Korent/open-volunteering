@@ -5,6 +5,7 @@ import { renderAvatarHtml, setupImageDropzone } from './components/image-dropzon
 import { renderPostCard } from './components/post-card.js';
 import { startDirectMessage } from './messages.js';
 import { applyProfileDeepLinks } from './route-utils.js';
+import { mountEventCreateForm } from './components/event-create-form.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -188,6 +189,10 @@ async function renderOwnVolunteerProfile(container, user) {
       <h3>Skill offers on my content</h3>
       <div id="user-inbound-skill-offers-list"><p class="empty-state">Loading…</p></div>
     </div>
+    <div class="profile-section" data-testid="user-event-rsvps-section">
+      <h3>Event attendees</h3>
+      <div id="user-event-rsvps-list"><p class="empty-state">Loading…</p></div>
+    </div>
     <h2 class="page-title" style="font-size:1rem">Your feed</h2>
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
@@ -239,7 +244,7 @@ async function renderOwnVolunteerProfile(container, user) {
     api.showToast('Profile saved!');
   });
 
-  setupVolunteerEventForm(container);
+  setupVolunteerEventForm(container, user.id);
   setupSubscriptions(container);
   await setupUserMembershipsSection(container, user.id);
   container.querySelector('[data-testid="btn-create-organization"]')?.addEventListener('click', () => {
@@ -247,6 +252,7 @@ async function renderOwnVolunteerProfile(container, user) {
   });
   await loadUserApplications(container);
   await loadUserSkillOfferSections(container, user.id);
+  await loadAuthorEventRsvpSection(container, 'user', user.id, 'user-event-rsvps-list');
   await loadProfileFeed('user', user.id);
   await applyProfileDeepLinks();
 }
@@ -542,6 +548,10 @@ async function renderOwnOrganizationProfile(container, org) {
       <h3>Position applicants</h3>
       <div id="org-applicants-list"><p class="empty-state">Loading…</p></div>
     </div>
+    <div class="profile-section" data-testid="org-event-rsvps-section">
+      <h3>Event attendees</h3>
+      <div id="org-event-rsvps-list"><p class="empty-state">Loading…</p></div>
+    </div>
     <div class="profile-section" data-testid="org-availability-section">
       <h3>Skill offers</h3>
       <div id="org-availability-list"><p class="empty-state">Loading…</p></div>
@@ -598,6 +608,7 @@ async function renderOwnOrganizationProfile(container, org) {
   setupOrgForms(container, org.id);
   await setupOrgMemberManagement(container, org);
   await loadOrgMessagingSections(container, org.id);
+  await loadAuthorEventRsvpSection(container, 'organization', org.id, 'org-event-rsvps-list');
   await loadProfileFeed('organization', org.id);
   await applyProfileDeepLinks();
 }
@@ -667,36 +678,17 @@ function renderSubscriptionsSection() {
  * Wire up the create-event form for volunteers on their own profile.
  *
  * @param {HTMLElement} container
+ * @param {number} userId
  */
-function setupVolunteerEventForm(container) {
+function setupVolunteerEventForm(container, userId) {
   const mount = container.querySelector('#org-form-mount');
   container.querySelector('[data-testid="btn-create-event-form"]')?.addEventListener('click', () => {
-    if (!mount) return;
-    mount.innerHTML = `
-      <div class="profile-form" data-testid="event-form">
-        <h3>Create event</h3>
-        <div class="form-group"><label>Title</label><input id="evt-title" data-testid="event-title"></div>
-        <div class="form-group"><label>Description</label><textarea id="evt-desc" data-testid="event-description"></textarea></div>
-        <div class="form-group"><label>Start date</label><input type="datetime-local" id="evt-start" data-testid="event-start"></div>
-        <div class="form-group"><label>Location type</label>
-          <select id="evt-loc-type" data-testid="event-location-type">
-            <option value="physical">Physical</option>
-            <option value="online">Online</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" data-testid="event-submit">Create</button>
-      </div>
-    `;
-    mount.querySelector('[data-testid="event-submit"]')?.addEventListener('click', async () => {
-      const start = /** @type {HTMLInputElement} */ (document.getElementById('evt-start')).value;
-      await api.createEvent({
-        title: /** @type {HTMLInputElement} */ (document.getElementById('evt-title')).value,
-        description: /** @type {HTMLTextAreaElement} */ (document.getElementById('evt-desc')).value,
-        startDate: new Date(start).toISOString(),
-        locationType: /** @type {'physical' | 'online'} */ (/** @type {HTMLSelectElement} */ (document.getElementById('evt-loc-type')).value),
-      });
-      api.showToast('Event created!');
-      mount.innerHTML = '';
+    if (!(mount instanceof HTMLElement)) return;
+    mountEventCreateForm(mount, {
+      onSuccess: async () => {
+        await loadAuthorEventRsvpSection(container, 'user', userId, 'user-event-rsvps-list');
+        await loadProfileFeed('user', userId);
+      },
     });
   });
 }
@@ -760,32 +752,12 @@ async function setupOrgForms(container, orgId) {
   });
 
   container.querySelector('[data-testid="btn-create-event-form"]')?.addEventListener('click', () => {
-    if (!mount) return;
-    mount.innerHTML = `
-      <div class="profile-form" data-testid="event-form">
-        <h3>Create event</h3>
-        <div class="form-group"><label>Title</label><input id="evt-title" data-testid="event-title"></div>
-        <div class="form-group"><label>Description</label><textarea id="evt-desc" data-testid="event-description"></textarea></div>
-        <div class="form-group"><label>Start date</label><input type="datetime-local" id="evt-start" data-testid="event-start"></div>
-        <div class="form-group"><label>Location type</label>
-          <select id="evt-loc-type" data-testid="event-location-type">
-            <option value="physical">Physical</option>
-            <option value="online">Online</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" data-testid="event-submit">Create</button>
-      </div>
-    `;
-    mount.querySelector('[data-testid="event-submit"]')?.addEventListener('click', async () => {
-      const start = /** @type {HTMLInputElement} */ (document.getElementById('evt-start')).value;
-      await api.createEvent({
-        title: /** @type {HTMLInputElement} */ (document.getElementById('evt-title')).value,
-        description: /** @type {HTMLTextAreaElement} */ (document.getElementById('evt-desc')).value,
-        startDate: new Date(start).toISOString(),
-        locationType: /** @type {'physical' | 'online'} */ (/** @type {HTMLSelectElement} */ (document.getElementById('evt-loc-type')).value),
-      });
-      api.showToast('Event created!');
-      mount.innerHTML = '';
+    if (!(mount instanceof HTMLElement)) return;
+    mountEventCreateForm(mount, {
+      onSuccess: async () => {
+        await loadAuthorEventRsvpSection(container, 'organization', orgId, 'org-event-rsvps-list');
+        await loadProfileFeed('organization', orgId);
+      },
     });
   });
 
@@ -1142,6 +1114,76 @@ async function renderPublicOrganizationProfile(container, org) {
 }
 
 /**
+ * Render attendee names for one RSVP bucket.
+ *
+ * @param {EventRsvpAttendee[]} attendees
+ * @param {'going' | 'maybe'} bucket
+ * @returns {string}
+ */
+function renderEventRsvpAttendeeList(attendees, bucket) {
+  if (attendees.length === 0) {
+    return '';
+  }
+  return `
+    <h5>${bucket === 'going' ? 'Going' : 'Maybe'}</h5>
+    <ul class="org-messaging-list">
+      ${attendees.map((a) => `
+        <li data-testid="event-rsvp-${bucket}-${a.accountType}-${a.accountId}">
+          ${escapeHtml(a.name)}
+        </li>
+      `).join('')}
+    </ul>
+  `;
+}
+
+/**
+ * Load RSVP attendee lists for events authored by the current profile.
+ *
+ * @param {HTMLElement} container
+ * @param {'user' | 'organization'} authorType
+ * @param {number} authorId
+ * @param {string} listElementId
+ * @returns {Promise<void>}
+ */
+async function loadAuthorEventRsvpSection(container, authorType, authorId, listElementId) {
+  const listEl = container.querySelector(`#${listElementId}`);
+  if (!listEl) return;
+
+  try {
+    const events = await api.getEvents();
+    const authored = events.filter((e) => {
+      const rawType = String(e.authorType);
+      const type = rawType === 'volunteer' ? 'user' : rawType;
+      return type === authorType && e.authorId === authorId;
+    });
+    if (authored.length === 0) {
+      listEl.innerHTML = '<p class="empty-state">No events yet.</p>';
+      return;
+    }
+
+    const blocks = [];
+    for (const event of authored) {
+      const lists = await api.getEventRsvps(event.id);
+      if (lists.going.length === 0 && lists.maybe.length === 0) {
+        continue;
+      }
+      blocks.push(`
+        <div class="org-list-block" data-testid="event-rsvp-block-${event.id}">
+          <h4>${escapeHtml(event.title)}</h4>
+          ${renderEventRsvpAttendeeList(lists.going, 'going')}
+          ${renderEventRsvpAttendeeList(lists.maybe, 'maybe')}
+        </div>
+      `);
+    }
+    listEl.innerHTML = blocks.length > 0
+      ? blocks.join('')
+      : '<p class="empty-state">No RSVPs yet.</p>';
+  } catch (err) {
+    listEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load'}</p>`;
+  }
+}
+
+/**
  * Load applicant and availability lists for an organization's own profile.
  *
  * @param {HTMLElement} container
@@ -1325,6 +1367,16 @@ async function loadProfileFeed(accountType, accountId) {
     feed.innerHTML = '<p class="empty-state">No posts yet.</p>';
   } else {
     data.items.forEach((item) => feed.appendChild(renderPostCard(item, { showApply: true, followedTargets })));
+  }
+
+  const profileRoot = feed.parentElement;
+  if (profileRoot instanceof HTMLElement) {
+    if (profileRoot.querySelector('#org-event-rsvps-list')) {
+      await loadAuthorEventRsvpSection(profileRoot, 'organization', accountId, 'org-event-rsvps-list');
+    }
+    if (profileRoot.querySelector('#user-event-rsvps-list')) {
+      await loadAuthorEventRsvpSection(profileRoot, 'user', accountId, 'user-event-rsvps-list');
+    }
   }
 }
 

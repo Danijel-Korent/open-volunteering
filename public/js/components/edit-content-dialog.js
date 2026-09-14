@@ -4,6 +4,7 @@
 
 import * as api from '../api.js';
 import { setupImageDropzone } from './image-dropzone.js';
+import { locationFieldsHtml, readLocationFromForm } from './location-fields.js';
 
 /**
  * Escape HTML for safe insertion into modal markup.
@@ -39,52 +40,6 @@ function isoToDatetimeLocal(iso) {
 function datetimeLocalToIso(value) {
   if (!value) return '';
   return new Date(value).toISOString();
-}
-
-/**
- * Read location fields from the edit form.
- *
- * @param {HTMLElement} root
- * @param {string} prefix
- * @returns {GeoLocation | null}
- */
-function readLocationFromForm(root, prefix) {
-  const labelEl = root.querySelector(`[data-testid="${prefix}-location-label"]`);
-  const latEl = root.querySelector(`[data-testid="${prefix}-lat"]`);
-  const lngEl = root.querySelector(`[data-testid="${prefix}-lng"]`);
-  const label = labelEl instanceof HTMLInputElement ? labelEl.value.trim() : '';
-  if (!label) return null;
-  const lat = latEl instanceof HTMLInputElement ? parseFloat(latEl.value) : 0;
-  const lng = lngEl instanceof HTMLInputElement ? parseFloat(lngEl.value) : 0;
-  return {
-    label,
-    lat: Number.isFinite(lat) ? lat : 0,
-    lng: Number.isFinite(lng) ? lng : 0,
-  };
-}
-
-/**
- * HTML for optional location fields.
- *
- * @param {string} prefix test id prefix (edit-event or edit-position)
- * @param {GeoLocation | null | undefined} location
- * @returns {string}
- */
-function locationFieldsHtml(prefix, location) {
-  return `
-    <div class="form-group">
-      <label>Location label</label>
-      <input type="text" data-testid="${prefix}-location-label" value="${escapeHtml(location?.label || '')}">
-    </div>
-    <div class="form-group">
-      <label>Latitude</label>
-      <input type="number" step="any" data-testid="${prefix}-lat" value="${location?.lat ?? ''}">
-    </div>
-    <div class="form-group">
-      <label>Longitude</label>
-      <input type="number" step="any" data-testid="${prefix}-lng" value="${location?.lng ?? ''}">
-    </div>
-  `;
 }
 
 /**
@@ -133,7 +88,8 @@ export function mergeFeedItemFromApi(original, apiEntity) {
     return merged;
   }
   const event = /** @type {VolEvent} */ (apiEntity);
-  return {
+  /** @type {FeedItem} */
+  const merged = {
     ...original,
     title: event.title,
     content: event.description,
@@ -141,7 +97,16 @@ export function mergeFeedItemFromApi(original, apiEntity) {
     endDate: event.endDate,
     locationType: event.locationType,
     location: event.location ?? null,
+    cancelled: Boolean(event.cancelledAt),
   };
+  if (event.imageFileId) {
+    merged.imageFileId = event.imageFileId;
+    merged.imageUrl = api.fileContentUrl(event.imageFileId);
+  } else {
+    delete merged.imageFileId;
+    delete merged.imageUrl;
+  }
+  return merged;
 }
 
 /**
@@ -181,6 +146,7 @@ export function showEditFeedItemDialog(item) {
           </select>
         </div>
         <div id="edit-event-location-mount" ${locType === 'online' ? 'hidden' : ''}>${locationFieldsHtml('edit-event', item.location)}</div>
+        <div id="edit-event-dropzone-mount"></div>
       `;
     } else {
       formInner = `
@@ -208,19 +174,27 @@ export function showEditFeedItemDialog(item) {
 
     /** @type {import('./image-dropzone.js').ImageDropzoneHandle | null} */
     let postDropzone = null;
+    /** @type {import('./image-dropzone.js').ImageDropzoneHandle | null} */
+    let eventDropzone = null;
     /** @type {number | undefined} */
-    const initialPostImageId = item.imageFileId;
+    const initialPostImageId = item.feedType === 'user_post' || item.feedType === 'org_post'
+      ? item.imageFileId
+      : undefined;
     let postImageRemoved = false;
     /** @type {number | undefined} */
-    const initialPositionImageId = item.imageFileId;
+    const initialPositionImageId = item.feedType === 'position' ? item.imageFileId : undefined;
     let positionImageRemoved = false;
+    /** @type {number | undefined} */
+    const initialEventImageId = item.feedType === 'event' ? item.imageFileId : undefined;
+    let eventImageRemoved = false;
 
     const submitBtn = overlay.querySelector('[data-testid="edit-content-submit"]');
     const cancelBtn = overlay.querySelector('[data-testid="edit-content-cancel"]');
 
     const updateSaveDisabled = () => {
       if (submitBtn instanceof HTMLButtonElement) {
-        submitBtn.disabled = postDropzone?.isUploading() ?? false;
+        const activeDropzone = eventDropzone ?? postDropzone;
+        submitBtn.disabled = activeDropzone?.isUploading() ?? false;
       }
     };
 
@@ -255,6 +229,25 @@ export function showEditFeedItemDialog(item) {
         if (!(locMount instanceof HTMLElement) || !(locTypeSelect instanceof HTMLSelectElement)) return;
         locMount.hidden = locTypeSelect.value === 'online';
       });
+      const evtMount = overlay.querySelector('#edit-event-dropzone-mount');
+      if (evtMount instanceof HTMLElement) {
+        eventDropzone = setupImageDropzone(evtMount, {
+          dropzoneTestId: 'edit-event-dropzone',
+          fileInputTestId: 'edit-event-file-input',
+          previewTestId: 'edit-event-image-preview',
+          label: 'Photo — drop here or tap',
+          initialFileId: item.imageFileId,
+          removeDeletesFile: false,
+          onChange: ({ fileId }) => {
+            if (initialEventImageId && fileId === null) {
+              eventImageRemoved = true;
+            } else if (fileId !== null) {
+              eventImageRemoved = false;
+            }
+            updateSaveDisabled();
+          },
+        });
+      }
     }
 
     if (item.feedType === 'position') {
@@ -338,14 +331,24 @@ export function showEditFeedItemDialog(item) {
           const location = locationType === 'online'
             ? null
             : readLocationFromForm(overlay, 'edit-event');
-          apiEntity = await api.updateEvent(item.id, {
+          /** @type {Partial<VolEvent> & { imageFileId?: number | null }} */
+          const eventPayload = {
             title,
             description,
             startDate: datetimeLocalToIso(startVal),
             endDate: endVal ? datetimeLocalToIso(endVal) : datetimeLocalToIso(startVal),
             locationType,
             location,
-          });
+          };
+          const evtFileId = eventDropzone?.getFileId() ?? null;
+          if (eventImageRemoved && !evtFileId) {
+            eventPayload.imageFileId = null;
+          } else if (evtFileId && evtFileId !== initialEventImageId) {
+            eventPayload.imageFileId = evtFileId;
+          } else if (eventImageRemoved) {
+            eventPayload.imageFileId = null;
+          }
+          apiEntity = await api.updateEvent(item.id, eventPayload);
         } else {
           const titleEl = overlay.querySelector('[data-testid="edit-position-title"]');
           const descEl = overlay.querySelector('[data-testid="edit-position-description"]');

@@ -1210,6 +1210,128 @@ function findEventById(int $eventId): ?array {
 }
 
 /**
+ * Whether an event is cancelled (has cancelledAt set).
+ *
+ * @param array<string, mixed> $event
+ */
+function eventIsCancelled(array $event): bool {
+    return !empty($event['cancelledAt']);
+}
+
+/**
+ * Find RSVP status for an account on an event.
+ *
+ * @param int $eventId
+ * @param string $accountType user|organization
+ * @param int $accountId
+ * @return 'going'|'maybe'|null
+ */
+function findEventRsvpStatusForAccount(int $eventId, string $accountType, int $accountId): ?string {
+    foreach (readJson(EVENT_RSVPS_JSON) as $r) {
+        if ((int) ($r['eventId'] ?? 0) !== $eventId) {
+            continue;
+        }
+        if (($r['accountType'] ?? 'user') !== $accountType) {
+            continue;
+        }
+        if ((int) ($r['accountId'] ?? 0) !== $accountId) {
+            continue;
+        }
+        $status = (string) ($r['status'] ?? '');
+        if (in_array($status, ['going', 'maybe'], true)) {
+            return $status;
+        }
+    }
+    return null;
+}
+
+/**
+ * Public summary for an RSVP account (name + ids).
+ *
+ * @param string $accountType user|organization
+ * @param int $accountId
+ * @return array{accountType: string, accountId: int, name: string}|null
+ */
+function publicRsvpAccountSummary(string $accountType, int $accountId): ?array {
+    if ($accountType === 'organization') {
+        $org = findOrganization(readOrganizations(), $accountId);
+        if ($org === null) {
+            return null;
+        }
+        return [
+            'accountType' => 'organization',
+            'accountId' => $accountId,
+            'name' => (string) ($org['name'] ?? "Organization #{$accountId}"),
+        ];
+    }
+    $user = findUser(readUsers(), $accountId);
+    if ($user === null) {
+        return null;
+    }
+    return [
+        'accountType' => 'user',
+        'accountId' => $accountId,
+        'name' => (string) ($user['name'] ?? "User #{$accountId}"),
+    ];
+}
+
+/**
+ * List RSVPs for an event grouped by status.
+ *
+ * @param int $eventId
+ * @return array{eventId: int, going: array<int, array<string, mixed>>, maybe: array<int, array<string, mixed>>}
+ */
+function listEventRsvpsGrouped(int $eventId): array {
+    $going = [];
+    $maybe = [];
+    foreach (readJson(EVENT_RSVPS_JSON) as $r) {
+        if ((int) ($r['eventId'] ?? 0) !== $eventId) {
+            continue;
+        }
+        $accountType = (string) ($r['accountType'] ?? 'user');
+        $accountId = (int) ($r['accountId'] ?? 0);
+        $summary = publicRsvpAccountSummary($accountType, $accountId);
+        if ($summary === null) {
+            continue;
+        }
+        $status = (string) ($r['status'] ?? '');
+        if ($status === 'going') {
+            $going[] = $summary;
+        } elseif ($status === 'maybe') {
+            $maybe[] = $summary;
+        }
+    }
+    return [
+        'eventId' => $eventId,
+        'going' => $going,
+        'maybe' => $maybe,
+    ];
+}
+
+/**
+ * Attach myRsvp to event records for the active session account.
+ *
+ * @param array<int, array<string, mixed>> $events
+ * @return array<int, array<string, mixed>>
+ */
+function enrichEventsWithMyRsvp(array $events): array {
+    $account = getActiveAccount();
+    if ($account === null) {
+        return $events;
+    }
+    $accountType = (string) $account['type'];
+    $accountId = (int) $account['id'];
+    foreach ($events as $i => $event) {
+        $events[$i]['myRsvp'] = findEventRsvpStatusForAccount(
+            (int) ($event['id'] ?? 0),
+            $accountType,
+            $accountId,
+        );
+    }
+    return $events;
+}
+
+/**
  * Resolve the user inbox id for a follow record (profile or content follow).
  *
  * @param array<string, mixed> $follow

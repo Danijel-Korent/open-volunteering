@@ -1,5 +1,6 @@
 import * as api from './api.js';
 import { getCurrentUser } from './auth.js';
+import { mountEventRsvpControls } from './components/event-rsvp-controls.js';
 
 /**
  * Escape HTML special characters in a string.
@@ -11,6 +12,16 @@ function escapeHtml(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
+}
+
+/**
+ * Whether an event is cancelled.
+ *
+ * @param {VolEvent} e
+ * @returns {boolean}
+ */
+function eventIsCancelled(e) {
+  return Boolean(e.cancelled || e.cancelledAt);
 }
 
 /**
@@ -37,6 +48,9 @@ export async function renderCalendar(container) {
     oneYear.setFullYear(oneYear.getFullYear() + 1);
 
     const filtered = events.filter((e) => {
+      if (eventIsCancelled(e)) {
+        return false;
+      }
       const start = new Date(e.startDate);
       return start >= now && start <= oneYear;
     });
@@ -70,24 +84,25 @@ export async function renderCalendar(container) {
           <h4 class="post-title">${escapeHtml(e.title)}</h4>
           <p class="post-content">${escapeHtml(e.description)}</p>
           <div class="post-meta">${e.locationType === 'online' ? 'Online' : (e.location?.label || 'Physical location')}</div>
-          <div class="rsvp-actions"></div>
+          <div class="rsvp-actions" data-testid="calendar-rsvp-mount-${e.id}"></div>
         `;
 
         const user = getCurrentUser();
         const actions = el.querySelector('.rsvp-actions');
-        if (user && actions) {
-          actions.innerHTML = `
-            <div class="post-actions">
-              <button class="btn btn-sm" data-rsvp="going" data-testid="calendar-rsvp-going-${e.id}">Going</button>
-              <button class="btn btn-sm" data-rsvp="maybe" data-testid="calendar-rsvp-maybe-${e.id}">Maybe</button>
-            </div>
-          `;
-          actions.querySelectorAll('[data-rsvp]').forEach((btn) => {
-            btn.addEventListener('click', async () => {
-              const status = /** @type {HTMLElement} */ (btn).dataset.rsvp || 'going';
-              await api.rsvpEvent(e.id, { status });
-              api.showToast(`Marked as ${status}`);
-            });
+        if (user && actions instanceof HTMLElement) {
+          mountEventRsvpControls(actions, {
+            eventId: e.id,
+            myRsvp: e.myRsvp ?? null,
+            cancelled: eventIsCancelled(e),
+            testIdPrefix: 'calendar-rsvp',
+            useSmButtons: true,
+            onChange: (myRsvp) => {
+              if (myRsvp) {
+                e.myRsvp = myRsvp;
+              } else {
+                e.myRsvp = null;
+              }
+            },
           });
         }
 

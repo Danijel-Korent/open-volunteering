@@ -84,7 +84,10 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 | Create event (organization)                                |               |      ✓      |                      | From org profile                                                     |
 | Create event (volunteer)                                   |               |      ✓      |                      | From volunteer profile                                               |
 | Calendar page (upcoming events)                            |               |      ✓      |                      | Next 12 months, grouped by month                                     |
-| Event RSVP (going / maybe)                                 |               |      ✓      |                      | API upserts RSVP; UI does not show current RSVP state                |
+| Event RSVP (going / maybe)                                 |               |      ✓      |                      | Active state on feed/calendar; tap again to clear RSVP                |
+| Event cancel / reopen                                      |               |      ✓      |                      | Author ⋯ menu; `cancelledAt`; hidden from calendar when cancelled    |
+| Event images (create / edit)                               |               |      ✓      |                      | Org and volunteer authors; optional on create form                   |
+| Author event attendee list                                 |               |      ✓      |                      | Own user/org profile; `GET /events/{id}/rsvps`                       |
 | Comment on events                                          |               |      ✓      |                      | On feed cards                                                        |
 | Like events                                                |               |      ✓      |                      | Same limitations as other likes                                      |
 

@@ -122,6 +122,25 @@ interface VolEvent {
   location?: GeoLocation | null;
   likeCount: number;
   createdAt: string;
+  cancelledAt?: string | null;
+  cancelled?: boolean;
+  imageFileId?: number;
+  myRsvp?: 'going' | 'maybe' | null;
+  /** PATCH only: set or clear cancellation */
+  cancelled?: boolean;
+}
+
+/** RSVP list grouped by status (event author API). */
+interface EventRsvpLists {
+  eventId: number;
+  going: EventRsvpAttendee[];
+  maybe: EventRsvpAttendee[];
+}
+
+interface EventRsvpAttendee {
+  accountType: AccountType;
+  accountId: number;
+  name: string;
 }
 
 interface Comment {
@@ -155,6 +174,8 @@ interface FeedItem {
   hasApplied?: boolean;
   applicationStatus?: 'pending' | 'accepted' | 'rejected';
   closed?: boolean;
+  cancelled?: boolean;
+  myRsvp?: 'going' | 'maybe';
   imageFileId?: number;
   imageUrl?: string;
 }
