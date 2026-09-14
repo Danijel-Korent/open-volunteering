@@ -78,9 +78,13 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
         exit;
     }
 
-    $allowed = ['name', 'bio', 'location', 'avatarFileId'];
+    $allowed = ['name', 'bio', 'location', 'avatarFileId', 'skills'];
     foreach ($allowed as $field) {
         if (!array_key_exists($field, $input)) {
+            continue;
+        }
+        if ($field === 'skills') {
+            $orgs[$idx]['skills'] = parseNonEmptyStringList($input['skills'] ?? []);
             continue;
         }
         if ($field === 'avatarFileId') {

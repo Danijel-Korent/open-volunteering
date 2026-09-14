@@ -509,13 +509,47 @@ export async function getAvailability(params = {}) {
 }
 
 /**
- * Set or update volunteer availability for a target (volunteers only).
+ * Set or update skill availability for a target (users or organizations).
  *
  * @param {{ targetType: string, targetId: number, skillsOffered: string[] }} data
  * @returns {Promise<Availability>}
  */
 export async function setAvailability(data) {
   return /** @type {Promise<Availability>} */ (request('availability', { method: 'POST', body: JSON.stringify(data) }));
+}
+
+/** List skill offers made by the active account. @returns {Promise<Availability[]>} */
+export async function getMySkillOffers() {
+  return /** @type {Promise<Availability[]>} */ (request('availability?mine=1'));
+}
+
+/**
+ * List inbound skill offers on content owned by the logged-in user.
+ *
+ * @param {number} userId
+ * @returns {Promise<Availability[]>}
+ */
+export async function getInboundSkillOffersForUser(userId) {
+  return /** @type {Promise<Availability[]>} */ (request(`availability?forUserId=${userId}`));
+}
+
+/**
+ * Update accept/reject status for a skill offer (recipient only).
+ *
+ * @param {number} offerId
+ * @param {'accepted' | 'rejected'} status
+ * @returns {Promise<Availability>}
+ */
+export async function updateSkillOfferStatus(offerId, status) {
+  return /** @type {Promise<Availability>} */ (request(`availability/${offerId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  }));
+}
+
+/** Delete a skill offer (offerer or recipient). @param {number} offerId @returns {Promise<{ ok: boolean }>} */
+export async function deleteSkillOffer(offerId) {
+  return /** @type {Promise<{ ok: boolean }>} */ (request(`availability/${offerId}`, { method: 'DELETE' }));
 }
 
 /** Get map markers for users, positions, and events. @returns {Promise<MapMarker[]>} */

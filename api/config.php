@@ -627,6 +627,388 @@ function resolveOrgIdFromAvailabilityTarget(string $targetType, int $targetId): 
 }
 
 /**
+ * Normalize offerer fields on an availability record (legacy userId supported).
+ *
+ * @param array<string, mixed> $row
+ * @return array<string, mixed>
+ */
+function normalizeAvailabilityOfferer(array $row): array {
+    $offererType = (string) ($row['offererType'] ?? 'user');
+    if ($offererType === 'volunteer') {
+        $offererType = 'user';
+    }
+    $offererId = isset($row['offererId'])
+        ? (int) $row['offererId']
+        : (int) ($row['userId'] ?? $row['volunteerId'] ?? 0);
+    $status = (string) ($row['status'] ?? 'pending');
+    if (!in_array($status, ['pending', 'accepted', 'rejected'], true)) {
+        $status = 'pending';
+    }
+    $row['offererType'] = $offererType;
+    $row['offererId'] = $offererId;
+    $row['status'] = $status;
+    if ($offererType === 'user' && $offererId > 0) {
+        $row['userId'] = $offererId;
+    }
+    return $row;
+}
+
+/**
+ * Resolve who receives inbound skill offers for a target (org admins or user author).
+ *
+ * @param string $targetType organization|post|position|event
+ * @param int $targetId
+ * @return array{kind: string, orgId?: int, userId?: int}|null
+ */
+function resolveAvailabilityRecipient(string $targetType, int $targetId): ?array {
+    if ($targetType === 'organization') {
+        return ['kind' => 'org', 'orgId' => $targetId];
+    }
+    if ($targetType === 'post') {
+        $post = findPostById($targetId);
+        if ($post === null) {
+            return null;
+        }
+        $authorType = (string) ($post['authorType'] ?? 'user');
+        $authorId = (int) ($post['authorId'] ?? 0);
+        if ($authorType === 'organization') {
+            return ['kind' => 'org', 'orgId' => $authorId];
+        }
+        return ['kind' => 'user', 'userId' => $authorId];
+    }
+    if ($targetType === 'position') {
+        $position = findPositionById($targetId);
+        if ($position === null) {
+            return null;
+        }
+        $authorType = (string) ($position['authorType'] ?? 'organization');
+        $authorId = (int) ($position['authorId'] ?? 0);
+        if ($authorType === 'organization') {
+            return ['kind' => 'org', 'orgId' => $authorId];
+        }
+        return ['kind' => 'user', 'userId' => $authorId];
+    }
+    if ($targetType === 'event') {
+        $event = findEventById($targetId);
+        if ($event === null) {
+            return null;
+        }
+        $authorType = (string) ($event['authorType'] ?? 'user');
+        $authorId = (int) ($event['authorId'] ?? 0);
+        if ($authorType === 'organization') {
+            return ['kind' => 'org', 'orgId' => $authorId];
+        }
+        return ['kind' => 'user', 'userId' => $authorId];
+    }
+    return null;
+}
+
+/**
+ * Human-readable label for an availability target.
+ *
+ * @param string $targetType
+ * @param int $targetId
+ * @return array{label: string, targetType: string, targetId: int}
+ */
+function buildAvailabilityTargetSummary(string $targetType, int $targetId): array {
+    $label = "{$targetType} #{$targetId}";
+    if ($targetType === 'post') {
+        $post = findPostById($targetId);
+        if ($post !== null) {
+            $content = trim((string) ($post['content'] ?? ''));
+            $snippet = $content !== '' ? mb_substr($content, 0, 40) : "Post #{$targetId}";
+            $label = $snippet . (mb_strlen($content) > 40 ? '…' : '');
+        }
+    } elseif ($targetType === 'position') {
+        $position = findPositionById($targetId);
+        if ($position !== null) {
+            $label = (string) ($position['title'] ?? "Position #{$targetId}");
+        }
+    } elseif ($targetType === 'event') {
+        $event = findEventById($targetId);
+        if ($event !== null) {
+            $label = (string) ($event['title'] ?? "Event #{$targetId}");
+        }
+    } elseif ($targetType === 'organization') {
+        $org = findOrganization(readOrganizations(), $targetId);
+        if ($org !== null) {
+            $label = (string) ($org['name'] ?? "Organization #{$targetId}");
+        }
+    }
+    return ['label' => $label, 'targetType' => $targetType, 'targetId' => $targetId];
+}
+
+/**
+ * Find an availability record by id.
+ *
+ * @param int $availabilityId
+ * @return array<string, mixed>|null
+ */
+function findAvailabilityById(int $availabilityId): ?array {
+    foreach (readJson(AVAILABILITY_JSON) as $row) {
+        if ((int) ($row['id'] ?? 0) === $availabilityId) {
+            return $row;
+        }
+    }
+    return null;
+}
+
+/**
+ * Enrich a single availability row for API responses.
+ *
+ * @param array<string, mixed> $row
+ * @return array<string, mixed>
+ */
+function enrichAvailabilityRow(array $row): array {
+    $row = normalizeAvailabilityOfferer($row);
+    $offererType = (string) $row['offererType'];
+    $offererId = (int) $row['offererId'];
+    $offerer = resolveAccount($offererType, $offererId);
+    $row['targetSummary'] = buildAvailabilityTargetSummary(
+        (string) ($row['targetType'] ?? ''),
+        (int) ($row['targetId'] ?? 0),
+    );
+    if ($offerer !== null) {
+        $row['offerer'] = publicAccount($offererType, $offerer);
+    } else {
+        $row['offerer'] = null;
+    }
+    if ($offererType === 'user') {
+        $row['user'] = $row['offerer'];
+        $row['organization'] = null;
+    } elseif ($offererType === 'organization') {
+        $row['organization'] = $row['offerer'];
+        $row['user'] = null;
+    }
+    return $row;
+}
+
+/**
+ * Whether an availability row is inbound to an organization.
+ *
+ * @param array<string, mixed> $row
+ * @param int $forOrgId
+ * @param int[] $orgPostIds
+ * @param int[] $orgPositionIds
+ * @param int[] $orgEventIds
+ */
+function availabilityInboundToOrg(
+    array $row,
+    int $forOrgId,
+    array $orgPostIds,
+    array $orgPositionIds,
+    array $orgEventIds,
+): bool {
+    $type = (string) ($row['targetType'] ?? '');
+    $tid = (int) ($row['targetId'] ?? 0);
+    if ($type === 'organization' && $tid === $forOrgId) {
+        return true;
+    }
+    if ($type === 'post' && in_array($tid, $orgPostIds, true)) {
+        return true;
+    }
+    if ($type === 'position' && in_array($tid, $orgPositionIds, true)) {
+        return true;
+    }
+    if ($type === 'event' && in_array($tid, $orgEventIds, true)) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Parse a list of non-empty strings from request input.
+ *
+ * @param mixed $raw
+ * @return string[]
+ */
+function parseNonEmptyStringList(mixed $raw): array {
+    if (!is_array($raw)) {
+        return [];
+    }
+    $out = [];
+    foreach ($raw as $item) {
+        if (!is_string($item) && !is_numeric($item)) {
+            continue;
+        }
+        $s = trim((string) $item);
+        if ($s !== '') {
+            $out[] = $s;
+        }
+    }
+    return $out;
+}
+
+/**
+ * Whether the active account is the offerer of an availability row.
+ *
+ * @param array<string, mixed> $row
+ * @param string $accountType user|organization
+ * @param int $accountId
+ */
+function isAvailabilityOfferer(array $row, string $accountType, int $accountId): bool {
+    $row = normalizeAvailabilityOfferer($row);
+    return ($row['offererType'] ?? '') === $accountType
+        && (int) ($row['offererId'] ?? 0) === $accountId;
+}
+
+/**
+ * Whether the authenticated account may manage an offer as recipient (accept/reject/delete).
+ *
+ * @param array<string, mixed> $row
+ * @param array{type: string, id: int} $auth From requireAuth()
+ */
+function canManageAvailabilityAsRecipient(array $row, array $auth): bool {
+    $recipient = resolveAvailabilityRecipient(
+        (string) ($row['targetType'] ?? ''),
+        (int) ($row['targetId'] ?? 0),
+    );
+    if ($recipient === null) {
+        return false;
+    }
+    if ($recipient['kind'] === 'org') {
+        $orgId = (int) $recipient['orgId'];
+        if ($auth['type'] !== 'organization' || (int) $auth['id'] !== $orgId) {
+            return false;
+        }
+        $userId = getSessionUserId();
+        return $userId !== null && isOrgAdmin($userId, $orgId);
+    }
+    if ($auth['type'] !== 'user') {
+        return false;
+    }
+    return (int) $auth['id'] === (int) ($recipient['userId'] ?? 0);
+}
+
+/**
+ * Require recipient privileges for an availability row (accept/reject).
+ *
+ * @param array<string, mixed> $row
+ */
+function requireAvailabilityRecipient(array $row): void {
+    $recipient = resolveAvailabilityRecipient(
+        (string) ($row['targetType'] ?? ''),
+        (int) ($row['targetId'] ?? 0),
+    );
+    if ($recipient === null) {
+        jsonResponse(['error' => 'Invalid offer target'], 400);
+        exit;
+    }
+    if ($recipient['kind'] === 'org') {
+        requireOrgAdminSession((int) $recipient['orgId']);
+        return;
+    }
+    $auth = requireAuth();
+    if ($auth['type'] !== 'user' || (int) $auth['id'] !== (int) $recipient['userId']) {
+        jsonResponse(['error' => 'Forbidden'], 403);
+        exit;
+    }
+}
+
+/**
+ * Send in-app notifications for a newly created skill offer (not upsert).
+ *
+ * @param array<string, mixed> $entry Normalized availability row with id
+ * @param string $offererType user|organization
+ * @param int $offererId
+ */
+function notifyOnNewSkillOffer(array $entry, string $offererType, int $offererId): void {
+    $offerId = (int) ($entry['id'] ?? 0);
+    $targetType = (string) ($entry['targetType'] ?? '');
+    $targetId = (int) ($entry['targetId'] ?? 0);
+    if ($offerId <= 0 || $targetType === '' || $targetId <= 0) {
+        return;
+    }
+
+    $recipient = resolveAvailabilityRecipient($targetType, $targetId);
+    if ($recipient === null) {
+        return;
+    }
+
+    if ($offererType === 'organization' && $recipient['kind'] === 'org'
+        && (int) $recipient['orgId'] === $offererId) {
+        return;
+    }
+
+    if ($recipient['kind'] === 'org') {
+        $orgId = (int) $recipient['orgId'];
+        createNotificationsForOrgAdmins(
+            $orgId,
+            'skill_offer',
+            $offererType,
+            $offererId,
+            'availability',
+            $offerId,
+            $offererType === 'user' ? $offererId : null,
+        );
+        return;
+    }
+
+    $userId = (int) ($recipient['userId'] ?? 0);
+    if ($userId <= 0 || $offererType !== 'organization') {
+        return;
+    }
+    $org = findOrganization(readOrganizations(), $offererId);
+    $orgName = $org !== null ? (string) ($org['name'] ?? '') : null;
+    createNotificationForUser(
+        $userId,
+        'skill_offer',
+        'organization',
+        $offererId,
+        'availability',
+        $offerId,
+        $offererId,
+        $orgName,
+    );
+}
+
+/**
+ * Notify the offerer when a skill offer is accepted or rejected.
+ *
+ * @param array<string, mixed> $row
+ * @param string $newStatus accepted|rejected
+ * @param string $actorType user|organization
+ * @param int $actorId
+ */
+function notifySkillOfferStatusChange(
+    array $row,
+    string $newStatus,
+    string $actorType,
+    int $actorId,
+): void {
+    $row = normalizeAvailabilityOfferer($row);
+    $offerId = (int) ($row['id'] ?? 0);
+    $notifyType = $newStatus === 'accepted' ? 'skill_offer_accepted' : 'skill_offer_rejected';
+    $offererType = (string) ($row['offererType'] ?? 'user');
+    $offererId = (int) ($row['offererId'] ?? 0);
+    if ($offerId <= 0 || $offererId <= 0) {
+        return;
+    }
+
+    if ($offererType === 'user') {
+        createNotificationForUser(
+            $offererId,
+            $notifyType,
+            $actorType,
+            $actorId,
+            'availability',
+            $offerId,
+            $actorType === 'organization' ? $actorId : null,
+        );
+        return;
+    }
+
+    createNotificationsForOrgAdmins(
+        $offererId,
+        $notifyType,
+        $actorType,
+        $actorId,
+        'availability',
+        $offerId,
+    );
+}
+
+/**
  * Check whether an identical notification already exists for a recipient.
  *
  * @param array<int, array<string, mixed>> $notifications
@@ -663,7 +1045,7 @@ function notificationExists(
  * Create an in-app notification for a single user.
  *
  * @param int $recipientUserId
- * @param string $type post_comment|position_application|position_application_accepted|position_application_rejected|skill_offer|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
+ * @param string $type post_comment|position_application|position_application_accepted|position_application_rejected|skill_offer|skill_offer_accepted|skill_offer_rejected|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
  * @param string $actorType user|organization
  * @param int $actorId
  * @param string $targetType
@@ -721,7 +1103,7 @@ function createNotificationForUser(
  * Create in-app notifications for all admins of an organization.
  *
  * @param int $orgId
- * @param string $type post_comment|position_application|position_application_accepted|position_application_rejected|skill_offer|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
+ * @param string $type post_comment|position_application|position_application_accepted|position_application_rejected|skill_offer|skill_offer_accepted|skill_offer_rejected|followed_target_comment|followed_author_post|followed_author_event|followed_author_position
  * @param string $actorType user|organization
  * @param int $actorId
  * @param string $targetType
@@ -1136,10 +1518,54 @@ function enrichNotification(array $notification): array {
         $title = $position !== null ? (string) ($position['title'] ?? 'a position') : 'a position';
         $message = "{$actorName} declined your application for {$title}";
         $link = '#/positions';
-    } elseif ($type === 'skill_offer') {
+    } elseif ($type === 'skill_offer' && $targetType === 'availability') {
         $orgId = (int) ($notification['organizationId'] ?? 0);
-        $message = "{$actorName} offered skills";
-        $link = "#/organization/{$orgId}?section=availability";
+        if ($orgId > 0 && ($notification['actorType'] ?? '') === 'organization') {
+            $message = "{$actorName} offered skills on your content";
+            $link = '#/profile?section=user-inbound-skill-offers';
+        } elseif ($orgId > 0) {
+            $message = "{$actorName} offered skills";
+            $link = "#/organization/{$orgId}?section=availability";
+        } else {
+            $message = "{$actorName} offered skills";
+            $link = '#/profile?section=user-inbound-skill-offers';
+        }
+    } elseif ($type === 'skill_offer_accepted' && $targetType === 'availability') {
+        $offer = findAvailabilityById($targetId);
+        $label = 'your offer';
+        $offererType = 'user';
+        $offererId = 0;
+        if ($offer !== null) {
+            $label = buildAvailabilityTargetSummary(
+                (string) ($offer['targetType'] ?? ''),
+                (int) ($offer['targetId'] ?? 0),
+            )['label'];
+            $normalized = normalizeAvailabilityOfferer($offer);
+            $offererType = (string) ($normalized['offererType'] ?? 'user');
+            $offererId = (int) ($normalized['offererId'] ?? 0);
+        }
+        $message = "{$actorName} accepted your skill offer for {$label}";
+        $link = $offererType === 'organization' && $offererId > 0
+            ? "#/organization/{$offererId}?section=skill-offers-out"
+            : '#/profile?section=skill-offers';
+    } elseif ($type === 'skill_offer_rejected' && $targetType === 'availability') {
+        $offer = findAvailabilityById($targetId);
+        $label = 'your offer';
+        $offererType = 'user';
+        $offererId = 0;
+        if ($offer !== null) {
+            $label = buildAvailabilityTargetSummary(
+                (string) ($offer['targetType'] ?? ''),
+                (int) ($offer['targetId'] ?? 0),
+            )['label'];
+            $normalized = normalizeAvailabilityOfferer($offer);
+            $offererType = (string) ($normalized['offererType'] ?? 'user');
+            $offererId = (int) ($normalized['offererId'] ?? 0);
+        }
+        $message = "{$actorName} declined your skill offer for {$label}";
+        $link = $offererType === 'organization' && $offererId > 0
+            ? "#/organization/{$offererId}?section=skill-offers-out"
+            : '#/profile?section=skill-offers';
     } elseif ($type === 'followed_target_comment') {
         $author = findTargetAuthor($targetType, $targetId);
         $label = match ($targetType) {

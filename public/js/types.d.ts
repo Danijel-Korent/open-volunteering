@@ -31,6 +31,7 @@ interface Organization {
   name: string;
   bio?: string;
   location?: GeoLocation | null;
+  skills?: string[];
   avatarFileId?: number;
   createdByUserId?: number;
   createdAt?: string;
@@ -191,14 +192,27 @@ interface Subscription {
   createdAt: string;
 }
 
+interface AvailabilityTargetSummary {
+  label: string;
+  targetType: string;
+  targetId: number;
+}
+
 interface Availability {
   id: number;
-  userId: number;
+  userId?: number;
+  offererType: AccountType;
+  offererId: number;
   targetType: string;
   targetId: number;
   skillsOffered: string[];
+  status: 'pending' | 'accepted' | 'rejected';
+  statusUpdatedAt?: string;
   createdAt: string;
+  targetSummary?: AvailabilityTargetSummary;
   user?: User | null;
+  organization?: Organization | null;
+  offerer?: Account | null;
 }
 
 interface ProjectDetailResponse {
@@ -288,7 +302,11 @@ interface MessagesResponse {
 type NotificationType =
   | 'post_comment'
   | 'position_application'
+  | 'position_application_accepted'
+  | 'position_application_rejected'
   | 'skill_offer'
+  | 'skill_offer_accepted'
+  | 'skill_offer_rejected'
   | 'followed_target_comment'
   | 'followed_author_post'
   | 'followed_author_event'

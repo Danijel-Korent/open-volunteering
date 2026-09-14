@@ -21,7 +21,7 @@ export function parseHashQuery(hash = window.location.hash) {
 /**
  * Apply deep-link effects after a profile or organization page has rendered.
  *
- * Supports `section=applicants|availability` and `highlight=post-{id}`.
+ * Supports profile sections and `highlight=post-{id}`.
  *
  * @returns {Promise<void>}
  */
@@ -33,6 +33,15 @@ export async function applyProfileDeepLinks() {
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } else if (section === 'availability') {
     document.querySelector('[data-testid="org-availability-section"]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (section === 'skill-offers-out') {
+    document.querySelector('[data-testid="org-outbound-skill-offers-section"]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (section === 'skill-offers') {
+    document.querySelector('[data-testid="user-skill-offers-section"]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (section === 'user-inbound-skill-offers') {
+    document.querySelector('[data-testid="user-inbound-skill-offers-section"]')
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 

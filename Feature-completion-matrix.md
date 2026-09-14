@@ -129,7 +129,8 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 | ---------------------------------------------------------- | :-----------: | :---------: | :------------------: | -------------------------------------------------------------------- |
 | Subscribe to category / org / location                     |               |      ✓      |                      | CRUD on volunteer profile                                            |
 | Deliver notifications for subscriptions                    |       ✓       |             |                      | Stored only; no push or email                                        |
-| Volunteer “Offer skills” / availability                    |               |      ✓      |                      | Modal on feed cards; upsert via API                                  |
+| Volunteer “Offer skills” / availability                    |               |             |          ✓           | Modal on feed cards; upsert; my offers; accept/reject                |
+| Organization offer skills on feed                          |               |             |          ✓           | Same modal when switched to org; org profile skills                    |
 
 ---
 
@@ -140,7 +141,8 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 | Notification for comment on user’s post                    |               |      ✓      |                      | Delivered to post author’s personal inbox                            |
 | Notification for comment on org post                       |               |      ✓      |                      | Delivered to each org admin’s personal inbox with org label           |
 | Notification for position application                      |               |      ✓      |                      | Org admins; deep-link to applicants section                          |
-| Notification for skill offer                               |               |      ✓      |                      | Org admins; new offers only (not upsert)                             |
+| Notification for skill offer                               |               |             |          ✓           | Org admins or user authors; new offers only                          |
+| Notification for skill offer accepted/declined             |               |             |          ✓           | Offerer (user or org admins)                                         |
 | Header bell + unread badge                                 |               |      ✓      |                      | Dropdown preview + `#/notifications` page                            |
 | Mark notification read on tap                              |               |      ✓      |                      | Badge updates via polling and `notificationschanged` event           |
 

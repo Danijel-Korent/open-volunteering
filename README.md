@@ -70,8 +70,10 @@ A social-network-like web page where people/organizations could perform the foll
 - organizations and volunteer can set going/maybe on the events
 - organizations and volunteer can see a calendar page with list of events happening in next 12 months
 - organizations and volunteer can create a project page which contains description of a project and news posts about it
-- A volunteer can set themselves available to an organization, project, or event
-  - a volunteer can add which skills they are offering to the organization, project, or event
+- Users and organizations can offer skills on posts, positions, events, and organization targets from the feed
+  - offerers list skills in a modal (profile skills prefill when set)
+  - recipients (org admins or user content authors) can accept, reject, remove, or message the offerer
+  - either party can delete/withdraw an offer; accept/decline notifies the offerer
 
 
 ### Web pages

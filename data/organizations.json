@@ -2,6 +2,11 @@
     {
         "id": 1,
         "name": "Green City Initiative",
+        "skills": [
+            "Tree planting",
+            "Event coordination",
+            "Community outreach"
+        ],
         "bio": "Local environmental organization. We plant trees, clean parks, and promote sustainable living.",
         "location": {
             "label": "Green City HQ, Zagreb",
@@ -38,6 +43,10 @@
     {
         "id": 4,
         "name": "Test Org Alpha",
+        "skills": [
+            "Logistics",
+            "Training"
+        ],
         "bio": "",
         "location": null,
         "createdByUserId": 2,

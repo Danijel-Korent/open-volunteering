@@ -180,6 +180,14 @@ async function renderOwnVolunteerProfile(container, user) {
       <h3>My applications</h3>
       <div id="user-applications-list"><p class="empty-state">Loading…</p></div>
     </div>
+    <div class="profile-section" data-testid="user-skill-offers-section">
+      <h3>My skill offers</h3>
+      <div id="user-skill-offers-list"><p class="empty-state">Loading…</p></div>
+    </div>
+    <div class="profile-section" data-testid="user-inbound-skill-offers-section">
+      <h3>Skill offers on my content</h3>
+      <div id="user-inbound-skill-offers-list"><p class="empty-state">Loading…</p></div>
+    </div>
     <h2 class="page-title" style="font-size:1rem">Your feed</h2>
     <div id="profile-feed" data-testid="profile-feed"></div>
   `;
@@ -238,6 +246,7 @@ async function renderOwnVolunteerProfile(container, user) {
     void showCreateOrganizationModal();
   });
   await loadUserApplications(container);
+  await loadUserSkillOfferSections(container, user.id);
   await loadProfileFeed('user', user.id);
   await applyProfileDeepLinks();
 }
@@ -287,6 +296,197 @@ async function loadUserApplications(container) {
 }
 
 /**
+ * Display name for a skill offer's offerer.
+ *
+ * @param {Availability} offer
+ * @returns {string}
+ */
+function skillOfferOffererName(offer) {
+  if (offer.offererType === 'organization') {
+    return offer.organization?.name ?? offer.offerer?.name ?? `Organization ${offer.offererId}`;
+  }
+  return offer.user?.name ?? offer.offerer?.name ?? `User ${offer.offererId}`;
+}
+
+/**
+ * Target label for a skill offer row.
+ *
+ * @param {Availability} offer
+ * @returns {string}
+ */
+function skillOfferTargetLabel(offer) {
+  return offer.targetSummary?.label ?? `${offer.targetType} #${offer.targetId}`;
+}
+
+/**
+ * Load outbound and inbound skill-offer sections on the user's own profile.
+ *
+ * @param {HTMLElement} container
+ * @param {number} userId
+ * @returns {Promise<void>}
+ */
+async function loadUserSkillOfferSections(container, userId) {
+  const outboundEl = container.querySelector('#user-skill-offers-list');
+  const inboundEl = container.querySelector('#user-inbound-skill-offers-list');
+
+  if (outboundEl) {
+    try {
+      const offers = await api.getMySkillOffers();
+      if (offers.length === 0) {
+        outboundEl.innerHTML = '<p class="empty-state">You have not offered skills yet.</p>';
+      } else {
+        outboundEl.innerHTML = `
+          <ul class="user-applications-list">
+            ${offers.map((offer) => {
+              const target = escapeHtml(skillOfferTargetLabel(offer));
+              const skills = escapeHtml((offer.skillsOffered || []).join(', '));
+              const status = escapeHtml((offer.status || 'pending').toLowerCase());
+              return `
+                <li class="user-application-row" data-testid="user-skill-offer-${offer.id}">
+                  <div>
+                    <strong>${target}</strong>
+                    <div class="post-meta">${skills} · <span class="application-status application-status--${status}">${status}</span></div>
+                  </div>
+                  <button type="button" class="btn btn-sm"
+                    data-testid="btn-withdraw-skill-offer-${offer.id}"
+                    data-skill-offer-id="${offer.id}"
+                    data-skill-offer-action="withdraw">Withdraw</button>
+                </li>
+              `;
+            }).join('')}
+          </ul>
+        `;
+      }
+    } catch (err) {
+      outboundEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load'}</p>`;
+    }
+  }
+
+  if (inboundEl) {
+    try {
+      const offers = await api.getInboundSkillOffersForUser(userId);
+      if (offers.length === 0) {
+        inboundEl.innerHTML = '<p class="empty-state">No skill offers on your posts or events yet.</p>';
+      } else {
+        inboundEl.innerHTML = `
+          <ul class="org-messaging-list">
+            ${offers.map((offer) => renderInboundSkillOfferRow(offer)).join('')}
+          </ul>
+        `;
+      }
+    } catch (err) {
+      inboundEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load'}</p>`;
+    }
+  }
+
+  bindSkillOfferRowActions(container, async () => {
+    await loadUserSkillOfferSections(container, userId);
+  });
+}
+
+/**
+ * HTML for an inbound skill offer list item.
+ *
+ * @param {Availability} offer
+ * @returns {string}
+ */
+function renderInboundSkillOfferRow(offer) {
+  const name = escapeHtml(skillOfferOffererName(offer));
+  const skills = escapeHtml((offer.skillsOffered || []).join(', '));
+  const target = escapeHtml(skillOfferTargetLabel(offer));
+  const status = (offer.status || 'pending').toLowerCase();
+  const statusHtml = `<span class="application-status application-status--${escapeHtml(status)}">${escapeHtml(status)}</span>`;
+  const pendingActions = status === 'pending'
+    ? `
+      <button type="button" class="btn btn-sm btn-primary"
+        data-testid="btn-accept-skill-offer-${offer.id}"
+        data-skill-offer-id="${offer.id}"
+        data-skill-offer-action="accept">Accept</button>
+      <button type="button" class="btn btn-sm"
+        data-testid="btn-reject-skill-offer-${offer.id}"
+        data-skill-offer-id="${offer.id}"
+        data-skill-offer-action="reject">Reject</button>
+    `
+    : '';
+  const messageBtn = offer.offererType === 'organization'
+    ? `<button type="button" class="btn btn-sm btn-primary"
+        data-testid="btn-message-skill-offer-org-${offer.offererId}"
+        data-message-offerer-type="organization"
+        data-message-offerer-id="${offer.offererId}"
+        data-message-target-label="${target}">Message</button>`
+    : `<button type="button" class="btn btn-sm btn-primary"
+        data-testid="btn-message-volunteer-${offer.offererId}"
+        data-message-offerer-type="user"
+        data-message-offerer-id="${offer.offererId}"
+        data-message-target-label="${target}">Message</button>`;
+
+  return `
+    <li class="org-applicant-row" data-testid="inbound-skill-offer-${offer.id}">
+      <div class="org-applicant-info">
+        <span>${name}</span>
+        ${statusHtml}
+        <div class="post-meta">${skills} · ${target}</div>
+      </div>
+      <div class="org-applicant-actions">
+        ${pendingActions}
+        ${messageBtn}
+        <button type="button" class="btn btn-sm"
+          data-testid="btn-remove-skill-offer-${offer.id}"
+          data-skill-offer-id="${offer.id}"
+          data-skill-offer-action="remove">Remove</button>
+      </div>
+    </li>
+  `;
+}
+
+/**
+ * Wire accept/reject/remove/withdraw/message handlers for skill-offer rows.
+ *
+ * @param {HTMLElement} container
+ * @param {() => Promise<void>} reload
+ */
+function bindSkillOfferRowActions(container, reload) {
+  container.querySelectorAll('[data-skill-offer-action]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const offerId = parseInt(btn.getAttribute('data-skill-offer-id') || '0', 10);
+      const action = btn.getAttribute('data-skill-offer-action');
+      if (!offerId || !action) return;
+      try {
+        if (action === 'accept') {
+          await api.updateSkillOfferStatus(offerId, 'accepted');
+          api.showToast('Skill offer accepted');
+        } else if (action === 'reject') {
+          await api.updateSkillOfferStatus(offerId, 'rejected');
+          api.showToast('Skill offer declined');
+        } else if (action === 'remove' || action === 'withdraw') {
+          await api.deleteSkillOffer(offerId);
+          api.showToast(action === 'withdraw' ? 'Offer withdrawn' : 'Offer removed');
+        }
+        await reload();
+      } catch (err) {
+        api.showToast(err instanceof Error ? err.message : 'Action failed');
+      }
+    });
+  });
+
+  container.querySelectorAll('[data-message-offerer-type]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const offererType = /** @type {AccountType} */ (btn.getAttribute('data-message-offerer-type') || 'user');
+      const offererId = parseInt(btn.getAttribute('data-message-offerer-id') || '0', 10);
+      const targetLabel = btn.getAttribute('data-message-target-label') || 'content';
+      if (!offererId) return;
+      try {
+        await startDirectMessage(offererType, offererId, {
+          initialMessage: `Re: skill offer on ${targetLabel}`,
+        });
+      } catch (err) {
+        api.showToast(err instanceof Error ? err.message : 'Failed to start conversation');
+      }
+    });
+  });
+}
+
+/**
  * Render the editable profile page for the logged-in organization.
  *
  * @param {HTMLElement} container
@@ -309,6 +509,10 @@ async function renderOwnOrganizationProfile(container, org) {
       <div class="form-group">
         <label>Bio</label>
         <textarea id="profile-bio" data-testid="profile-bio">${escapeHtml(org.bio || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Skills (comma-separated)</label>
+        <input type="text" id="org-profile-skills" data-testid="org-profile-skills" value="${escapeHtml((org.skills || []).join(', '))}">
       </div>
       <div class="form-group">
         <label>Location label</label>
@@ -341,6 +545,10 @@ async function renderOwnOrganizationProfile(container, org) {
     <div class="profile-section" data-testid="org-availability-section">
       <h3>Skill offers</h3>
       <div id="org-availability-list"><p class="empty-state">Loading…</p></div>
+    </div>
+    <div class="profile-section" data-testid="org-outbound-skill-offers-section">
+      <h3>Our skill offers</h3>
+      <div id="org-outbound-skill-offers-list"><p class="empty-state">Loading…</p></div>
     </div>
     <h2 class="page-title" style="font-size:1rem">Your feed</h2>
     <div id="profile-feed" data-testid="profile-feed"></div>
@@ -380,6 +588,8 @@ async function renderOwnOrganizationProfile(container, org) {
     await api.updateOrganization(org.id, {
       name: /** @type {HTMLInputElement} */ (document.getElementById('profile-name')).value,
       bio: /** @type {HTMLTextAreaElement} */ (document.getElementById('profile-bio')).value,
+      skills: /** @type {HTMLInputElement} */ (document.getElementById('org-profile-skills')).value
+        .split(',').map((s) => s.trim()).filter(Boolean),
       location: locLabel ? { label: locLabel, lat: lat || 0, lng: lng || 0 } : null,
     });
     api.showToast('Profile saved!');
@@ -899,6 +1109,10 @@ async function renderPublicOrganizationProfile(container, org) {
       </div>
       <p class="profile-bio">${escapeHtml(org.bio || '')}</p>
       ${org.location?.label ? `<p class="post-meta">📍 ${escapeHtml(org.location.label)}</p>` : ''}
+      ${org.skills?.length ? `
+        <div class="profile-section"><h3>Skills</h3>
+          <div class="tag-list">${org.skills.map((s) => `<span class="tag">${escapeHtml(s)}</span>`).join('')}</div>
+        </div>` : ''}
       ${renderOrgMembersHtml(org)}
       ${current && !isSameAccount(current, org) ? `
         <div class="profile-actions">
@@ -937,6 +1151,7 @@ async function renderPublicOrganizationProfile(container, org) {
 async function loadOrgMessagingSections(container, orgId) {
   const applicantsEl = container.querySelector('#org-applicants-list');
   const availabilityEl = container.querySelector('#org-availability-list');
+  const outboundEl = container.querySelector('#org-outbound-skill-offers-list');
 
   if (applicantsEl) {
     try {
@@ -983,7 +1198,7 @@ async function loadOrgMessagingSections(container, orgId) {
                         ${actions}
                         <button type="button" class="btn btn-sm btn-primary"
                           data-testid="btn-message-applicant-${applicant.id}"
-                          data-user-id="${applicant.id}"
+                          data-message-applicant-id="${applicant.id}"
                           data-position-title="${escapeHtml(position.title)}">Message</button>
                       </div>
                     </li>
@@ -1010,23 +1225,7 @@ async function loadOrgMessagingSections(container, orgId) {
       } else {
         availabilityEl.innerHTML = `
           <ul class="org-messaging-list">
-            ${offers.map((offer) => {
-              const offerUser = offer.user;
-              if (!offerUser) return '';
-              const skills = (offer.skillsOffered || []).join(', ');
-              const target = `${offer.targetType} #${offer.targetId}`;
-              return `
-                <li>
-                  <div>
-                    <strong>${escapeHtml(offerUser.name)}</strong>
-                    <div class="post-meta">${escapeHtml(skills)} · ${escapeHtml(target)}</div>
-                  </div>
-                  <button type="button" class="btn btn-sm btn-primary"
-                    data-testid="btn-message-volunteer-${offerUser.id}"
-                    data-user-id="${offerUser.id}">Message</button>
-                </li>
-              `;
-            }).join('')}
+            ${offers.map((offer) => renderInboundSkillOfferRow(offer)).join('')}
           </ul>
         `;
       }
@@ -1035,9 +1234,48 @@ async function loadOrgMessagingSections(container, orgId) {
     }
   }
 
-  container.querySelectorAll('[data-user-id]').forEach((btn) => {
+  if (outboundEl) {
+    try {
+      const offers = await api.getMySkillOffers();
+      if (offers.length === 0) {
+        outboundEl.innerHTML = '<p class="empty-state">Your organization has not offered skills yet.</p>';
+      } else {
+        outboundEl.innerHTML = `
+          <ul class="user-applications-list">
+            ${offers.map((offer) => {
+              const target = escapeHtml(skillOfferTargetLabel(offer));
+              const skills = escapeHtml((offer.skillsOffered || []).join(', '));
+              const status = escapeHtml((offer.status || 'pending').toLowerCase());
+              return `
+                <li class="user-application-row" data-testid="org-outbound-skill-offer-${offer.id}">
+                  <div>
+                    <strong>${target}</strong>
+                    <div class="post-meta">${skills} · <span class="application-status application-status--${status}">${status}</span></div>
+                  </div>
+                  <button type="button" class="btn btn-sm"
+                    data-testid="btn-withdraw-skill-offer-${offer.id}"
+                    data-skill-offer-id="${offer.id}"
+                    data-skill-offer-action="withdraw">Withdraw</button>
+                </li>
+              `;
+            }).join('')}
+          </ul>
+        `;
+      }
+    } catch (err) {
+      outboundEl.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Failed to load'}</p>`;
+    }
+  }
+
+  const reloadOrgSections = async () => {
+    await loadOrgMessagingSections(container, orgId);
+  };
+
+  bindSkillOfferRowActions(container, reloadOrgSections);
+
+  container.querySelectorAll('[data-message-applicant-id]').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      const uid = parseInt(btn.getAttribute('data-user-id') || '0', 10);
+      const uid = parseInt(btn.getAttribute('data-message-applicant-id') || '0', 10);
       if (!uid) return;
       const positionTitle = btn.getAttribute('data-position-title') || 'position';
       try {

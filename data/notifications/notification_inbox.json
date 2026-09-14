@@ -115,5 +115,18 @@
         "targetId": 9,
         "readAt": null,
         "createdAt": "2026-09-12T18:49:35+02:00"
+    },
+    {
+        "id": 11,
+        "recipientUserId": 1,
+        "type": "skill_offer",
+        "organizationId": 1,
+        "organizationName": "Green City Initiative",
+        "actorType": "user",
+        "actorId": 2,
+        "targetType": "availability",
+        "targetId": 7,
+        "readAt": null,
+        "createdAt": "2026-09-14T08:42:21+02:00"
     }
 ]

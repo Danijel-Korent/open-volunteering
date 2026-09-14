@@ -224,7 +224,7 @@ Canonical field definitions live in [`public/js/types.d.ts`](public/js/types.d.t
 { id, email, name, bio?, location?, skills?, experience?, seekingVolunteering?, weeklyVolunteeringHours?, avatarFileId?, createdAt? }
 
 // Organization (organizations.json) — no login credentials
-{ id, name, bio?, location?, createdByUserId?, avatarFileId?, createdAt? }
+{ id, name, bio?, skills?, location?, createdByUserId?, avatarFileId?, createdAt? }
 
 // Organization member
 { id, organizationId, userId, role: "admin"|"member", joinedAt }
@@ -430,12 +430,16 @@ The most complex handler. Aggregates posts, positions, and events into a unified
 | POST | `/api/subscriptions` | Yes | Body: `filterType` (`category` \| `organization` \| `location`), `value` |
 | DELETE | `/api/subscriptions/{id}` | Yes | Delete own subscription |
 
-### availability — `/api/availability`
+### availability — `/api/availability[/{id}]`
+
+Skill offers tie an offerer account (user or organization) to a feed target (post, position, event, or organization) with `skillsOffered` and `status` (`pending` \| `accepted` \| `rejected`).
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| GET | `/api/availability` | No* | Query: `targetType` + `targetId`, `mine=1`, or `forOrgId` (org owner only) |
-| POST | `/api/availability` | Yes (volunteer) | Body: `targetType`, `targetId`, `skillsOffered` (upsert) |
+| GET | `/api/availability` | No* | Query: `targetType` + `targetId`, `mine=1` (active account), `forOrgId` (org admin), or `forUserId` (user session, inbound on user-authored content) |
+| POST | `/api/availability` | Yes | Body: `targetType`, `targetId`, `skillsOffered` (upsert per offerer+target; new rows notify recipients) |
+| PATCH | `/api/availability/{id}` | Yes (recipient) | Body: `status` `accepted` \| `rejected` (pending only) |
+| DELETE | `/api/availability/{id}` | Yes | Offerer or recipient may delete the row |
 
 ### notifications — `/api/notifications[/{id}[/{sub}]]`
 
@@ -450,7 +454,7 @@ In-app notifications for the logged-in user, stored in `notifications/notificati
 
 **Creation hooks** (not separate endpoints): `comments.php` (post comments), `positions.php` (new applications), `availability.php` (new skill offers only), `comments.php` / `posts.php` / `events.php` / `positions.php` (follow-based notifications).
 
-Notification types include `post_comment`, `position_application`, `position_application_accepted`, `position_application_rejected`, `skill_offer`, `followed_target_comment`, `followed_author_post`, `followed_author_event`, `followed_author_position`.
+Notification types include `post_comment`, `position_application`, `position_application_accepted`, `position_application_rejected`, `skill_offer`, `skill_offer_accepted`, `skill_offer_rejected`, `followed_target_comment`, `followed_author_post`, `followed_author_event`, `followed_author_position`.
 
 ### content-follows — `/api/content-follows[/{sub}]`
 

@@ -410,22 +410,20 @@ export function renderPostCard(item, opts = {}) {
     actions.appendChild(shareBtn);
   }
 
-  if (!user || user.type === 'user') {
-    const availBtn = document.createElement('button');
-    availBtn.type = 'button';
-    availBtn.className = 'post-action-btn';
-    availBtn.dataset.testid = `btn-availability-${item.feedType}-${item.id}`;
-    availBtn.innerHTML = `${ICONS.skills}<span>Offer skills</span>`;
-    availBtn.addEventListener('click', () => {
-      if (!user) {
-        api.showToast('Log in to offer skills');
-        window.location.hash = '#/login';
-        return;
-      }
-      showAvailabilityModal(item);
-    });
-    actions.appendChild(availBtn);
-  }
+  const availBtn = document.createElement('button');
+  availBtn.type = 'button';
+  availBtn.className = 'post-action-btn';
+  availBtn.dataset.testid = `btn-availability-${item.feedType}-${item.id}`;
+  availBtn.innerHTML = `${ICONS.skills}<span>Offer skills</span>`;
+  availBtn.addEventListener('click', () => {
+    if (!user) {
+      api.showToast('Log in to offer skills');
+      window.location.hash = '#/login';
+      return;
+    }
+    showAvailabilityModal(item);
+  });
+  actions.appendChild(availBtn);
 
   const hasSecondary =
     (opts.showApply && item.feedType === 'position')
@@ -505,6 +503,9 @@ function showAvailabilityModal(item) {
 
   const targetId = targetType === 'organization' ? item.authorId : item.id;
 
+  const current = getCurrentUser();
+  const skillsPrefill = escapeHtml((current?.skills || []).join(', '));
+
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.dataset.testid = 'availability-modal';
@@ -513,7 +514,7 @@ function showAvailabilityModal(item) {
       <h3>Offer your skills</h3>
       <div class="form-group">
         <label>Skills (comma-separated)</label>
-        <input type="text" id="avail-skills" data-testid="availability-skills" placeholder="e.g. Cooking, First aid">
+        <input type="text" id="avail-skills" data-testid="availability-skills" value="${skillsPrefill}" placeholder="e.g. Cooking, First aid">
       </div>
       <div style="display:flex;gap:0.5rem">
         <button class="btn btn-primary" data-testid="availability-submit">Submit</button>
