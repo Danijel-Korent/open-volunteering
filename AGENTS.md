@@ -55,6 +55,7 @@ Prefer `data-testid` attributes:
 - `header-messages`, `header-messages-unread`
 - `messages-inbox`, `conversation-row-{id}`, `btn-new-conversation`
 - `message-user-picker`, `message-picker-search`, `group-chat-title`
+- `btn-edit-conversation-title`, `edit-conversation-title-dialog`, `edit-conversation-title-input`, `edit-conversation-title-submit`, `edit-conversation-title-cancel`
 - `message-thread-{id}`, `message-list`, `message-{id}`, `message-compose-input`, `message-send`
 - `btn-message-user-{id}`, `btn-message-applicant-{id}`, `btn-message-volunteer-{id}`
 - `org-applicants-section`, `org-availability-section`, `btn-accept-applicant-{userId}`, `btn-reject-applicant-{userId}`

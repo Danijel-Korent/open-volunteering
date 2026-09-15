@@ -2,7 +2,7 @@
 /**
  * Conversations API — private direct and group messaging.
  *
- * Routes: GET/POST /conversations, GET /conversations/{id},
+ * Routes: GET/POST /conversations, GET/PATCH /conversations/{id},
  * GET/POST /conversations/{id}/messages, POST /conversations/{id}/read
  */
 require_once __DIR__ . '/config.php';
@@ -10,6 +10,7 @@ require_once __DIR__ . '/config.php';
 const MAX_GROUP_SIZE = 20;
 const MAX_MESSAGE_LENGTH = 2000;
 const PREVIEW_LENGTH = 120;
+const MAX_CONVERSATION_TITLE_LENGTH = 120;
 
 $segments = getPathSegments();
 $id = isset($segments[1]) ? (int) $segments[1] : null;
@@ -155,11 +156,12 @@ function conversationDisplayName(
     string $currentType,
     int $currentId
 ): string {
+    $title = trim($conversation['title'] ?? '');
+    if ($title !== '') {
+        return $title;
+    }
+
     if (($conversation['type'] ?? '') === 'group') {
-        $title = trim($conversation['title'] ?? '');
-        if ($title !== '') {
-            return $title;
-        }
         $names = [];
         foreach ($participantRows as $row) {
             $type = $row['accountType'] ?? 'user';
@@ -187,6 +189,29 @@ function conversationDisplayName(
         }
     }
     return 'Conversation';
+}
+
+/**
+ * Parse and validate a conversation title from API input.
+ *
+ * @param mixed $rawTitle
+ * @return array{ok: true, value: string|null}|array{ok: false, error: string}
+ */
+function parseConversationTitle(mixed $rawTitle): array {
+    if ($rawTitle === null) {
+        return ['ok' => true, 'value' => null];
+    }
+    $title = trim((string) $rawTitle);
+    if ($title === '') {
+        return ['ok' => true, 'value' => null];
+    }
+    if (strlen($title) > MAX_CONVERSATION_TITLE_LENGTH) {
+        return [
+            'ok' => false,
+            'error' => 'Title must be at most ' . MAX_CONVERSATION_TITLE_LENGTH . ' characters',
+        ];
+    }
+    return ['ok' => true, 'value' => $title];
 }
 
 /**
@@ -398,6 +423,12 @@ if ($id === null && method() === 'POST') {
             exit;
         }
 
+        $parsedTitle = parseConversationTitle($title);
+        if (!$parsedTitle['ok']) {
+            jsonResponse(['error' => $parsedTitle['error']], 400);
+            exit;
+        }
+
         $conversation = [
             'id' => nextId($conversations),
             'type' => 'direct',
@@ -407,6 +438,9 @@ if ($id === null && method() === 'POST') {
             'updatedAt' => $now,
             'lastMessagePreview' => '',
         ];
+        if ($parsedTitle['value'] !== null) {
+            $conversation['title'] = $parsedTitle['value'];
+        }
         $conversations[] = $conversation;
         writeJson(CONVERSATIONS_JSON, $conversations);
 
@@ -453,10 +487,16 @@ if ($id === null && method() === 'POST') {
         exit;
     }
 
+    $parsedGroupTitle = parseConversationTitle($title);
+    if (!$parsedGroupTitle['ok']) {
+        jsonResponse(['error' => $parsedGroupTitle['error']], 400);
+        exit;
+    }
+
     $conversation = [
         'id' => nextId($conversations),
         'type' => 'group',
-        'title' => $title !== '' ? $title : null,
+        'title' => $parsedGroupTitle['value'],
         'createdByType' => $auth['type'],
         'createdBy' => $auth['id'],
         'createdAt' => $now,
@@ -484,6 +524,52 @@ if ($id === null && method() === 'POST') {
         'participants' => publicParticipants($rows),
         'displayName' => conversationDisplayName($conversation, $rows, $auth['type'], $auth['id']),
     ], 201);
+    exit;
+}
+
+if ($id !== null && $sub === '' && method() === 'PATCH') {
+    $auth = requireAuth();
+    $input = getJsonInput();
+    if (!array_key_exists('title', $input)) {
+        jsonResponse(['error' => 'title is required'], 400);
+        exit;
+    }
+
+    $parsed = parseConversationTitle($input['title']);
+    if (!$parsed['ok']) {
+        jsonResponse(['error' => $parsed['error']], 400);
+        exit;
+    }
+
+    $conversations = readJson(CONVERSATIONS_JSON);
+    $participants = readJson(CONVERSATION_PARTICIPANTS_JSON);
+
+    $found = findConversation($conversations, $id);
+    if ($found === null) {
+        jsonResponse(['error' => 'Conversation not found'], 404);
+        exit;
+    }
+
+    $participant = requireParticipant($participants, $id, $auth['type'], $auth['id']);
+    $idx = $found['idx'];
+
+    if ($parsed['value'] === null) {
+        unset($conversations[$idx]['title']);
+    } else {
+        $conversations[$idx]['title'] = $parsed['value'];
+    }
+    writeJson(CONVERSATIONS_JSON, $conversations);
+
+    $conversation = $conversations[$idx];
+    $rows = participantsForConversation($participants, $id);
+    $messages = readJson(MESSAGES_JSON);
+
+    jsonResponse([
+        ...$conversation,
+        'displayName' => conversationDisplayName($conversation, $rows, $auth['type'], $auth['id']),
+        'participants' => publicParticipants($rows),
+        'unreadCount' => unreadCount($messages, $id, $participant),
+    ]);
     exit;
 }
 

@@ -478,6 +478,7 @@ Private messaging. Only conversation participants may read or write.
 | GET | `/api/conversations` | Yes | Inbox: paginated list with `displayName`, `unreadCount`, `totalUnread` |
 | POST | `/api/conversations` | Yes | Body: `type` (`direct` \| `group`), `participantIds`, optional `title`. Direct threads are deduplicated per user pair |
 | GET | `/api/conversations/{id}` | Yes (participant) | Conversation metadata + participants |
+| PATCH | `/api/conversations/{id}` | Yes (participant) | Body: `title` (string or null to clear). Custom title for direct or group; does not change `updatedAt` |
 | GET | `/api/conversations/{id}/messages` | Yes (participant) | Paginated messages, oldest first |
 | POST | `/api/conversations/{id}/messages` | Yes (participant) | Body: `content` (max 2000 chars) |
 | POST | `/api/conversations/{id}/read` | Yes (participant) | Mark conversation read for current user |

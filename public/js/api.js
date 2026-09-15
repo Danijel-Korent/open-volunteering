@@ -641,6 +641,20 @@ export async function getConversation(id) {
 }
 
 /**
+ * Set or clear a conversation title (direct or group).
+ *
+ * @param {number} conversationId
+ * @param {string | null} title Trimmed non-empty string stores title; null or empty clears custom title.
+ * @returns {Promise<Conversation>}
+ */
+export async function updateConversationTitle(conversationId, title) {
+  return /** @type {Promise<Conversation>} */ (request(`conversations/${conversationId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ title }),
+  }));
+}
+
+/**
  * List messages in a conversation.
  *
  * @param {number} conversationId

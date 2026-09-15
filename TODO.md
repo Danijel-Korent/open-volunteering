@@ -85,21 +85,25 @@ Draw on ASCII-friednly overview of XYZ
 ### Milestone #5 - Follow organization feature ✓
 ### Milestone #6 - Deleting posts/events/positions ✓
 ### Milestone #7 - Editing posts/events/positions ✓
-### Milestone #x - Full functionality for applying to position ✓
+### Milestone #8 - Full functionality for applying to position ✓
+### Milestone #9 - Full functionality for offering skils ✓
+### Milestone #10 - Full functionality for events ✓
 
-  - [x] Close/reopen positions, images, optional apply message, accept/reject, notifications, my applications, DM context message
+### Milestone #x - Ability to set/change a chat title
 
+  - [x] Ability to set/change a chat title
+  - [ ] Chat conversation titles from applicant/skill-offer rows (backlog — see Small issues)
 
-### Milestone #x - Full functionality for offering skils
+### Milestone #x - Followers, supporters, friends?
 
-  - [ ] Check what currently works and does't work
+- Friends to see who knows who? (Do I actually need this or is following enough?)
+- Users and organizations should be able to "follow" and "unfollow" each other
+- Organizations should be able to know which users are interested in volunteering for them
 
-### Milestone #x - Full functionality for events
-
-  - [ ] Check what currently works and does't work
 
 ### Milestone #x - 
-### Milestone #x - 
+
+
 
 ### Phase full feature table ✓
 
@@ -177,7 +181,7 @@ Draw on ASCII-friednly overview of XYZ
     - Moderators - can delete post replays on ORG's posts
     - Members - seen as members when responding to ORG posts, can participate in ORG custom chats
 
-### Milestone #1 - 
+### Milestone #1 - TODO
 
 #### TODO
 
@@ -278,7 +282,7 @@ Draw on ASCII-friednly overview of XYZ
 
 - [] Add feature table
 
-## PHASE #7 - "OV" instances disovery server
+## PHASE #7 - open-volunteering instances discovery service
 
   - One or more servers where Open-volunteering instances can register themself so they can be discovered by others instances
 

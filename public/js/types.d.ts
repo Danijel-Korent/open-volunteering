@@ -268,9 +268,16 @@ interface AccountRef {
   accountId: number;
 }
 
+/** Participant in a conversation thread (includes membership metadata from API). */
+type ConversationParticipant = Account & {
+  role: 'admin' | 'member';
+  joinedAt?: string;
+};
+
 interface Conversation {
   id: number;
   type: 'direct' | 'group';
+  /** Optional custom title for direct or group chats; when empty, displayName is computed. */
   title?: string | null;
   createdByType?: AccountType;
   createdBy: number;
@@ -278,7 +285,7 @@ interface Conversation {
   updatedAt: string;
   lastMessagePreview?: string;
   displayName?: string;
-  participants?: Account[];
+  participants?: ConversationParticipant[];
   unreadCount?: number;
 }
 

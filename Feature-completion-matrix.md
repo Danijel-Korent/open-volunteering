@@ -179,6 +179,7 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 | ---------------------------------------------------------- | :-----------: | :---------: | :------------------: | -------------------------------------------------------------------- |
 | Direct messages (1:1)                                      |               |      ✓      |                      | From profile, org applicant/offer lists; deduplicated threads        |
 | Group messages                                             |               |      ✓      |                      | 3–20 participants; optional title; via inbox modal                   |
+| Set/change chat title (direct or group)                    |               |      ✓      |                      | Thread header Edit → modal; PATCH `/api/conversations/{id}`            |
 | Inbox with unread badge                                    |               |      ✓      |                      | Header link; polls every 15s on inbox                                |
 | Message thread view                                        |               |      ✓      |                      | `#/messages/{id}`; polls every 10s; mark read on open                |
 | Org: message position applicants                           |               |      ✓      |                      | Own org profile → Position applicants section                        |

@@ -20,7 +20,8 @@
         "accountType": "user",
         "accountId": 1,
         "joinedAt": "2026-09-05T17:41:13+02:00",
-        "role": "admin"
+        "role": "admin",
+        "lastReadAt": "2026-09-15T09:39:25+02:00"
     },
     {
         "conversationId": 2,
@@ -51,7 +52,8 @@
         "accountType": "user",
         "accountId": 1,
         "joinedAt": "2026-09-05T18:18:22+02:00",
-        "role": "member"
+        "role": "member",
+        "lastReadAt": "2026-09-15T09:37:51+02:00"
     },
     {
         "conversationId": 4,

@@ -170,6 +170,55 @@ async function renderInbox(container, current) {
 }
 
 /**
+ * Show modal to edit a conversation title.
+ *
+ * @param {Conversation} conversation
+ * @param {(updated: Conversation) => void} onSaved
+ * @returns {void}
+ */
+function showEditConversationTitleModal(conversation, onSaved) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.dataset.testid = 'edit-conversation-title-dialog';
+  const currentTitle = conversation.title ?? '';
+  overlay.innerHTML = `
+    <div class="modal edit-conversation-title-modal">
+      <h3>Chat title</h3>
+      <p class="form-hint">Leave empty to use default name.</p>
+      <div class="form-group">
+        <label for="edit-conversation-title-input">Title</label>
+        <input type="text" id="edit-conversation-title-input" data-testid="edit-conversation-title-input"
+               maxlength="120" value="${escapeHtml(currentTitle)}" placeholder="e.g. Beach cleanup team">
+      </div>
+      <div style="display:flex;gap:0.5rem;margin-top:1rem">
+        <button type="button" class="btn btn-primary" data-testid="edit-conversation-title-submit">Save</button>
+        <button type="button" class="btn" data-testid="edit-conversation-title-cancel">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const titleInput = /** @type {HTMLInputElement} */ (overlay.querySelector('#edit-conversation-title-input'));
+
+  const close = () => overlay.remove();
+  overlay.querySelector('[data-testid="edit-conversation-title-cancel"]')?.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  overlay.querySelector('[data-testid="edit-conversation-title-submit"]')?.addEventListener('click', async () => {
+    const trimmed = titleInput.value.trim();
+    const title = trimmed === '' ? null : trimmed;
+    try {
+      const updated = await api.updateConversationTitle(conversation.id, title);
+      close();
+      onSaved(updated);
+      notifyMessagesChanged();
+    } catch (err) {
+      api.showToast(err instanceof Error ? err.message : 'Failed to save title');
+    }
+  });
+}
+
+/**
  * Render a single conversation thread.
  *
  * @param {HTMLElement} container
@@ -183,6 +232,8 @@ async function renderThread(container, conversationId, current) {
       <div class="messages-thread-header">
         <a href="#/messages" class="btn btn-sm messages-back">← Back</a>
         <h1 class="messages-thread-title" id="thread-title">Loading…</h1>
+        <button type="button" class="btn btn-sm messages-thread-edit-title"
+                data-testid="btn-edit-conversation-title" aria-label="Edit chat title">Edit</button>
       </div>
       <div id="message-list" class="message-list" data-testid="message-list"></div>
       <form class="message-composer" data-testid="message-composer">
@@ -256,6 +307,16 @@ async function renderThread(container, conversationId, current) {
     container.innerHTML = `<p class="empty-state">${err instanceof Error ? err.message : 'Conversation not found'}</p>`;
     return;
   }
+
+  container.querySelector('[data-testid="btn-edit-conversation-title"]')?.addEventListener('click', () => {
+    if (!conversation) return;
+    showEditConversationTitleModal(conversation, (updated) => {
+      conversation = updated;
+      if (titleEl) {
+        titleEl.textContent = updated.displayName || 'Conversation';
+      }
+    });
+  });
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();

@@ -1594,9 +1594,14 @@ main#app {
   font-size: 1rem;
   margin: 0;
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.messages-thread-edit-title {
+  flex-shrink: 0;
 }
 
 .messages-back {
