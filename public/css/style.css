@@ -921,6 +921,21 @@ main#app {
   color: #15803d;
 }
 
+.org-classification-badge {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+  white-space: normal;
+  line-height: 1.2;
+}
+
+.post-card-headline .org-classification-badge {
+  margin-left: 0.35rem;
+  margin-top: 0;
+  vertical-align: middle;
+  max-width: min(100%, 12rem);
+}
+
 .message-picker-tabs {
   display: flex;
   gap: 0.35rem;

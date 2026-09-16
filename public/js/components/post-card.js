@@ -1,6 +1,7 @@
 import * as api from '../api.js';
 import { getCurrentUser } from '../auth.js';
 import { profileLink } from '../account-utils.js';
+import { renderOrganizationClassificationBadge } from '../organization-types.js';
 import { renderAvatarHtml } from './image-dropzone.js';
 import { toggleComments } from './comment-section.js';
 import {
@@ -132,7 +133,7 @@ function setApplyTooltip(wrap, applyBtn, text) {
 /**
  * Whether the current user can apply to a position feed item.
  *
- * @param {Account | null | undefined} user
+ * @param {MeResponse | null | undefined} user
  * @param {FeedItem} item
  * @returns {{ enabled: boolean, title?: string }}
  */
@@ -140,7 +141,7 @@ function getApplyState(user, item) {
   if (!user) {
     return { enabled: false, title: 'Log in to apply' };
   }
-  if (user.type !== 'user') {
+  if (user.activeAccountType !== 'user') {
     return { enabled: false, title: 'Switch to your profile to apply to positions' };
   }
   if (item.closed) {
@@ -215,12 +216,16 @@ function mergeEventIntoFeedItem(item, event) {
 /**
  * Whether the logged-in account authored this feed item.
  *
- * @param {Account | null | undefined} user
+ * @param {MeResponse | null | undefined} user
  * @param {FeedItem} item
  * @returns {boolean}
  */
 function isOwnFeedItem(user, item) {
-  return Boolean(user && user.type === item.authorType && user.id === item.authorId);
+  return Boolean(
+    user
+    && user.activeAccountType === item.authorType
+    && user.activeAccountId === item.authorId,
+  );
 }
 
 /** @type {Record<string, string>} */
@@ -286,6 +291,9 @@ export function renderPostCard(item, opts = {}) {
       ${renderAvatarHtml({ avatarFileId: item.author?.avatarFileId, name: authorName })}
       <div class="post-card-headline">
         <a class="post-author" href="${authorLink}">${escapeHtml(authorName)}</a>
+        ${item.author?.accountType === 'organization' && item.author.type
+    ? renderOrganizationClassificationBadge(item.author.type)
+    : ''}
         ${item.closed ? '<span class="position-status-badge" data-testid="position-closed-badge">Closed</span>' : ''}
         ${item.cancelled ? '<span class="position-status-badge" data-testid="event-cancelled-badge">Cancelled</span>' : ''}
         <div class="post-meta-line">${buildMetaSubline(item)}</div>
@@ -556,7 +564,7 @@ function showAvailabilityModal(item) {
   let targetType = 'post';
   if (item.feedType === 'position') targetType = 'position';
   else if (item.feedType === 'event') targetType = 'event';
-  else if (item.author?.type === 'organization') targetType = 'organization';
+  else if (item.author?.accountType === 'organization') targetType = 'organization';
 
   const targetId = targetType === 'organization' ? item.authorId : item.id;
 

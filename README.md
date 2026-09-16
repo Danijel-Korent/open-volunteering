@@ -44,6 +44,7 @@ Why would this page be used by volunteers:
 - A volunteer can set themselves available to an organization, project, or event
 
 Why would this page be used by volunteer organizations:
+- Organization profiles declare a type (NGO, Non-profit, Charity, Informal organization, or Informal movement), shown on the profile and on their posts
 - Can open volunteering positions that other people can see and share
 - Can create projects to showcase what they are doing now
 - To see the calendar of volunteering related activities

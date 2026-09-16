@@ -223,7 +223,7 @@ function showEditConversationTitleModal(conversation, onSaved) {
  *
  * @param {HTMLElement} container
  * @param {number} conversationId
- * @param {Account} current
+ * @param {MeResponse} current
  * @returns {Promise<void>}
  */
 async function renderThread(container, conversationId, current) {
@@ -267,7 +267,7 @@ async function renderThread(container, conversationId, current) {
       return;
     }
     listEl.innerHTML = data.items.map((msg) => {
-      const isOwn = msg.authorType === current.type && msg.authorId === current.id;
+      const isOwn = msg.authorType === current.activeAccountType && msg.authorId === current.activeAccountId;
       const authorName = msg.author?.name || 'Unknown';
       return `
         <div class="message-bubble-wrap ${isOwn ? 'message-bubble-wrap--own' : ''}" data-testid="message-${msg.id}">
@@ -399,13 +399,13 @@ async function showNewConversationModal(current) {
       return;
     }
     listEl.innerHTML = filtered.map((u) => {
-      const key = accountKey(u.type, u.id);
+      const key = accountKey(u.accountType, u.id);
       return `
       <label class="message-picker-item">
         <input type="checkbox" value="${key}" ${selected.has(key) ? 'checked' : ''}>
         ${renderAvatarHtml(u, 'conversation-avatar')}
         <span>${escapeHtml(u.name)}</span>
-        ${renderProfileBadge(u.type)}
+        ${renderProfileBadge(u)}
       </label>
     `;
     }).join('');

@@ -224,7 +224,9 @@ Canonical field definitions live in [`public/js/types.d.ts`](public/js/types.d.t
 { id, email, name, bio?, location?, skills?, experience?, seekingVolunteering?, weeklyVolunteeringHours?, avatarFileId?, createdAt? }
 
 // Organization (organizations.json) — no login credentials
-{ id, name, bio?, skills?, location?, createdByUserId?, avatarFileId?, createdAt? }
+{ id, name, type, bio?, skills?, location?, createdByUserId?, avatarFileId?, createdAt? }
+// `type` is classification: NGO | Non-profit | Charity | Informal organization | Informal movement
+// API user/org account objects use accountType: "user" | "organization" (not stored in JSON for users)
 
 // Organization member
 { id, organizationId, userId, role: "admin"|"member", joinedAt }
@@ -304,10 +306,10 @@ All responses are JSON. Errors use `{ "error": "message" }` with an appropriate 
 
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
-| POST | `/api/organizations` | Yes (user) | Create org; caller becomes admin |
+| POST | `/api/organizations` | Yes (user) | Create org; body requires `name` and `type`; caller becomes admin |
 | GET | `/api/organizations` | No | List all organizations |
 | GET | `/api/organizations/{id}` | No | Single organization with `members[]` |
-| PATCH | `/api/organizations/{id}` | Yes (org admin context) | Body: `name`, `bio`, `location`, `avatarFileId` |
+| PATCH | `/api/organizations/{id}` | Yes (org admin context) | Body: `name`, `type`, `bio`, `location`, `avatarFileId`, `skills` |
 | POST | `/api/organizations/{id}/members` | Yes (org admin) | Body: `userId`, `role` |
 | PATCH | `/api/organizations/{id}/members/{userId}` | Yes (org admin) | Change role |
 | DELETE | `/api/organizations/{id}/members/{userId}` | Yes (admin or self) | Remove / leave |

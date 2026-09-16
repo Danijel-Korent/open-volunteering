@@ -2,6 +2,7 @@
     {
         "id": 1,
         "name": "Green City Initiative",
+        "type": "NGO",
         "skills": [
             "Tree planting",
             "Event coordination",
@@ -19,6 +20,7 @@
     {
         "id": 2,
         "name": "Community Shelter",
+        "type": "Charity",
         "bio": "Providing shelter and support for those in need since 2015.",
         "location": {
             "label": "Community Shelter, Zagreb",
@@ -31,6 +33,7 @@
     {
         "id": 3,
         "name": "Youth Mentors Network",
+        "type": "Non-profit",
         "bio": "Connecting young people with mentors and learning opportunities.",
         "location": {
             "label": "Youth Center, Zagreb",
@@ -43,6 +46,7 @@
     {
         "id": 4,
         "name": "Test Org Alpha",
+        "type": "Informal organization",
         "skills": [
             "Logistics",
             "Training"
@@ -55,6 +59,7 @@
     {
         "id": 5,
         "name": "ngo1",
+        "type": "Informal movement",
         "bio": "",
         "location": null,
         "createdByUserId": 2,

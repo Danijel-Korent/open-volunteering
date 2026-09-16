@@ -89,7 +89,7 @@ export async function updateOrganization(id, data) {
   return /** @type {Promise<Organization>} */ (request(`organizations/${id}`, { method: 'PATCH', body: JSON.stringify(data) }));
 }
 
-/** Create a new organization; caller becomes admin. @param {{ name: string, bio?: string, location?: GeoLocation | null }} data @returns {Promise<Organization>} */
+/** Create a new organization; caller becomes admin. @param {{ name: string, type: OrganizationClassification, bio?: string, location?: GeoLocation | null }} data @returns {Promise<Organization>} */
 export async function createOrganization(data) {
   return /** @type {Promise<Organization>} */ (request('organizations', { method: 'POST', body: JSON.stringify(data) }));
 }

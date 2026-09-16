@@ -2,44 +2,72 @@
  * Shared helpers for user and organization account references.
  */
 
+import { renderOrganizationClassificationBadge } from './organization-types.js';
+
+/**
+ * @param {{ accountType?: AccountType, type?: string } | null | undefined} account
+ * @returns {AccountType}
+ */
+export function getAccountType(account) {
+  if (!account) return 'user';
+  if (account.accountType) {
+    return normalizeAccountType(account.accountType);
+  }
+  const legacy = account.type;
+  if (legacy === 'volunteer' || legacy === 'user') return 'user';
+  if (legacy === 'organization') return 'organization';
+  return 'user';
+}
+
 /**
  * Hash route for a user or organization profile.
  *
- * @param {{ type: AccountType, id: number } | null | undefined} account
+ * @param {{ accountType?: AccountType, type?: string, id: number } | null | undefined} account
  * @returns {string}
  */
 export function profileLink(account) {
   if (!account) return '#';
-  const type = /** @type {string} */ (account.type) === 'volunteer' ? 'user' : account.type;
-  return type === 'organization'
+  const accountType = getAccountType(account);
+  return accountType === 'organization'
     ? `#/organization/${account.id}`
     : `#/profile/${account.id}`;
 }
 
 /**
- * HTML for a profile type badge chip.
+ * HTML for a profile type badge chip (user or organization classification).
  *
- * @param {AccountType | 'volunteer'} type
+ * @param {Account | AccountType | 'volunteer'} accountOrType
  * @returns {string}
  */
-export function renderProfileBadge(type) {
-  const normalized = type === 'volunteer' ? 'user' : type;
-  const label = normalized === 'organization' ? 'Organization' : 'User';
-  return `<span class="profile-badge profile-badge--${normalized}">${label}</span>`;
+export function renderProfileBadge(accountOrType) {
+  if (typeof accountOrType === 'string') {
+    const normalized = accountOrType === 'volunteer' ? 'user' : accountOrType;
+    if (normalized === 'organization') {
+      return `<span class="profile-badge profile-badge--organization" data-testid="org-classification-badge">Organization</span>`;
+    }
+    return `<span class="profile-badge profile-badge--user">User</span>`;
+  }
+  const accountType = getAccountType(accountOrType);
+  if (accountType === 'organization') {
+    const classification = /** @type {Organization} */ (accountOrType).type;
+    if (classification) {
+      return renderOrganizationClassificationBadge(classification);
+    }
+    return `<span class="profile-badge profile-badge--organization" data-testid="org-classification-badge">Organization</span>`;
+  }
+  return `<span class="profile-badge profile-badge--user">User</span>`;
 }
 
 /**
  * Whether two accounts refer to the same profile.
  *
- * @param {{ type: AccountType | 'volunteer', id: number } | null | undefined} a
- * @param {{ type: AccountType | 'volunteer', id: number } | null | undefined} b
+ * @param {{ accountType?: AccountType, type?: string, id: number } | null | undefined} a
+ * @param {{ accountType?: AccountType, type?: string, id: number } | null | undefined} b
  * @returns {boolean}
  */
 export function isSameAccount(a, b) {
   if (!a || !b) return false;
-  const typeA = a.type === 'volunteer' ? 'user' : a.type;
-  const typeB = b.type === 'volunteer' ? 'user' : b.type;
-  return typeA === typeB && a.id === b.id;
+  return getAccountType(a) === getAccountType(b) && a.id === b.id;
 }
 
 /**

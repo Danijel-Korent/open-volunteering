@@ -7,7 +7,7 @@ $segments = getPathSegments();
  * Build public author summary from comment authorType and authorId.
  *
  * @param array<string, mixed> $comment
- * @return array{id: int, name: string, type: string}|null
+ * @return array<string, mixed>|null
  */
 function publicCommentAuthor(array $comment): ?array {
     $authorType = $comment['authorType'] ?? 'user';
@@ -19,11 +19,16 @@ function publicCommentAuthor(array $comment): ?array {
     if ($author === null) {
         return null;
     }
-    return [
+    $pub = publicAccount($authorType, $author);
+    $summary = [
         'id' => $authorId,
-        'name' => $author['name'],
-        'type' => $authorType,
+        'name' => (string) $pub['name'],
+        'accountType' => (string) $pub['accountType'],
     ];
+    if ($authorType === 'organization' && isset($pub['type'])) {
+        $summary['type'] = (string) $pub['type'];
+    }
+    return $summary;
 }
 
 if (method() === 'GET') {

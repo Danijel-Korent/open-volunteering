@@ -122,7 +122,7 @@ Status of every planned feature in Open Volunteering. Mark **one** column per ro
 | Notification: followed author new post/event/position      |               |      ✓      |                      | Profile follow in `notifications/profile_follows.json`                 |
 | Multiple roles per user (volunteer + org member)           |       ✓       |             |                      | Single `type` at registration                                        |
 | Switch between user and managed org profile                |       ✓       |             |                      | Milestone #2 spec; not built                                         |
-| Registered vs informal organization type                   |       ✓       |             |                      | Milestone #2 spec; not built                                         |
+| Organization classification type (NGO, charity, informal…) |               |      ✓      |                      | `type` on organizations; required on create; badge on profile/posts   |
 
 ---
 

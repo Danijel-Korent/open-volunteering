@@ -1,4 +1,5 @@
 import * as api from './api.js';
+import { organizationTypeSelectOptions } from './organization-types.js';
 
 /** @type {MeResponse | null} */
 let currentUser = null;
@@ -103,11 +104,17 @@ export async function showCreateOrganizationModal() {
         <input type="text" id="create-org-name" data-testid="create-org-name" required>
       </div>
       <div class="form-group">
+        <label>Type</label>
+        <select id="create-org-type" data-testid="create-org-type" required>
+          ${organizationTypeSelectOptions()}
+        </select>
+      </div>
+      <div class="form-group">
         <label>Bio (optional)</label>
         <textarea id="create-org-bio" data-testid="create-org-bio"></textarea>
       </div>
       <div style="display:flex;gap:0.5rem;margin-top:1rem">
-        <button type="button" class="btn btn-primary" data-testid="create-org-submit">Create</button>
+        <button type="button" class="btn btn-primary" data-testid="create-org-submit" disabled>Create</button>
         <button type="button" class="btn" data-testid="create-org-cancel">Cancel</button>
       </div>
     </div>
@@ -118,15 +125,30 @@ export async function showCreateOrganizationModal() {
   overlay.querySelector('[data-testid="create-org-cancel"]')?.addEventListener('click', close);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 
+  const typeSelect = /** @type {HTMLSelectElement | null} */ (overlay.querySelector('#create-org-type'));
+  const submitBtn = /** @type {HTMLButtonElement | null} */ (overlay.querySelector('[data-testid="create-org-submit"]'));
+  const syncSubmit = () => {
+    if (submitBtn && typeSelect) {
+      submitBtn.disabled = !typeSelect.value;
+    }
+  };
+  typeSelect?.addEventListener('change', syncSubmit);
+  syncSubmit();
+
   overlay.querySelector('[data-testid="create-org-submit"]')?.addEventListener('click', async () => {
     const name = /** @type {HTMLInputElement} */ (overlay.querySelector('#create-org-name')).value.trim();
     const bio = /** @type {HTMLTextAreaElement} */ (overlay.querySelector('#create-org-bio')).value.trim();
+    const type = typeSelect?.value ?? '';
     if (!name) {
       api.showToast('Name is required');
       return;
     }
+    if (!type) {
+      api.showToast('Organization type is required');
+      return;
+    }
     try {
-      const org = await api.createOrganization({ name, bio });
+      const org = await api.createOrganization({ name, bio, type: /** @type {OrganizationClassification} */ (type) });
       await loadCurrentUser();
       emitAuthChanged();
       close();
@@ -146,7 +168,7 @@ export async function showCreateOrganizationModal() {
 function renderAccountSwitcher(me) {
   const adminOrgs = (me.memberships ?? []).filter((m) => m.role === 'admin');
   const isUserContext = me.activeAccountType === 'user';
-  const userName = me.userProfile?.name ?? (me.type === 'user' ? /** @type {User} */ (me).name : 'My profile');
+  const userName = me.userProfile?.name ?? (me.activeAccountType === 'user' ? /** @type {User} */ (me).name : 'My profile');
 
   const orgOptions = adminOrgs.map((m) => {
     const active = !isUserContext && me.activeAccountId === m.organizationId;

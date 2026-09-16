@@ -1,6 +1,7 @@
 import * as api from './api.js';
 import { getCurrentUser, loadCurrentUser, getSessionUserId, showCreateOrganizationModal, switchToAccount } from './auth.js';
 import { isSameAccount, profileLink, renderProfileBadge } from './account-utils.js';
+import { organizationTypeSelectOptions } from './organization-types.js';
 import { renderAvatarHtml, setupImageDropzone } from './components/image-dropzone.js';
 import { renderPostCard } from './components/post-card.js';
 import { startDirectMessage } from './messages.js';
@@ -28,7 +29,7 @@ function escapeHtml(s) {
  */
 export async function renderProfile(container, userId, projectId) {
   const current = getCurrentUser();
-  if (!userId && current?.type === 'organization') {
+  if (!userId && current?.activeAccountType === 'organization') {
     window.location.hash = `#/organization/${current.id}`;
     return;
   }
@@ -501,6 +502,12 @@ function bindSkillOfferRowActions(container, reload) {
 async function renderOwnOrganizationProfile(container, org) {
   container.innerHTML = `
     <h1 class="page-title">My Organization</h1>
+    <div class="profile-header-top" style="margin-bottom:0.75rem">
+      <div>
+        <h2 class="profile-name" style="font-size:1.25rem;margin:0">${escapeHtml(org.name)}</h2>
+        ${renderProfileBadge(org)}
+      </div>
+    </div>
     <div class="profile-avatar-section" data-testid="profile-avatar-section">
       <div id="profile-avatar-display" data-testid="profile-avatar-display">
         ${renderAvatarHtml(org, 'profile-avatar')}
@@ -511,6 +518,12 @@ async function renderOwnOrganizationProfile(container, org) {
       <div class="form-group">
         <label>Name</label>
         <input type="text" id="profile-name" data-testid="profile-name" value="${escapeHtml(org.name)}">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="profile-org-type" data-testid="profile-org-type" required>
+          ${organizationTypeSelectOptions(org.type)}
+        </select>
       </div>
       <div class="form-group">
         <label>Bio</label>
@@ -595,8 +608,10 @@ async function renderOwnOrganizationProfile(container, org) {
     const locLabel = /** @type {HTMLInputElement} */ (document.getElementById('profile-loc-label')).value;
     const lat = parseFloat(/** @type {HTMLInputElement} */ (document.getElementById('profile-lat')).value);
     const lng = parseFloat(/** @type {HTMLInputElement} */ (document.getElementById('profile-lng')).value);
+    const orgTypeEl = /** @type {HTMLSelectElement} */ (document.getElementById('profile-org-type'));
     await api.updateOrganization(org.id, {
       name: /** @type {HTMLInputElement} */ (document.getElementById('profile-name')).value,
+      type: /** @type {OrganizationClassification} */ (orgTypeEl.value),
       bio: /** @type {HTMLTextAreaElement} */ (document.getElementById('profile-bio')).value,
       skills: /** @type {HTMLInputElement} */ (document.getElementById('org-profile-skills')).value
         .split(',').map((s) => s.trim()).filter(Boolean),
@@ -1076,7 +1091,7 @@ async function renderPublicOrganizationProfile(container, org) {
         ${renderAvatarHtml(org, 'profile-avatar')}
         <div>
           <h1 class="profile-name">${escapeHtml(org.name)}</h1>
-          ${renderProfileBadge('organization')}
+          ${renderProfileBadge(org)}
         </div>
       </div>
       <p class="profile-bio">${escapeHtml(org.bio || '')}</p>
@@ -1455,7 +1470,7 @@ async function renderProjectDetail(container, projectId, orgId, ownerType = 'org
   const project = data.project;
   const posts = data.posts || [];
   const current = getCurrentUser();
-  const isOwner = current?.type === ownerType && current.id === orgId;
+  const isOwner = current?.activeAccountType === ownerType && current.activeAccountId === orgId;
 
   container.innerHTML = `
     <a href="${profileLink({ type: ownerType, id: orgId })}" class="btn btn-sm">← Back to profile</a>

@@ -69,9 +69,13 @@ Draw on ASCII-friednly overview of XYZ
  - [ ] Org profile's "Position applicants" and "Skill offers" - need some way to remove them after they are no longer relevant. Maybe just delete/remove/hide button for start?
 
  - [ ] /#/messages: Ability to set chat title
-    - [ ] when clicking on "Message" from "Position applicants" and "Skill offers" automaticly set chat title to reflect that
- - [ ] In the group chats you cannot see members
 
+# TIME-SLOT - Month 9
+
+- Most of the prototype development is done, so at the end of the month the UX/UI check phase begins with whatever I have at that moment (otherwise I will keep delaying it)
+
+- It would be nice to finish all standard user features (movements orgs, custom feeds, org moderators+members, solution against rage-baiting)
+- Idealy, server moderation would be also done by the end of the month
 
 ## PHASE #1 - UI/UX check: Make it good/complete enough to put it on-line for UI/UX people to take a look
 
@@ -88,19 +92,49 @@ Draw on ASCII-friednly overview of XYZ
 ### Milestone #8 - Full functionality for applying to position ✓
 ### Milestone #9 - Full functionality for offering skils ✓
 ### Milestone #10 - Full functionality for events ✓
+### Milestone #11 - Ability to set/change a chat title ✓
 
-### Milestone #x - Ability to set/change a chat title
+### Milestone #x - User/ORG profile can create "movements"
 
-  - [x] Ability to set/change a chat title
-  - [ ] Chat conversation titles from applicant/skill-offer rows (backlog — see Small issues)
+ - [ ] TODO: Define tasks
+
+### Milestone #x - User/ORG profile can create multiple custom feeds (like g. circles)
+
+ - [ ] TODO: Define tasks
+
+## Milestone #x - Orgs admins/moderators/members
+
+  - [x] Instead of single username/password for organizations, make user create org, add and remove members/moderators/admins
+    - Admins - only ones that can add/remove other members/moderators/admins
+    - Moderators - can delete post replays on ORG's posts
+    - Members - seen as members when responding to ORG posts, can participate in ORG custom chats
+
 
 ### Milestone #x - Followers, supporters, friends?
 
-- Friends to see who knows who? (Do I actually need this or is following enough?)
-- Users and organizations should be able to "follow" and "unfollow" each other
-- Organizations should be able to know which users are interested in volunteering for them
+ - Solution for rage-baiting algos?
+    - High engagement filtering is useful, but also very rage-baiting
+    - Add multiple type of reactions - support, sad, insightful, inspirative - and add option for algos to prioritize only specific engagement type?
+
+ - Friends to see who knows who? (Do I actually need this or is following enough?)
+ - Users and organizations should be able to "follow" and "unfollow" each other
+ - Organizations should be able to know which users are interested in volunteering for them
+
+### Milestone #x - Forums (ala FB groups)
 
 
+## Milestone #x - Server general/health stats
+
+- Add an server administration panel that shows:
+  - General stats (disk usage, number of users)
+  - Health stats (logs of errors and triggered asserts, ...)
+
+## Milestone #x - Server moderators
+
+ - [ ] TODO: Define tasks
+
+### Milestone #x - 
+### Milestone #x - 
 ### Milestone #x - 
 
 
@@ -168,115 +202,7 @@ Draw on ASCII-friednly overview of XYZ
 
 
 
-## PHASE #2 - Server maintainence/adminstration
-
-- Add an server administration panel that shows:
-  - General stats (disk usage, number of users)
-  - Health stats (logs of errors and triggered asserts, ...)
-
-## PHASE #3 - Prototype for real usage tests
-
-  - [x] Instead of single username/password for organizations, make user create org, add and remove members/moderators/admins
-    - Admins - only ones that can add/remove other members/moderators/admins
-    - Moderators - can delete post replays on ORG's posts
-    - Members - seen as members when responding to ORG posts, can participate in ORG custom chats
-
-### Milestone #1 - TODO
-
-#### TODO
-
-- [ ] 
-
-#### Milestone feature table ✓
-
-### Milestone #x - 
-### Milestone #x - 
-
-### Phase full feature table ✓
-
-✅︎  - Current state
-🎯︎  - Target
-
-| Feature name                                      | None | Mock | Proto | Full  | Notes                                             |
-| ------------------------------------------------- | ---- | ---- | ----- | ----- | ------------------------------------------------- |
-| Registration                                      |      |      |  ✅︎🎯︎ |       | can create profiles, but no password input/change |
-| Non-logged / public: can see all posts            |      |      |       | ✅︎ 🎯︎ |                                                   |
-| Non-logged / public: can see all events           |      |      |       | ✅︎ 🎯︎ |                                                   |
-| Non-logged / public: can see all map              |      |      |       | ✅︎ 🎯︎ |                                                   |
-|        --- Ordinary users ---                                                                                                      |
-| User profile: can create posts                    |      |      |       | ✅︎ 🎯︎ |                                                   |
-| User profile: can create posts with image         |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can delete posts                    |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can edit posts                      |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can comment posts                   |      |      |       | ✅︎ 🎯︎ |                                                   |
-| User profile: can like posts                      |      |  ✅︎  |       |   🎯︎  | Colors a like button, but dissapers on refresh    |
-| User profile: can see likes (own posts)           |  ✅︎  |      |       |   🎯︎  | No counter at all, or ways to see who liked       |
-| User profile: can offer skills                    |      |  ✅︎  |       |   🎯︎  | There is a dialog, need to check if it goes to DB |
-| User profile: can apply to valunteer adds         |      |      |   ✅︎  |   🎯︎  | Button in "Positions" tab, but not in "Feed"      |
-| User profile: can see offered skills              |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can send DM                         |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can read DM                         |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: can create group DMs                |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: Notification for post comment       |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: Notification for accepted position  |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: Notification for accepted skill     |  ✅︎  |      |       |   🎯︎  |                                                   |
-| User profile: Follow post option                  |  ✅︎  |      |       |   🎯︎  |                                                   |
-|        --- Organization profile ---                                                                                                 |
-| Org profile: can see all posts                    |      |      |       | ✅︎ 🎯︎ |                                                   |
-| Org profile: can comment                          |      |      |       | ✅︎ 🎯︎ |                                                   |
-| Org profile: can like posts                       |      | ✅︎   |       |   🎯︎  |                                                   |
-| Org profile: can see likes (own posts)            |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can create posts                     |      |      |       | ✅︎ 🎯︎ |                                                   |
-| Org profile: can create posts with image          |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can delete posts                     |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can edit posts                       |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can send DM                          |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can read DM                          |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can create events                    |      |      |  ✅︎   |   🎯︎  | Only in profile page. Block on empty desc, no warning why |
-| Org profile: can create events - with image       |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can cancel events                    |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can delete events                    |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can edit events                      |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can see list of goers                |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can create open positions            |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can create open positions - with img |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can delete positions                 |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can edit positions                   |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can close open position              |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can see people applied to possition  |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can see people offering a skill      |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: can DM people applied to possitions  |  ✅︎  |      |       |   🎯︎  | From the list of applied people                   |
-| Org profile: can DM people offering a skill       |  ✅︎  |      |       |   🎯︎  | From the list of applied people                   |
-| Org profile: can create group DMs                 |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: Notification for post comment        |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: Notification for applied possition   |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: Notification for offered skill       |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org profile: Follow post option                   |  ✅︎  |      |       |   🎯︎  |                                                   |
-|        --- Organization profile administration & ops ---                                                                            |
-| Org members: Can create org profile               |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Multiple types of orgs (NGO, ..)     |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Can switch to org profile            |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Can add members to org               |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Can add moderators to org            |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Can add administrators to org        |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Can remove members to org            |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Can remove moderators to org         |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Can remove administrators to org     |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: org internal operational chats       |  ✅︎  |      |       |   🎯︎  |                                                   |
-| Org members: Groupchats between orgs              |  ✅︎  |      |       |   🎯︎  |                                                   |
-
-
-## PHASE #4 - User/ORG profile can create "movements" and multiple custom feeds (like g. circles)
-
-### TODOs
-
-- [] Add feature table
-
-## PHASE #5 - Server moderators
-
-### TODOs
-
-- [] Add feature table
+# TIME-SLOT Month 10
 
 ## PHASE #6 - The most basic ActivityPub integration
 
@@ -289,6 +215,8 @@ Draw on ASCII-friednly overview of XYZ
 - [] Add feature table
 
 ## PHASE #8 - Post analytics for posters
+
+# Other
 
 ## Feature backlog
 

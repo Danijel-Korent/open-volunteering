@@ -69,9 +69,9 @@ export async function renderMap(container) {
 
       let link = '#/feed';
       if (m.type === 'organization' || m.type === 'user') {
-        link = profileLink({ type: m.type, id: m.id });
+        link = profileLink({ accountType: m.type, id: m.id });
       } else if (/** @type {string} */ (m.type) === 'volunteer') {
-        link = profileLink({ type: 'user', id: m.id });
+        link = profileLink({ accountType: 'user', id: m.id });
       } else if (m.type === 'position') link = '#/positions';
       else if (m.type === 'event') link = '#/calendar';
 

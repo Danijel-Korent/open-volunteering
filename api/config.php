@@ -414,14 +414,46 @@ function resolveAccount(string $type, int $id): ?array {
 }
 
 /**
- * Strip sensitive fields and add type for user API output.
+ * Allowed organization classification values (stored as `type` in organizations.json).
+ *
+ * @return list<string>
+ */
+function organizationClassificationTypes(): array {
+    return [
+        'NGO',
+        'Non-profit',
+        'Charity',
+        'Informal organization',
+        'Informal movement',
+    ];
+}
+
+/**
+ * @param string $type
+ */
+function validateOrganizationClassification(string $type): bool {
+    return in_array($type, organizationClassificationTypes(), true);
+}
+
+/**
+ * @param string $type
+ */
+function assertValidOrganizationClassification(string $type): void {
+    if (!validateOrganizationClassification($type)) {
+        jsonResponse(['error' => 'Invalid organization type'], 400);
+        exit;
+    }
+}
+
+/**
+ * Strip sensitive fields and add accountType for user API output.
  *
  * @param array<string, mixed> $user
  * @return array<string, mixed>
  */
 function publicUser(array $user): array {
     unset($user['passwordHash']);
-    $user['type'] = 'user';
+    $user['accountType'] = 'user';
     return $user;
 }
 
@@ -435,14 +467,19 @@ function publicVolunteer(array $user): array {
 }
 
 /**
- * Strip sensitive fields and add type for organization API output.
+ * Strip sensitive fields and add accountType for organization API output.
  *
  * @param array<string, mixed> $org
  * @return array<string, mixed>
  */
 function publicOrganization(array $org): array {
     unset($org['passwordHash']);
-    $org['type'] = 'organization';
+    $classification = isset($org['type']) ? (string) $org['type'] : 'NGO';
+    if (!validateOrganizationClassification($classification)) {
+        $classification = 'NGO';
+    }
+    $org['type'] = $classification;
+    $org['accountType'] = 'organization';
     return $org;
 }
 
@@ -1145,7 +1182,7 @@ function createNotificationsForOrgAdmins(
  * Build public actor summary for a notification.
  *
  * @param array<string, mixed> $notification
- * @return array{id: int, name: string, type: string}|null
+ * @return array<string, mixed>|null
  */
 function publicNotificationActor(array $notification): ?array {
     $actorType = $notification['actorType'] ?? 'user';
@@ -1157,11 +1194,16 @@ function publicNotificationActor(array $notification): ?array {
     if ($actor === null) {
         return null;
     }
-    return [
+    $pub = publicAccount($actorType, $actor);
+    $summary = [
         'id' => $actorId,
-        'name' => (string) ($actor['name'] ?? 'Unknown'),
-        'type' => $actorType,
+        'name' => (string) ($pub['name'] ?? 'Unknown'),
+        'accountType' => (string) $pub['accountType'],
     ];
+    if ($actorType === 'organization' && isset($pub['type'])) {
+        $summary['type'] = (string) $pub['type'];
+    }
+    return $summary;
 }
 
 /**
@@ -1749,7 +1791,7 @@ function enrichOrganizationWithMembers(array $org): array {
             'user' => [
                 'id' => $pub['id'],
                 'name' => $pub['name'],
-                'type' => 'user',
+                'accountType' => 'user',
             ],
         ];
     }

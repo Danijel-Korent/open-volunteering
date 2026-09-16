@@ -301,7 +301,7 @@ function parseParticipantInput(array $input): array {
  * Build public author summary for a message.
  *
  * @param array<string, mixed> $message
- * @return array{id: int, name: string, type: string}|null
+ * @return array<string, mixed>|null
  */
 function publicMessageAuthor(array $message): ?array {
     $authorType = $message['authorType'] ?? 'user';
@@ -310,11 +310,16 @@ function publicMessageAuthor(array $message): ?array {
     if ($author === null) {
         return null;
     }
-    return [
+    $pub = publicAccount($authorType, $author);
+    $summary = [
         'id' => $authorId,
-        'name' => $author['name'],
-        'type' => $authorType,
+        'name' => (string) $pub['name'],
+        'accountType' => (string) $pub['accountType'],
     ];
+    if ($authorType === 'organization' && isset($pub['type'])) {
+        $summary['type'] = (string) $pub['type'];
+    }
+    return $summary;
 }
 
 if ($id === null && method() === 'GET') {

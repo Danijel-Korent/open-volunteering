@@ -2,6 +2,13 @@
 
 type AccountType = 'user' | 'organization';
 
+type OrganizationClassification =
+  | 'NGO'
+  | 'Non-profit'
+  | 'Charity'
+  | 'Informal organization'
+  | 'Informal movement';
+
 interface GeoLocation {
   label: string;
   lat: number;
@@ -11,7 +18,7 @@ interface GeoLocation {
 /** User profile (stored in users.json). */
 interface User {
   id: number;
-  type: 'user';
+  accountType: 'user';
   email: string;
   name: string;
   bio?: string;
@@ -27,7 +34,8 @@ interface User {
 /** Organization profile (stored in organizations.json). */
 interface Organization {
   id: number;
-  type: 'organization';
+  accountType: 'organization';
+  type: OrganizationClassification;
   name: string;
   bio?: string;
   location?: GeoLocation | null;
@@ -42,7 +50,7 @@ interface OrganizationMemberRow {
   userId: number;
   role: 'admin' | 'member';
   joinedAt?: string;
-  user?: { id: number; name: string; type: 'user' };
+  user?: { id: number; name: string; accountType: 'user' };
 }
 
 interface Membership {
@@ -151,7 +159,14 @@ interface Comment {
   authorId: number;
   content: string;
   createdAt: string;
-  author?: { id: number; name: string; type: AccountType } | null;
+  author?: CommentAuthorSummary | null;
+}
+
+interface CommentAuthorSummary {
+  id: number;
+  name: string;
+  accountType: AccountType;
+  type?: OrganizationClassification;
 }
 
 interface FeedItem {
@@ -316,7 +331,7 @@ interface Message {
   authorId: number;
   content: string;
   createdAt: string;
-  author?: { id: number; name: string; type: AccountType } | null;
+  author?: CommentAuthorSummary | null;
 }
 
 interface MessagesResponse {
@@ -354,7 +369,7 @@ interface Notification {
   createdAt: string;
   message?: string;
   link?: string;
-  actor?: { id: number; name: string; type: AccountType } | null;
+  actor?: CommentAuthorSummary | null;
 }
 
 interface NotificationsResponse {

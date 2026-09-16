@@ -26,10 +26,18 @@ if ($id === null && method() === 'POST') {
         exit;
     }
 
+    $classification = trim((string) ($input['type'] ?? ''));
+    if ($classification === '') {
+        jsonResponse(['error' => 'Organization type is required'], 400);
+        exit;
+    }
+    assertValidOrganizationClassification($classification);
+
     $id = nextId($orgs);
     $org = [
         'id' => $id,
         'name' => $name,
+        'type' => $classification,
         'bio' => trim($input['bio'] ?? ''),
         'location' => $input['location'] ?? null,
         'createdByUserId' => $userId,
@@ -78,9 +86,19 @@ if ($id !== null && $sub === '' && method() === 'PATCH') {
         exit;
     }
 
-    $allowed = ['name', 'bio', 'location', 'avatarFileId', 'skills'];
+    $allowed = ['name', 'bio', 'location', 'avatarFileId', 'skills', 'type'];
     foreach ($allowed as $field) {
         if (!array_key_exists($field, $input)) {
+            continue;
+        }
+        if ($field === 'type') {
+            $classification = trim((string) $input['type']);
+            if ($classification === '') {
+                jsonResponse(['error' => 'Organization type is required'], 400);
+                exit;
+            }
+            assertValidOrganizationClassification($classification);
+            $orgs[$idx]['type'] = $classification;
             continue;
         }
         if ($field === 'skills') {

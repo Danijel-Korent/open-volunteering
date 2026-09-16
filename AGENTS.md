@@ -45,7 +45,7 @@ Prefer `data-testid` attributes:
 - `btn-login`, `btn-register`, `btn-logout`
 - `account-switcher`, `account-switcher-toggle`, `account-switcher-create`, `account-switch-org-{id}`, `account-switch-user`
 - `login-name`, `login-password`, `register-name`, `register-success`, `register-success-password`, `register-copy-credentials`, `register-continue`
-- `profile-seeking-volunteering`, `profile-weekly-volunteering-hours`, `btn-create-organization`, `create-org-modal`, `create-org-name`
+- `profile-seeking-volunteering`, `profile-weekly-volunteering-hours`, `btn-create-organization`, `create-org-modal`, `create-org-name`, `create-org-type`, `profile-org-type`, `org-classification-badge`
 - `user-memberships-section`, `membership-{orgId}`, `org-members-section`, `org-member-{userId}`, `org-member-search`
 - `feed-algorithm`, `feed-filter-user-post`, `feed-filter-org-post`, `feed-filter-position`, `feed-filter-event`
 - `post-card-{type}-{id}`, `post-card-menu-{feedType}-{id}`, `post-card-menu-follow-{feedType}-{id}`, `post-card-menu-edit-{feedType}-{id}`, `post-card-menu-delete-{feedType}-{id}`, `confirm-delete-dialog`, `confirm-delete-submit`, `confirm-delete-cancel`, `edit-content-dialog`, `edit-content-submit`, `edit-content-cancel`, `pagination-next`, `map-container`
